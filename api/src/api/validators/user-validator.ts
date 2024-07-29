@@ -1,4 +1,3 @@
-import { Members } from "@prisma/client";
 import Joi from "joi";
 
 export interface userRequest {
@@ -7,7 +6,6 @@ export interface userRequest {
   email: string;
   password: string;
   isSuperAdmin?: boolean;
-  members?: Members[];
 }
 
 export const userValidation = Joi.object<userRequest>({
@@ -18,8 +16,8 @@ export const userValidation = Joi.object<userRequest>({
   isSuperAdmin: Joi.boolean().optional(),
 }).options({ abortEarly: true });
 
-export const userPatchValidation = Joi.object<Partial<userRequest>>({
+export const userPatchValidation = Joi.object<Pick<userRequest, "firstName" | "lastName" | "email">>({
   firstName: Joi.string(),
   lastName: Joi.string(),
-  email: Joi.string().email(),
+  email: Joi.string().email()
 }).options({ abortEarly: true });
