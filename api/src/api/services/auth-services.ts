@@ -20,8 +20,8 @@ export const addRefreshTokenToWhitelist = ({
   return prisma.refreshToken.create({
     data: {
       id: jti,
-      hashed_token: hashToken(refreshToken),
-      user_id: userId,
+      hashedToken: hashToken(refreshToken),
+      userId: userId,
     },
   });
 };
@@ -31,13 +31,6 @@ export const findRefreshTokenById = (id: string) => {
     where: {
       id,
     },
-  });
-};
-
-export const findMembersByUserId = (userId: number) => {
-  return prisma.members.findMany({
-    where: { userId: userId },
-    include: { organization: true },
   });
 };
 
@@ -55,7 +48,7 @@ export const deleteRefreshToken = (id: string) => {
 export const revokeTokens = (userId: number) => {
   return prisma.refreshToken.updateMany({
     where: {
-      user_id: userId,
+      userId: userId,
     },
     data: {
       revoked: true,

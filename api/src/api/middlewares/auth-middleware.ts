@@ -22,7 +22,7 @@ export const authMiddleware = async (req: Request, res: Response, next: any) => 
     next()
 }
 
-export const authzMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+export const isSuperAdmin = async (req: Request, res: Response, next: NextFunction) => {
     const payload = (req as any).payload;
 
     if (payload?.isSuperAdmin !== true) {

@@ -2,10 +2,19 @@ import express from "express";
 import { prisma } from "./utils/prisma";
 import { initRoutes } from "./api/routes";
 import cors from "cors";
+import {User} from "./api/services/users-services";
+
+declare global{
+  namespace Express {
+    interface Request {
+      user?: User
+    }
+  }
+}
 
 const main = async () => {
   const app = express();
-  const port = Number(process.env.PORT);
+  const port = process.env.PORT || 3000;
 
   try {
     console.log("Datasource initialized");

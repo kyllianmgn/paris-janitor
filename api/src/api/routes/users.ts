@@ -5,20 +5,19 @@ import {
   userValidation,
 } from "../validators/user-validator";
 import bcrypt from "bcrypt";
-import { authMiddleware, authzMiddleware } from "../middlewares/auth-middleware";
+import { authMiddleware, isSuperAdmin } from "../middlewares/auth-middleware";
 
 export const initUsers = (app: express.Express) => {
-  app.get("/users/me",authMiddleware, async (req: any, res) => {
+  app.get(`/users/me`,authMiddleware, async (req: any, res) => {
     try {
       console.log(req.payload)
-      const user = await prisma.users.findUnique({
+      const user = await prisma.user.findUnique({
         where: { id: Number(req.payload.userId) },
         select: {
           id: true,
           "firstName": true,
           "lastName": true,
-          "email": true,
-          "isSuperAdmin": true,
+          "email": true
         }
       });
       res.status(200).json(user);
@@ -28,9 +27,9 @@ export const initUsers = (app: express.Express) => {
     }
   });
 
-  app.get("/users", authMiddleware, authzMiddleware, async (req, res) => {
+  app.get("/users", authMiddleware, isSuperAdmin, async (_req, res) => {
     try {
-      const allUsers = await prisma.users.findMany();
+      const allUsers = await prisma.user.findMany();
       res.json(allUsers);
     } catch (e) {
       res.status(500).send({ error: e });
@@ -38,58 +37,10 @@ export const initUsers = (app: express.Express) => {
     }
   });
 
-  app.get("/users/:id", authMiddleware, authzMiddleware, async (req, res) => {
+  app.get("/users/:id", authMiddleware, isSuperAdmin, async (req, res) => {
     try {
-      const user = await prisma.users.findUnique({
+      const user = await prisma.user.findUnique({
         where: { id: Number(req.params.id) },
-      });
-      res.json(user);
-    } catch (e) {
-      res.status(500).send({ error: e });
-      return;
-    }
-  });
-
-  app.get("/users/:id/name", async (req, res) => {
-    try {
-      const user = await prisma.members.findUnique({
-        where: { id: Number(req.params.id) },
-        include: {
-          user: {
-            select: {
-              lastName: true,
-              firstName: true
-            }
-          }
-        }
-      });
-      res.json(user);
-    } catch (e) {
-      res.status(500).send({ error: e });
-      return;
-    }
-  });
-
-
-  app.post("/users", async (req, res) => {
-    const validation = userValidation.validate(req.body);
-
-    if (validation.error) {
-      res.status(400).send({ error: validation.error });
-      return;
-    }
-
-    const userRequest = validation.value;
-    userRequest.password = await bcrypt.hash(userRequest.password, 10);
-    try {
-      const user = await prisma.users.create({
-        data: {
-          firstName: userRequest.firstName,
-          lastName: userRequest.lastName,
-          email: userRequest.email,
-          password: userRequest.password,
-          isSuperAdmin: userRequest.isSuperAdmin,
-        },
       });
       res.json(user);
     } catch (e) {
@@ -108,7 +59,7 @@ export const initUsers = (app: express.Express) => {
 
     const userRequest = validation.value;
     try {
-      const user = await prisma.users.update({
+      const user = await prisma.user.update({
         where: {
           id: Number(req.params.id),
         },
@@ -123,7 +74,7 @@ export const initUsers = (app: express.Express) => {
 
   app.delete("/users/:id", async (req, res) => {
     try {
-      const deletedUser = await prisma.users.delete({
+      const deletedUser = await prisma.user.delete({
         where: { id: Number(req.params.id) },
       });
       res.status(200).json(deletedUser);
