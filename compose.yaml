@@ -1,5 +1,7 @@
+name: paris-janitor
 services:
   database:
+    container_name: database
     image: postgres
     restart: always
     ports:
@@ -10,7 +12,9 @@ services:
       POSTGRES_DB: paris_janitor
     volumes:
       - db:/var/lib/postgresql/data
+
   pgadmin:
+    container_name: pgadmin
     image: dpage/pgadmin4
     restart: always
     ports:
