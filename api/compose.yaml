@@ -1,3 +1,4 @@
+name: paris-janitor-backend
 services:
   database:
     image: postgres
