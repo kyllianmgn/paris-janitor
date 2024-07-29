@@ -1,0 +1,24 @@
+services:
+  database:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: paris_janitor
+      POSTGRES_PASSWORD: NbH@_FDyS=
+      POSTGRES_DB: paris_janitor
+    volumes:
+      - db:/var/lib/postgresql/data
+  interface:
+    image: dpage/pgadmin4
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: paris_janitor@domain-name.com
+      PGADMIN_DEFAULT_PASSWORD: NbH@_FDyS=
+
+volumes:
+  db:
+    driver: local
