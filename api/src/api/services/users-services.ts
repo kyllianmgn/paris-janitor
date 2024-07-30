@@ -11,9 +11,23 @@ export interface User {
 
 export type UserWithoutPassword = Omit<User, "password">
 
+export interface Admin {
+    id: number,
+    username: string,
+    password: string
+}
+
+export type AdminWithoutPassword = Omit<Admin, "password">
+
 export const findUserByEmail = async (email: string): Promise<User|null> => {
     return prisma.user.findFirst({
         where: {email: email}
+    });
+};
+
+export const findAdminByUsername = async (username: string): Promise<Admin|null> => {
+    return prisma.admin.findFirst({
+        where: {username: username}
     });
 };
 
@@ -34,6 +48,19 @@ export const verifyUserPassword = async (
   if (!validPassword) return null;
 
   return user;
+};
+
+export const verifyAdminPassword = async (
+    username: string,
+    password: string
+): Promise<AdminWithoutPassword | null> => {
+    const admin = await findAdminByUsername(username);
+    if (!admin) return null;
+
+    const validPassword = await bcrypt.compare(password, admin.password);
+    if (!validPassword) return null;
+
+    return admin;
 };
 
 export const createUserByEmailAndPassword = (user: any) => {

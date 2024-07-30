@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import {User, UserWithoutPassword} from "../api/services/users-services";
+import {AdminWithoutPassword, User, UserWithoutPassword} from "../api/services/users-services";
 
 export const generateAccessToken = (user: UserWithoutPassword) => {
     return jwt.sign(
@@ -33,6 +33,42 @@ export const generateRefreshToken = (user: UserWithoutPassword, jti: string) => 
 export const generateTokens = (user: UserWithoutPassword, jti: string) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user, jti);
+
+    return {
+        accessToken,
+        refreshToken,
+    };
+};
+
+export const generateAdminAccessToken = (admin: AdminWithoutPassword) => {
+    return jwt.sign(
+        {
+            adminId: admin.id,
+            username: admin.username,
+        },
+        process.env.JWT_ACCESS_SECRET!,
+        {
+            expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRE,
+        }
+    );
+};
+
+export const generateAdminRefreshToken = (admin: AdminWithoutPassword, jti: string) => {
+    return jwt.sign(
+        {
+            adminId: admin.id,
+            jti,
+        },
+        process.env.JWT_REFRESH_SECRET!,
+        {
+            expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRE,
+        }
+    );
+};
+
+export const generateAdminTokens = (admin: AdminWithoutPassword, jti: string) => {
+    const accessToken = generateAdminAccessToken(admin);
+    const refreshToken = generateAdminRefreshToken(admin, jti);
 
     return {
         accessToken,

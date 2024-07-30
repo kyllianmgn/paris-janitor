@@ -33,7 +33,7 @@ model User {
 model Landlord {
   id            Int             @id @default(autoincrement())
   userId        Int             @unique
-  user          User            @relation(references: [id], fields: [userId])
+  user          User            @relation(references: [id], fields: [userId], onDelete: Cascade)
   property      Property[]
   ServiceReview ServiceReview[]
 
@@ -56,15 +56,15 @@ model Property {
 }
 
 model PropertyReview {
-  id         Int            @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   travelerId Int
-  traveler   Traveler       @relation(references: [id], fields: [travelerId])
+  traveler   Traveler @relation(references: [id], fields: [travelerId])
   propertyId Int
-  property   Property       @relation(references: [id], fields: [propertyId])
+  property   Property @relation(references: [id], fields: [propertyId])
   note       Decimal
-  status     PropertyStatus
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("property_reviews")
 }
@@ -76,7 +76,7 @@ enum PropertyStatus {
 }
 
 model PropertyOccupation {
-  id           Int                  @id
+  id           Int                  @id @default(autoincrement())
   propertyId   Int
   property     Property             @relation(fields: [propertyId], references: [id])
   startDate    DateTime
@@ -90,9 +90,9 @@ model PropertyOccupation {
 }
 
 model PropertyReservation {
-  id           Int                @id
-  traverlerId  Int
-  traveler     Traveler           @relation(fields: [traverlerId], references: [id])
+  id           Int                @id @default(autoincrement())
+  travelerId   Int
+  traveler     Traveler           @relation(fields: [travelerId], references: [id])
   occupationId Int                @unique
   occupation   PropertyOccupation @relation(fields: [occupationId], references: [id])
   status       ReservationStatus
@@ -112,7 +112,7 @@ enum ReservationStatus {
 model Traveler {
   id             Int                   @id @default(autoincrement())
   userId         Int                   @unique
-  user           User                  @relation(references: [id], fields: [userId])
+  user           User                  @relation(references: [id], fields: [userId], onDelete: Cascade)
   reservations   PropertyReservation[]
   ServiceReview  ServiceReview[]
   PropertyReview PropertyReview[]
@@ -123,7 +123,7 @@ model Traveler {
 model ServiceProvider {
   id         Int                  @id @default(autoincrement())
   userId     Int                  @unique
-  user       User                 @relation(references: [id], fields: [userId])
+  user       User                 @relation(references: [id], fields: [userId], onDelete: Cascade)
   services   Service[]
   occupation ProviderOccupation[]
 
@@ -159,16 +159,17 @@ model Service {
 }
 
 model ServiceReview {
-  id         Int      @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   serviceId  Int
-  service    Service  @relation(references: [id], fields: [serviceId])
-  travelerId Int
-  traveler   Traveler @relation(references: [id], fields: [travelerId])
-  landlordId Int
-  landlord   Landlord @relation(references: [id], fields: [landlordId])
+  service    Service   @relation(references: [id], fields: [serviceId])
+  travelerId Int?
+  traveler   Traveler? @relation(references: [id], fields: [travelerId])
+  landlordId Int?
+  landlord   Landlord? @relation(references: [id], fields: [landlordId])
   note       Decimal
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  comment    String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@map("service_reviews")
 }

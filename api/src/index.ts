@@ -3,11 +3,13 @@ import { prisma } from "./utils/prisma";
 import { initRoutes } from "./api/routes";
 import cors from "cors";
 import {User} from "./api/services/users-services";
+import {JwtPayload} from "jsonwebtoken";
+import cookieParser from "cookie-parser";
 
 declare global{
   namespace Express {
     interface Request {
-      user?: User
+      user?: string | JwtPayload
     }
   }
 }
@@ -24,13 +26,16 @@ const main = async () => {
     process.exit(1);
   }
 
+  app.use(cookieParser())
+
   app.use(cors());
 
   app.use(express.json({ limit: "50mb" }));
 
+  initRoutes(app);
+
   app.listen(port, () => {
     console.log(`Server running on port ${port}`);
-    initRoutes(app);
   });
 };
 

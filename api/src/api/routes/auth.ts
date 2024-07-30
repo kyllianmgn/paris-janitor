@@ -1,16 +1,21 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import {v4 as uuidv4} from "uuid";
-import {generateTokens, hashToken} from "../../utils/token";
-import {authMiddleware} from "../middlewares/auth-middleware";
+import {generateAdminTokens, generateTokens, hashToken} from "../../utils/token";
+import {isAuthenticated} from "../middlewares/auth-middleware";
 import {
     addRefreshTokenToWhitelist,
     deleteRefreshToken,
     findRefreshTokenById,
     revokeTokens
 } from "../services/auth-services";
-import {getSafeUserById, verifyUserPassword} from "../services/users-services";
-import {loginValidation, refreshTokenValidation, revokeRefreshTokenValidation} from "../validators/auth-validator";
+import {getSafeUserById, verifyAdminPassword, verifyUserPassword} from "../services/users-services";
+import {
+    adminLoginValidation,
+    loginValidation,
+    refreshTokenValidation,
+    revokeRefreshTokenValidation
+} from "../validators/auth-validator";
 import {userValidation} from "../validators/user-validator";
 import bcrypt from "bcrypt";
 import {prisma} from "../../utils/prisma";
@@ -45,6 +50,46 @@ export const initAuth = (app: express.Express) => {
                 });
 
                 req.headers.authorization = `Bearer ${accessToken}`;
+                res.cookie("authorization", `Bearer ${accessToken}`)
+                console.log(req.headers)
+                return res.json({accessToken, refreshToken});
+            } catch (error) {
+                console.error(error);
+                return res.status(500).send({error: error});
+            }
+        }
+    );
+
+    app.post(`/auth/login/admin`, async (req: express.Request, res: express.Response) => {
+            try {
+                const validation = adminLoginValidation.validate(req.body);
+                if (validation.error) {
+                    return res.status(400).send({error: validation.error});
+                }
+
+                const loginRequest = validation.value;
+                const admin = await verifyAdminPassword(
+                    loginRequest.username,
+                    loginRequest.password
+                );
+
+                if (!admin) {
+                    return res.status(403).send({error: "Invalid login credentials"});
+                }
+
+                const jti = uuidv4();
+                const {accessToken, refreshToken} = generateAdminTokens(
+                    admin,
+                    jti
+                );
+                await addRefreshTokenToWhitelist({
+                    jti,
+                    refreshToken,
+                    userId: admin.id,
+                });
+
+                req.headers.authorization = `Bearer ${accessToken}`;
+                res.cookie("authorization", `Bearer ${accessToken}`)
                 console.log(req.headers)
                 return res.json({accessToken, refreshToken});
             } catch (error) {
@@ -70,8 +115,99 @@ export const initAuth = (app: express.Express) => {
                     firstName: userRequest.firstName,
                     lastName: userRequest.lastName,
                     email: userRequest.email,
-                    password: userRequest.password
+                    password: userRequest.password,
                 },
+
+            });
+            res.json(user);
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.post("/auth/signup/landlord", async (req, res) => {
+        const validation = userValidation.validate(req.body);
+
+        if (validation.error) {
+            res.status(400).send({ error: validation.error });
+            return;
+        }
+
+        const userRequest = validation.value;
+        userRequest.password = await bcrypt.hash(userRequest.password, 10);
+        try {
+            const user = await prisma.user.create({
+                data: {
+                    firstName: userRequest.firstName,
+                    lastName: userRequest.lastName,
+                    email: userRequest.email,
+                    password: userRequest.password,
+                    Landlord: {
+                        create: {}
+                    }
+                },
+
+            });
+            res.json(user);
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.post("/auth/signup/traveler", async (req, res) => {
+        const validation = userValidation.validate(req.body);
+
+        if (validation.error) {
+            res.status(400).send({ error: validation.error });
+            return;
+        }
+
+        const userRequest = validation.value;
+        userRequest.password = await bcrypt.hash(userRequest.password, 10);
+        try {
+            const user = await prisma.user.create({
+                data: {
+                    firstName: userRequest.firstName,
+                    lastName: userRequest.lastName,
+                    email: userRequest.email,
+                    password: userRequest.password,
+                    Traveler: {
+                        create: {}
+                    }
+                },
+
+            });
+            res.json(user);
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.post("/auth/signup/service-provider", async (req, res) => {
+        const validation = userValidation.validate(req.body);
+
+        if (validation.error) {
+            res.status(400).send({ error: validation.error });
+            return;
+        }
+
+        const userRequest = validation.value;
+        userRequest.password = await bcrypt.hash(userRequest.password, 10);
+        try {
+            const user = await prisma.user.create({
+                data: {
+                    firstName: userRequest.firstName,
+                    lastName: userRequest.lastName,
+                    email: userRequest.email,
+                    password: userRequest.password,
+                    ServiceProvider: {
+                        create: {}
+                    }
+                },
+
             });
             res.json(user);
         } catch (e) {
@@ -148,7 +284,7 @@ export const initAuth = (app: express.Express) => {
         }
     );
 
-    app.get(`/auth/check`, authMiddleware, async (req: express.Request, res: express.Response) => {
+    app.get(`/auth/check`, isAuthenticated, async (req: express.Request, res: express.Response) => {
             try {
                 const payload = (req as any).payload;
                 return res.json(payload);

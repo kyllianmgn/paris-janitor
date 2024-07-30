@@ -10,6 +10,16 @@ export const loginValidation = Joi.object<loginRequest>({
     password: Joi.string().required()
 }).options({abortEarly: true})
 
+export interface adminLoginRequest {
+    username: string
+    password: string
+}
+
+export const adminLoginValidation = Joi.object<adminLoginRequest>({
+    username: Joi.string().required(),
+    password: Joi.string().required()
+}).options({abortEarly: true})
+
 export interface refreshTokenRequest {
     token: string
 }

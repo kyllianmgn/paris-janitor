@@ -5,51 +5,55 @@ import {
   userValidation,
 } from "../validators/user-validator";
 import bcrypt from "bcrypt";
-import { authMiddleware, isSuperAdmin } from "../middlewares/auth-middleware";
+import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
 
 export const initUsers = (app: express.Express) => {
-  app.get(`/users/me`,authMiddleware, async (req: any, res) => {
+  app.get(`/users/me`, isAuthenticated, async (req: any, res) => {
     try {
-      console.log(req.payload)
+      console.log(req.user)
+      console.log(req.cookies)
       const user = await prisma.user.findUnique({
-        where: { id: Number(req.payload.userId) },
+        where: { id: +req.user.userId },
         select: {
           id: true,
           "firstName": true,
           "lastName": true,
-          "email": true
+          "email": true,
+          Landlord: true,
+          Traveler: true,
+          ServiceProvider: true
         }
       });
-      res.status(200).json(user);
+      res.status(200).json({data: user});
     } catch (e) {
       res.status(500).send({ error: e });
       return;
     }
   });
 
-  app.get("/users", authMiddleware, isSuperAdmin, async (_req, res) => {
+  app.get("/users", isAuthenticated, isSuperAdmin, async (_req, res) => {
     try {
       const allUsers = await prisma.user.findMany();
-      res.json(allUsers);
+      res.status(200).json({data: allUsers});
     } catch (e) {
       res.status(500).send({ error: e });
       return;
     }
   });
 
-  app.get("/users/:id", authMiddleware, isSuperAdmin, async (req, res) => {
+  app.get("/users/:id(\\d+)", isAuthenticated, isSuperAdmin, async (req, res) => {
     try {
       const user = await prisma.user.findUnique({
         where: { id: Number(req.params.id) },
       });
-      res.json(user);
+      res.status(200).json({data: user});
     } catch (e) {
       res.status(500).send({ error: e });
       return;
     }
   });
 
-  app.patch("/users/:id", async (req, res) => {
+  app.patch("/users/:id(\\d+)", async (req, res) => {
     const validation = userPatchValidation.validate(req.body);
 
     if (validation.error) {
@@ -65,19 +69,19 @@ export const initUsers = (app: express.Express) => {
         },
         data: userRequest,
       });
-      res.json(user);
+      res.status(200).json({data: user});
     } catch (e) {
       res.status(500).json({ error: e });
       return;
     }
   });
 
-  app.delete("/users/:id", async (req, res) => {
+  app.delete("/users/:id(\\d+)", async (req, res) => {
     try {
       const deletedUser = await prisma.user.delete({
         where: { id: Number(req.params.id) },
       });
-      res.status(200).json(deletedUser);
+      res.status(200).json({data: deletedUser});
     } catch (e) {
       res.status(500).send({ error: e });
     }
