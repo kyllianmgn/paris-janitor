@@ -12,18 +12,30 @@ export const initUsers = (app: express.Express) => {
     try {
       console.log(req.user)
       console.log(req.cookies)
-      const user = await prisma.user.findUnique({
-        where: { id: +req.user.userId },
-        select: {
-          id: true,
-          "firstName": true,
-          "lastName": true,
-          "email": true,
-          Landlord: true,
-          Traveler: true,
-          ServiceProvider: true
-        }
-      });
+      let user;
+      if (req.user.userId){
+        user = await prisma.user.findUnique({
+          where: { id: +req.user.userId },
+          select: {
+            id: true,
+            "firstName": true,
+            "lastName": true,
+            "email": true,
+            Landlord: true,
+            Traveler: true,
+            ServiceProvider: true
+          }
+        });
+      }else if (req.user.adminId){
+        user = await prisma.admin.findUnique({
+          where: { id: +req.user.adminId },
+          select: {
+            id: true,
+            username: true
+          }
+        })
+      }
+
       res.status(200).json({data: user});
     } catch (e) {
       res.status(500).send({ error: e });
