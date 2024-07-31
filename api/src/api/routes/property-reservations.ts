@@ -1,9 +1,9 @@
 import express from "express";
-import { prisma } from "../../utils/prisma";
-import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
+import {prisma} from "../../utils/prisma";
+import {isAuthenticated, isSuperAdmin} from "../middlewares/auth-middleware";
 import {
     propertyReservationValidator,
-    propertyReservationPatchValidator
+    propertyReservationPatchValidator, propertyReservationWithOccupationValidator, ReservationStatus
 } from "../validators/property-validator";
 
 export const initPropertyReservations = (app: express.Express) => {
@@ -12,7 +12,7 @@ export const initPropertyReservations = (app: express.Express) => {
             const allPropertyReservations = await prisma.propertyReservation.findMany();
             res.status(200).json({data: allPropertyReservations});
         } catch (e) {
-            res.status(500).send({ error: e });
+            res.status(500).send({error: e});
             return;
         }
     });
@@ -20,31 +20,43 @@ export const initPropertyReservations = (app: express.Express) => {
     app.get("/property-reservations/:id(\\d+)", async (req, res) => {
         try {
             const PropertyReservations = await prisma.propertyReservation.findUnique({
-                where: { id: Number(req.params.id) },
+                where: {id: Number(req.params.id)},
             });
             res.status(200).json({data: PropertyReservations});
         } catch (e) {
-            res.status(500).send({ error: e });
+            res.status(500).send({error: e});
             return;
         }
     });
 
     app.post("/property-reservations/", async (req, res) => {
         try {
-            const validation = propertyReservationValidator.validate(req.body);
+            const validation = propertyReservationWithOccupationValidator.validate(req.body);
 
             if (validation.error) {
-                res.status(400).json({ error: validation.error });
+                res.status(400).json({error: validation.error});
                 return;
             }
 
             const reservationRequest = validation.value;
-            const propertyReservation = await prisma.propertyReservation.create({
-                data: reservationRequest
+
+            const propertyReservation = await prisma.propertyOccupation.create({
+                data: {
+                    startDate: reservationRequest.startDate,
+                    endDate: reservationRequest.endDate,
+                    propertyId: reservationRequest.propertyId,
+                    reservation: {
+                        create: {
+                            travelerId: reservationRequest.travelerId,
+                            totalPrice: reservationRequest.totalPrice,
+                            status: ReservationStatus.PENDING,
+                        }
+                    },
+                }
             })
             res.status(200).json({data: propertyReservation});
         } catch (e) {
-            res.status(500).send({ error: e });
+            res.status(500).send({error: e});
             return;
         }
     });
@@ -53,7 +65,7 @@ export const initPropertyReservations = (app: express.Express) => {
         const validation = propertyReservationPatchValidator.validate(req.body);
 
         if (validation.error) {
-            res.status(400).json({ error: validation.error });
+            res.status(400).json({error: validation.error});
             return;
         }
 
@@ -67,7 +79,7 @@ export const initPropertyReservations = (app: express.Express) => {
             });
             res.status(200).json({data: property});
         } catch (e) {
-            res.status(500).json({ error: e });
+            res.status(500).json({error: e});
             return;
         }
     });
@@ -76,7 +88,7 @@ export const initPropertyReservations = (app: express.Express) => {
         const validation = propertyReservationPatchValidator.validate(req.body);
 
         if (validation.error) {
-            res.status(400).json({ error: validation.error });
+            res.status(400).json({error: validation.error});
             return;
         }
 
@@ -86,11 +98,11 @@ export const initPropertyReservations = (app: express.Express) => {
                 where: {
                     id: +req.params.id,
                 },
-                data: { status: propertyRequest.status},
+                data: {status: propertyRequest.status},
             });
             res.status(200).json({data: property});
         } catch (e) {
-            res.status(500).json({ error: e });
+            res.status(500).json({error: e});
             return;
         }
     });
@@ -98,11 +110,11 @@ export const initPropertyReservations = (app: express.Express) => {
     app.delete("/property-reservations/:id(\\d+)", isAuthenticated, isSuperAdmin, async (req, res) => {
         try {
             const deletedProperty = await prisma.propertyReservation.delete({
-                where: { id: Number(req.params.id) },
+                where: {id: Number(req.params.id)},
             });
             res.status(200).json({data: deletedProperty});
         } catch (e) {
-            res.status(500).send({ error: e });
+            res.status(500).send({error: e});
         }
     });
 };

@@ -76,12 +76,24 @@ export interface PropertyReservation {
     totalPrice: number
 }
 
+export const propertyReservationWithOccupationValidator = Joi.object<PropertyReservation & PropertyOccupation>({
+    travelerId: Joi.number().required(),
+    occupationId: Joi.number().required(),
+    status: Joi.string().required().valid("PENDING", "CONFIRMED", "CANCELLED"),
+    totalPrice: Joi.number().required(),
+    propertyId: Joi.number().required(),
+    startDate: Joi.date().required(),
+    endDate: Joi.date().required()
+})
+
 export const propertyReservationValidator = Joi.object<PropertyReservation>({
     travelerId: Joi.number().required(),
     occupationId: Joi.number().required(),
     status: Joi.string().required().valid("PENDING", "CONFIRMED", "CANCELLED"),
     totalPrice: Joi.number().required()
 })
+
+
 
 export const propertyReservationPatchValidator = Joi.object<PropertyReservation>({
     travelerId: Joi.number().optional(),

@@ -2,8 +2,8 @@ import express from "express";
 import { prisma } from "../../utils/prisma";
 import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
 import {
-    InterventionPatchValidator,
-    InterventionValidator,
+    InterventionPatchValidator, InterventionStatus,
+    InterventionValidator, InterventionWithOccupationValidator,
     servicePatchValidator,
     serviceValidator
 } from "../validators/service-validator";
@@ -33,7 +33,7 @@ export const initInterventions = (app: express.Express) => {
 
     app.post("/interventions/", async (req, res) => {
         try {
-            const validation = InterventionValidator.validate(req.body);
+            const validation = InterventionWithOccupationValidator.validate(req.body);
 
             if (validation.error) {
                 res.status(400).json({ error: validation.error });
@@ -41,8 +41,19 @@ export const initInterventions = (app: express.Express) => {
             }
 
             const serviceRequest = validation.value;
-            const intervention = await prisma.intervention.create({
-                data: serviceRequest
+            const intervention = await prisma.providerOccupation.create({
+                data: {
+                    startDate: serviceRequest.startDate,
+                    endDate: serviceRequest.endDate,
+                    providerId: serviceRequest.providerId,
+                    intervention: {
+                        create: {
+                            status: InterventionStatus.PLANNED,
+                            additionalPrice: serviceRequest.additionalPrice,
+                            serviceId: serviceRequest.serviceId
+                        }
+                    }
+                }
             })
             res.status(200).json({data: intervention});
         } catch (e) {

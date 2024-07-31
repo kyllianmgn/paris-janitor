@@ -94,7 +94,7 @@ model PropertyReservation {
   travelerId   Int
   traveler     Traveler           @relation(fields: [travelerId], references: [id])
   occupationId Int                @unique
-  occupation   PropertyOccupation @relation(fields: [occupationId], references: [id])
+  occupation   PropertyOccupation @relation(fields: [occupationId], references: [id], onDelete: Cascade)
   status       ReservationStatus
   totalPrice   Decimal
   createdAt    DateTime           @default(now())

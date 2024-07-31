@@ -62,6 +62,17 @@ export interface Intervention {
     status: InterventionStatus
 }
 
+export const InterventionWithOccupationValidator = Joi.object<Intervention & ProviderOccupation>({
+    serviceId: Joi.number().required(),
+    propertyOccupationId: Joi.number().optional(),
+    providerOccupationId: Joi.number().required(),
+    additionalPrice: Joi.number().required(),
+    status: Joi.string().required(),
+    startDate: Joi.date().required(),
+    endDate: Joi.date().required(),
+    providerId: Joi.number().required(),
+})
+
 export const InterventionValidator = Joi.object<Intervention>({
     serviceId: Joi.number().required(),
     propertyOccupationId: Joi.number().optional(),
