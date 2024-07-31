@@ -2,25 +2,21 @@ import express from "express";
 import { prisma } from "../../utils/prisma";
 import {
   userPatchValidation,
-  userValidation,
 } from "../validators/user-validator";
-import bcrypt from "bcrypt";
 import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
 
 export const initUsers = (app: express.Express) => {
   app.get(`/users/me`, isAuthenticated, async (req: any, res) => {
     try {
-      console.log(req.user)
-      console.log(req.cookies)
       let user;
       if (req.user.userId){
         user = await prisma.user.findUnique({
           where: { id: +req.user.userId },
           select: {
             id: true,
-            "firstName": true,
-            "lastName": true,
-            "email": true,
+            firstName: true,
+            lastName: true,
+            email: true,
             Landlord: true,
             Traveler: true,
             ServiceProvider: true

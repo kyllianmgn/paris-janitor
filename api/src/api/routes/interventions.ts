@@ -51,7 +51,7 @@ export const initInterventions = (app: express.Express) => {
         }
     });
 
-    app.patch("/interventions/:id(\\d+)/status", isAuthenticated, isSuperAdmin, async (req, res) => {
+    app.patch("/interventions/:id(\\d+)", isAuthenticated, isSuperAdmin, async (req, res) => {
         const validation = InterventionPatchValidator.validate(req.body);
 
         if (validation.error) {

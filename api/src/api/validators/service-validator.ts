@@ -70,7 +70,7 @@ export const InterventionValidator = Joi.object<Intervention>({
     status: Joi.string().required()
 })
 
-export const InterventionPatchValidator = Joi.object<Partial<Intervention>>({
+export const InterventionPatchValidator = Joi.object<Intervention>({
     serviceId: Joi.number().optional(),
     propertyOccupationId: Joi.number().optional(),
     providerOccupationId: Joi.number().optional(),
@@ -85,4 +85,25 @@ export interface InterventionForm {
 
 export const InterventionFormValidator = Joi.object<InterventionForm>({
     interventionId: Joi.number().optional()
+})
+
+export interface ProviderOccupation{
+    id: number
+    providerId: number
+    startDate: Date
+    endDate: Date
+}
+
+export const providerOccupationValidator = Joi.object<ProviderOccupation>({
+    id: Joi.number().required(),
+    providerId: Joi.number().required(),
+    startDate: Joi.date().required(),
+    endDate: Joi.date().required(),
+})
+
+export const providerOccupationPatchValidator = Joi.object<ProviderOccupation>({
+    id: Joi.number().optional(),
+    providerId: Joi.number().optional(),
+    startDate: Joi.date().optional(),
+    endDate: Joi.date().optional(),
 })

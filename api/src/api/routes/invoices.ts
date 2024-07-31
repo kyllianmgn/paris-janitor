@@ -46,7 +46,7 @@ export const initInvoices = (app: express.Express) => {
         }
     });
 
-    app.patch("/invoices/:id(\\d+)/status", isAuthenticated, isSuperAdmin, async (req, res) => {
+    app.patch("/invoices/:id(\\d+)", isAuthenticated, isSuperAdmin, async (req, res) => {
         const validation = InvoicePatchValidator.validate(req.body);
 
         if (validation.error) {

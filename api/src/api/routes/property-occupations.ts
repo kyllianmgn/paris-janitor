@@ -3,8 +3,7 @@ import { prisma } from "../../utils/prisma";
 import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
 import {
     propertyOccupationValidator,
-    propertyOccupationPatchValidator,
-    PropertyStatus
+    propertyOccupationPatchValidator
 } from "../validators/property-validator";
 
 export const initPropertyOccupations = (app: express.Express) => {
