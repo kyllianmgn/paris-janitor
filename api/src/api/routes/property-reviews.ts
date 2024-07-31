@@ -1,13 +1,13 @@
 import express from "express";
 import { prisma } from "../../utils/prisma";
 import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
-import {propertyReviewValidator, propertyOccupationPatchValidator, PropertyStatus} from "../validators/property-validator";
+import {propertyReviewValidator} from "../validators/property-validator";
 
 export const initPropertyReviews = (app: express.Express) => {
     app.get("/property-reviews", async (_req, res) => {
         try {
-            const allpropertyReviews = await prisma.propertyReview.findMany();
-            res.status(200).json({data: allpropertyReviews});
+            const allPropertyReviews = await prisma.propertyReview.findMany();
+            res.status(200).json({data: allPropertyReviews});
         } catch (e) {
             res.status(500).send({ error: e });
             return;

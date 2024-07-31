@@ -2,10 +2,7 @@ import express from "express";
 import { prisma } from "../../utils/prisma";
 import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
 import {
-    InterventionPatchValidator, InterventionStatus,
-    InterventionValidator, InterventionWithOccupationValidator,
-    servicePatchValidator,
-    serviceValidator
+    InterventionPatchValidator, InterventionWithOccupationValidator, InterventionStatus
 } from "../validators/service-validator";
 
 export const initInterventions = (app: express.Express) => {

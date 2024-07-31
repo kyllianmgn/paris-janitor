@@ -9,9 +9,19 @@ import cookieParser from "cookie-parser";
 declare global{
   namespace Express {
     interface Request {
-      user?: string | JwtPayload
+      user?: RequestUser
     }
   }
+}
+
+export interface RequestUser extends User{
+  adminId?: number,
+  username?: string,
+  landlordId?: number,
+  travelerId?: number,
+  serviceProviderId?: number,
+  iat: number,
+  exp: number
 }
 
 const main = async () => {

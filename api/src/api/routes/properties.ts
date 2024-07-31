@@ -1,7 +1,12 @@
 import express from "express";
 import { prisma } from "../../utils/prisma";
 import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
-import {propertyPatchStatusValidator, propertyPatchValidator, PropertyStatus} from "../validators/property-validator";
+import {
+    propertyPatchStatusValidator,
+    propertyPatchValidator,
+    PropertyStatus,
+    propertyValidator
+} from "../validators/property-validator";
 
 export const initProperties = (app: express.Express) => {
     app.get("/properties", async (_req, res) => {
@@ -22,6 +27,31 @@ export const initProperties = (app: express.Express) => {
             res.status(200).json({data: property});
         } catch (e) {
             res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.post("/properties", isAuthenticated, async (req, res) => {
+        const validation = propertyValidator.validate(req.body);
+
+        if (validation.error) {
+            res.status(400).json({ error: validation.error });
+            return;
+        }
+
+        const propertyRequest = validation.value;
+        try {
+            const property = await prisma.property.create({
+                data: {
+                    address: propertyRequest.address,
+                    description: propertyRequest.description,
+                    status: PropertyStatus.PENDING,
+                    landlordId: propertyRequest.landlordId
+                },
+            });
+            res.status(200).json({data: property});
+        } catch (e) {
+            res.status(500).json({ error: e });
             return;
         }
     });

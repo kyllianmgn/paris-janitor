@@ -6,7 +6,15 @@ export interface User {
     firstName: string,
     lastName: string,
     email: string,
-    password: string
+    password: string,
+    Landlord?: Role|null,
+    Traveler?: Role|null,
+    ServiceProvider?: Role|null,
+}
+
+interface Role{
+    id: number,
+    userId: number
 }
 
 export type UserWithoutPassword = Omit<User, "password">
@@ -21,7 +29,17 @@ export type AdminWithoutPassword = Omit<Admin, "password">
 
 export const findUserByEmail = async (email: string): Promise<User|null> => {
     return prisma.user.findFirst({
-        where: {email: email}
+        where: {email: email},
+        select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            password: true,
+            Landlord: true,
+            Traveler: true,
+            ServiceProvider: true,
+        }
     });
 };
 

@@ -1,9 +1,7 @@
 import express from "express";
-import { prisma } from "../../utils/prisma";
-import {
-  userPatchValidation,
-} from "../validators/user-validator";
-import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
+import {prisma} from "../../utils/prisma";
+import {userPatchValidation,} from "../validators/user-validator";
+import {isAuthenticated, isRole, isRoleOrAdmin, isSuperAdmin, UserRole} from "../middlewares/auth-middleware";
 
 export const initUsers = (app: express.Express) => {
   app.get(`/users/me`, isAuthenticated, async (req: any, res) => {

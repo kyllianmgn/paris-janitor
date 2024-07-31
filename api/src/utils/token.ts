@@ -3,12 +3,16 @@ import crypto from "crypto";
 import {AdminWithoutPassword, User, UserWithoutPassword} from "../api/services/users-services";
 
 export const generateAccessToken = (user: UserWithoutPassword) => {
+    console.log(user)
     return jwt.sign(
         {
             userId: user.id,
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
+            landlordId: user.Landlord?.id,
+            travelerId: user.Traveler?.id,
+            serviceProviderId: user.ServiceProvider?.id,
         },
         process.env.JWT_ACCESS_SECRET!,
         {
