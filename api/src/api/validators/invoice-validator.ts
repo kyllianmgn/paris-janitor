@@ -13,12 +13,12 @@ export enum InvoiceStatus {
     CANCELLED="CANCELLED"
 }
 
-export const InvoiceValidator = Joi.object<Invoice>({
+export const invoiceValidator = Joi.object<Invoice>({
     amount: Joi.number().required(),
     description: Joi.string().required()
 })
 
-export const InvoicePatchValidator = Joi.object<Partial<Invoice>>({
+export const invoicePatchValidator = Joi.object<Partial<Invoice>>({
     amount: Joi.number().optional(),
     description: Joi.string().optional(),
     status: Joi.string().optional().valid("PENDING", "PAID", "CANCELLED")

@@ -1,10 +1,8 @@
-// src/types/index.ts
 export interface User {
   id: number;
   email: string;
   firstName: string;
   lastName: string;
-  // Ajoutez d'autres propriétés selon votre modèle utilisateur
 }
 
 export interface AuthState {
@@ -14,13 +12,11 @@ export interface AuthState {
   isAuthenticated: boolean;
 }
 
-// Ajoutez d'autres interfaces selon vos besoins
 export interface DecodedToken {
   userId: number;
   email: string;
   role: string;
   exp: number;
-  // Ajoutez d'autres champs si nécessaire
 }
 
 export interface TokenResponse {
