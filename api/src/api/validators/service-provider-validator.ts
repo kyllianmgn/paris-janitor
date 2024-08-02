@@ -5,7 +5,7 @@ export interface ServiceProvider{
     userId: number
 }
 
-export const ServiceProviderValidator = Joi.object<ServiceProvider>({
+export const serviceProviderValidator = Joi.object<ServiceProvider>({
     id: Joi.string().required(),
     userId: Joi.string().required(),
 })

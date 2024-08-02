@@ -1,7 +1,7 @@
 import express from "express";
 import { prisma } from "../../utils/prisma";
 import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
-import {InvoicePatchValidator, InvoiceValidator,} from "../validators/invoice-validator";
+import {invoicePatchValidator, invoiceValidator,} from "../validators/invoice-validator";
 
 export const initInvoices = (app: express.Express) => {
     app.get("/invoices", async (_req, res) => {
@@ -28,7 +28,7 @@ export const initInvoices = (app: express.Express) => {
 
     app.post("/invoices/", async (req, res) => {
         try {
-            const validation = InvoiceValidator.validate(req.body);
+            const validation = invoiceValidator.validate(req.body);
 
             if (validation.error) {
                 res.status(400).json({ error: validation.error });
@@ -47,7 +47,7 @@ export const initInvoices = (app: express.Express) => {
     });
 
     app.patch("/invoices/:id(\\d+)", isAuthenticated, isSuperAdmin, async (req, res) => {
-        const validation = InvoicePatchValidator.validate(req.body);
+        const validation = invoicePatchValidator.validate(req.body);
 
         if (validation.error) {
             res.status(400).json({ error: validation.error });
@@ -70,7 +70,7 @@ export const initInvoices = (app: express.Express) => {
     });
 
     app.patch("/invoices/:id(\\d+)/status", isAuthenticated, isSuperAdmin, async (req, res) => {
-        const validation = InvoicePatchValidator.validate(req.body);
+        const validation = invoicePatchValidator.validate(req.body);
 
         if (validation.error) {
             res.status(400).json({ error: validation.error });

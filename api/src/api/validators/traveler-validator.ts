@@ -5,7 +5,7 @@ export interface Traveler{
     userId: number
 }
 
-export const TravelerValidator = Joi.object<Traveler>({
+export const travelerValidator = Joi.object<Traveler>({
     id: Joi.string().required(),
     userId: Joi.string().required(),
 })

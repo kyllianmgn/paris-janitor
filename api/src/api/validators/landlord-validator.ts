@@ -5,7 +5,7 @@ export interface Landlord{
     userId: number
 }
 
-export const LandlordValidator = Joi.object<Landlord>({
+export const landlordValidator = Joi.object<Landlord>({
     id: Joi.string().required(),
     userId: Joi.string().required(),
 })

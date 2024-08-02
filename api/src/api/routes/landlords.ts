@@ -1,6 +1,6 @@
 import express from "express";
 import { prisma } from "../../utils/prisma";
-import {LandlordValidator} from "../validators/landlord-validator";
+import {landlordValidator} from "../validators/landlord-validator";
 import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
 
 export const initLandlords = (app: express.Express) => {

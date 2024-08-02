@@ -1,6 +1,6 @@
 import express from "express";
 import { prisma } from "../../utils/prisma";
-import {ServiceProviderValidator} from "../validators/service-provider-validator";
+import {serviceProviderValidator} from "../validators/service-provider-validator";
 import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
 
 export const initServiceProviders = (app: express.Express) => {

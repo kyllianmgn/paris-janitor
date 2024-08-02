@@ -1,6 +1,6 @@
 import express from "express";
 import { prisma } from "../../utils/prisma";
-import {TravelerValidator} from "../validators/traveler-validator";
+import {travelerValidator} from "../validators/traveler-validator";
 import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
 
 export const initTravelers = (app: express.Express) => {
