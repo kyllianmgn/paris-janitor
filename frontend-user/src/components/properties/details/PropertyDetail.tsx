@@ -12,16 +12,17 @@ export const PropertyDetail = ({propertyId}: PropertyDetailProps) => {
     const [property, setProperty] = useState<Property | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
+    const loadProperty = async () => {
+        if (propertyId) {
+            const res = await getPropertyById(propertyId);
+            setProperty(res.data);
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const loadProperty = async () => {
-            if (propertyId) {
-                const res = await getPropertyById(propertyId);
-                setProperty(res.data);
-                setLoading(false);
-            }
-        };
         loadProperty().then();
-    }, [propertyId]);
+    }, [loadProperty, propertyId]);
 
     if (loading) {
         return <h1>Loading...</h1>;
