@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoginRequest } from '@/types';
 import {useRouter} from "next/navigation";
-import {store} from "@/store";
+import {store} from "@/store/store";
 
 interface LoginFormProps {
   onSignUpClick: () => void;
@@ -31,13 +31,13 @@ export default function LoginForm({ onSignUpClick, onClose }: LoginFormProps ) {
       const {role} =store.getState().auth;
       switch (role) {
         case "LANDLORD":
-          router.push("/dashboard/landlord");
+          router.push("/dashboard/");
           break;
         case "TRAVELER":
           onClose();
           break;
         case "SERVICE_PROVIDER":
-          router.push("/dashboard/service-provider");
+          router.push("/dashboard");
           break;
         default:
           onClose();
