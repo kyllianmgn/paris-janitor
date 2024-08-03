@@ -6,9 +6,13 @@ import { LoginRequest, SignUpRequest, TokenResponse } from '@/types';
 export const authService = {
     login: async (loginData: LoginRequest, dispatch: AppDispatch): Promise<TokenResponse> => {
         try {
+            console.log("je suis dans le login fucntion");
+            console.log(loginData);
             const response: TokenResponse = await api.post('auth/login', { json: loginData }).json();
             tokenUtils.setTokens(response);
             dispatch(setCredentials(response));
+            console.log("response");
+            console.log(response);
             return response;
         } catch (error) {
             console.error('Login error:', error);
@@ -19,10 +23,8 @@ export const authService = {
     signup: async (userData: SignUpRequest, dispatch: AppDispatch): Promise<TokenResponse> => {
         try {
             const response: TokenResponse = await api.post(`auth/signup/${userData.role.toLowerCase()}`, { json: userData }).json();
-            if (response.accessToken && response.refreshToken) {
-                tokenUtils.setTokens(response);
-                dispatch(setCredentials(response));
-            }
+            tokenUtils.setTokens(response);
+            dispatch(setCredentials(response));
             return response;
         } catch (error) {
             console.error('Signup error:', error);
