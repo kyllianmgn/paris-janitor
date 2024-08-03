@@ -20,9 +20,9 @@ export const authService = {
         }
     },
 
-    signup: async (userData: SignUpRequest, dispatch: AppDispatch): Promise<TokenResponse> => {
+    signup: async (userData: SignUpRequest, dispatch: AppDispatch, role: string): Promise<TokenResponse> => {
         try {
-            const response: TokenResponse = await api.post(`auth/signup/${userData.role.toLowerCase()}`, { json: userData }).json();
+            const response: TokenResponse = await api.post(`auth/signup/${role.toLowerCase()}`, { json: userData }).json();
             tokenUtils.setTokens(response);
             dispatch(setCredentials(response));
             return response;

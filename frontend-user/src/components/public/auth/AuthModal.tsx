@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import {
     Dialog,
     DialogContent,
@@ -23,13 +23,21 @@ export default function AuthModal({
                                   }: AuthModalProps) {
     const [mode, setMode] = useState<"login" | "signup">(initialMode);
 
+    useEffect(() => {
+        setMode(initialMode);
+    }, [initialMode]);
 
     const toggleMode = () => {
         setMode(mode === "login" ? "signup" : "login");
     };
 
+    const handleClose = () => {
+        setMode(initialMode);
+        onClose();
+    };
+
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
+        <Dialog open={isOpen} onOpenChange={handleClose}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>
@@ -42,9 +50,9 @@ export default function AuthModal({
                     </DialogDescription>
                 </DialogHeader>
                 {mode === "login" ? (
-                    <LoginForm onSignUpClick={toggleMode} />
+                    <LoginForm onSignUpClick={toggleMode} onClose={onClose} />
                 ) : (
-                    <SignUpForm onLoginClick={toggleMode} />
+                    <SignUpForm onLoginClick={toggleMode} onClose={onClose} />
                 )}
             </DialogContent>
         </Dialog>

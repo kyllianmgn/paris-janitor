@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { authService } from '@/api/services/authService';
 import { Button } from "@/components/ui/button";
@@ -6,12 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SignUpRequest } from '@/types';
+import {store} from "@/store";
+import {useRouter} from "next/navigation";
 
 interface SignUpFormProps {
   onLoginClick: () => void;
+  onClose: () => void;
 }
 
-export default function SignUpForm({ onLoginClick }: SignUpFormProps) {
+export default function SignUpForm({ onLoginClick, onClose }: SignUpFormProps) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -20,14 +24,37 @@ export default function SignUpForm({ onLoginClick }: SignUpFormProps) {
   const [error, setError] = useState("");
   const dispatch = useDispatch();
 
+  const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     try {
-      const signUpData: SignUpRequest = { firstName, lastName, email, password, role };
-      await authService.signup(signUpData, dispatch);
-      // Handle successful signup (e.g., redirect to dashboard or show success message)
+
+      const signUpData: SignUpRequest = { firstName, lastName, email, password};
+
+
+      const response = await authService.signup(signUpData, dispatch, role);
+
+
+      switch (role) {
+        case "LANDLORD":
+          router.push("/dashboard/");
+          break;
+        case "TRAVELER":
+          onClose();
+          break;
+        case "SERVICE_PROVIDER":
+          router.push("/dashboard/");
+          break;
+        default:
+          onClose();
+          break;
+      }
+
+
     } catch (error) {
+      console.error("Error signing up:", error);
       setError("Failed to sign up. Please try again.");
     }
   };

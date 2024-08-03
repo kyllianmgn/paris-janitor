@@ -58,7 +58,7 @@ export interface SignUpRequest {
   lastName: string;
   email: string;
   password: string;
-  role: 'TRAVELER' | 'LANDLORD' | 'SERVICE_PROVIDER';
+
 }
 export interface AdminLoginRequest {
   username: string;

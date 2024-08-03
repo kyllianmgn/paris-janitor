@@ -33,7 +33,6 @@ const tokenUtils = {
 const api = ky.create({
   prefixUrl: process.env.NEXT_PUBLIC_API_URL,
   timeout: 8000,
-  credentials: "include",
   hooks: {
     beforeRequest: [
       (request) => {
