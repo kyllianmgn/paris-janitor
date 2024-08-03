@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 interface Rental {
   id: string;
@@ -40,8 +41,10 @@ export default function RentalList() {
         {rentals.map((rental) => (
           <Card key={rental.id}>
             <CardHeader className="p-0">
-              <img
+              <Image
                 src={rental.image}
+                width={400}
+                height={300}
                 alt={rental.title}
                 className="w-full h-48 object-cover rounded-t-lg"
               />

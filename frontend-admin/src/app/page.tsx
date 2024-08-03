@@ -1,17 +1,13 @@
-"use client";
-import Header from "@/components/public/Header";
-import RentalList from "@/components/public/RentalList";
-import { useState } from "react";
+import { Providers } from '@/components/public/Providers';
+import LoginForm from '@/components/auth/LoginForm';
 
-export default function HomePage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  return (
-    <div>
-      <Header isLoggedIn={isLoggedIn} />
-      <main>
-        <RentalList />
-      </main>
-    </div>
-  );
+export default function Home() {
+    return (
+        <Providers>
+            <main className="flex min-h-screen flex-col items-center justify-center p-24">
+                <h1 className="text-4xl font-bold mb-8">Paris Janitor Admin</h1>
+                <LoginForm />
+            </main>
+        </Providers>
+    );
 }

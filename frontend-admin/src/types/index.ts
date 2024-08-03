@@ -1,25 +1,27 @@
-export interface User {
-  id: number;
-  email: string;
-  firstName: string;
-  lastName: string;
+export interface Admin {
+    id: number;
+    username: string;
 }
 
-export interface AuthState {
-  user: User | null;
-  accessToken: string | null;
-  refreshToken: string | null;
-  isAuthenticated: boolean;
-}
-
-export interface DecodedToken {
-  userId: number;
-  email: string;
-  role: string;
-  exp: number;
+export interface AdminLoginRequest {
+    username: string;
+    password: string;
 }
 
 export interface TokenResponse {
-  accessToken: string;
-  refreshToken: string;
+    accessToken: string;
+    refreshToken: string;
+}
+
+export interface DecodedAdminToken {
+    adminId: number;
+    username: string;
+    exp: number;
+}
+
+export interface AuthState {
+    admin: Admin | null;
+    accessToken: string | null;
+    refreshToken: string | null;
+    isAuthenticated: boolean;
 }
