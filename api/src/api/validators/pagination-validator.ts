@@ -1,11 +1,11 @@
 import Joi from "joi";
 
 interface Pagination{
-    page?: number,
-    pageSize?: number
+    page?: string,
+    pageSize?: string
 }
 
 export const paginationValidator = Joi.object<Pagination>({
-    page: Joi.number().min(0),
-    pageSize: Joi.number().min(10),
+    page: Joi.string().pattern(/\d+/),
+    pageSize: Joi.string().pattern(/\d+/),
 })

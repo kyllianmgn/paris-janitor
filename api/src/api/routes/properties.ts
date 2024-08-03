@@ -1,12 +1,14 @@
 import express from "express";
 import { prisma } from "../../utils/prisma";
-import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
+import {isAuthenticated, isRole, isRoleOrAdmin, isSuperAdmin, UserRole} from "../middlewares/auth-middleware";
 import {
+    propertyAdminValidator,
     propertyPatchStatusValidator,
     propertyPatchValidator,
     PropertyStatus,
     propertyValidator
 } from "../validators/property-validator";
+import {paginationValidator} from "../validators/pagination-validator";
 
 export const initProperties = (app: express.Express) => {
     app.get("/properties", async (_req, res) => {
@@ -19,9 +21,21 @@ export const initProperties = (app: express.Express) => {
         }
     });
 
-    app.get("/properties/pending", async (_req, res) => {
+    app.get("/properties/pending", async (req, res) => {
         try {
-            const allProperties = await prisma.property.findMany();
+            console.log(req.query)
+            const validation = paginationValidator.validate(req.query)
+
+            if (validation.error) {
+                res.status(400).json({ error: validation.error });
+                return;
+            }
+
+            const paginationParams = validation.value;
+            const allProperties = await prisma.property.findMany({
+                take: (paginationParams.pageSize) ? +paginationParams.pageSize : undefined,
+                skip: (paginationParams.page && paginationParams.pageSize) ? +paginationParams.pageSize * +paginationParams.pageSize : undefined
+            });
             res.status(200).json({data: allProperties});
         } catch (e) {
             res.status(500).send({ error: e });
@@ -41,7 +55,10 @@ export const initProperties = (app: express.Express) => {
         }
     });
 
-    app.post("/properties", isAuthenticated, async (req, res) => {
+    app.post("/properties", isAuthenticated, isRole(UserRole.LANDLORD), async (req, res) => {
+        if (!req.user?.landlordId){
+            return res.status(401).send({ error: "You are not a landlord." });
+        }
         const validation = propertyValidator.validate(req.body);
 
         if (validation.error) {
@@ -56,7 +73,32 @@ export const initProperties = (app: express.Express) => {
                     address: propertyRequest.address,
                     description: propertyRequest.description,
                     status: PropertyStatus.PENDING,
-                    landlordId: propertyRequest.landlordId
+                    landlordId: req.user.landlordId
+                },
+            });
+            res.status(200).json({data: property});
+        } catch (e) {
+            res.status(500).json({ error: e });
+            return;
+        }
+    });
+
+    app.post("/admin/properties", isAuthenticated, isSuperAdmin, async (req, res) => {
+        const validation = propertyAdminValidator.validate(req.body);
+
+        if (validation.error) {
+            res.status(400).json({ error: validation.error });
+            return;
+        }
+
+        const propertyRequest = validation.value;
+        try {
+            const property = await prisma.property.create({
+                data: {
+                    address: propertyRequest.address,
+                    description: propertyRequest.description,
+                    status: propertyRequest.status,
+                    landlordId: propertyRequest.landlordId,
                 },
             });
             res.status(200).json({data: property});
