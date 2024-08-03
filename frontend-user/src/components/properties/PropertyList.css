@@ -1,0 +1,10 @@
+.property-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 0 1rem;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 50px;
+}
