@@ -1,6 +1,7 @@
 import "./globals.css";
-import { cn } from "@/lib/utils";
-import { Inter as FontSans } from "next/font/google";
+import {cn} from "@/lib/utils";
+import {Inter as FontSans} from "next/font/google";
+import Providers from "@/components/public/Providers";
 
 const fontSans = FontSans({
     subsets: ["latin"],
@@ -12,18 +13,13 @@ export const metadata = {
     description: 'Admin panel for Paris Janitor',
 }
 
-export default function RootLayout({
-                                       children,
-                                   }: {
-    children: React.ReactNode
-}) {
+export default function RootLayout({children,}: { children: React.ReactNode }) {
     return (
         <html lang="en">
-        <body className={cn(
-            "min-h-screen bg-background font-sans antialiased",
-            fontSans.variable
-        )}>
-        {children}
+        <body className={cn("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
+            <Providers>
+                {children}
+            </Providers>
         </body>
         </html>
     )

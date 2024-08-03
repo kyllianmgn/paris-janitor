@@ -72,3 +72,7 @@ export interface RefreshTokenRequest {
 export interface RevokeRefreshTokenRequest {
   userId: number;
 }
+
+export interface ApiResponse<T> {
+  data: T
+}

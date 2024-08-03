@@ -15,9 +15,15 @@ export interface Property {
 }
 
 export const propertyValidator = Joi.object<Omit<Property, "status" | "id">>({
-    landlordId: Joi.number().required(),
     address: Joi.string().required(),
     description: Joi.string().required()
+})
+
+export const propertyAdminValidator = Joi.object<Omit<Property, "id">>({
+    landlordId: Joi.number().required(),
+    address: Joi.string().required(),
+    description: Joi.string().required(),
+    status: Joi.string().valid("PENDING", "APPROVED", "REJECTED").required()
 })
 
 export const propertyPatchValidator = Joi.object<Partial<Property>>({
