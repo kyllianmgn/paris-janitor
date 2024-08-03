@@ -2,8 +2,8 @@ import express from "express";
 import { prisma } from "../../utils/prisma";
 import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
 import {
-    InterventionPatchValidator,
-    InterventionValidator,
+    interventionPatchValidator,
+    interventionValidator,
     servicePatchValidator,
     serviceValidator
 } from "../validators/service-validator";
@@ -33,7 +33,7 @@ export const initInterventionForms = (app: express.Express) => {
 
     app.post("/intervention-forms/", async (req, res) => {
         try {
-            const validation = InterventionValidator.validate(req.body);
+            const validation = interventionValidator.validate(req.body);
 
             if (validation.error) {
                 res.status(400).json({ error: validation.error });
@@ -52,7 +52,7 @@ export const initInterventionForms = (app: express.Express) => {
     });
 
     app.patch("/intervention-forms/:id(\\d+)/status", isAuthenticated, isSuperAdmin, async (req, res) => {
-        const validation = InterventionPatchValidator.validate(req.body);
+        const validation = interventionPatchValidator.validate(req.body);
 
         if (validation.error) {
             res.status(400).json({ error: validation.error });

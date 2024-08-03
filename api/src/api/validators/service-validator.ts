@@ -73,7 +73,7 @@ export const InterventionWithOccupationValidator = Joi.object<Intervention & Pro
     providerId: Joi.number().required(),
 })
 
-export const InterventionValidator = Joi.object<Intervention>({
+export const interventionValidator = Joi.object<Intervention>({
     serviceId: Joi.number().required(),
     propertyOccupationId: Joi.number().optional(),
     providerOccupationId: Joi.number().required(),
@@ -81,7 +81,7 @@ export const InterventionValidator = Joi.object<Intervention>({
     status: Joi.string().required()
 })
 
-export const InterventionPatchValidator = Joi.object<Intervention>({
+export const interventionPatchValidator = Joi.object<Intervention>({
     serviceId: Joi.number().optional(),
     propertyOccupationId: Joi.number().optional(),
     providerOccupationId: Joi.number().optional(),
@@ -94,7 +94,7 @@ export interface InterventionForm {
     interventionId: number
 }
 
-export const InterventionFormValidator = Joi.object<InterventionForm>({
+export const interventionFormValidator = Joi.object<InterventionForm>({
     interventionId: Joi.number().optional()
 })
 

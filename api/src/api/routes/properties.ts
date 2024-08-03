@@ -19,6 +19,16 @@ export const initProperties = (app: express.Express) => {
         }
     });
 
+    app.get("/properties/pending", async (_req, res) => {
+        try {
+            const allProperties = await prisma.property.findMany();
+            res.status(200).json({data: allProperties});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
     app.get("/properties/:id(\\d+)", async (req, res) => {
         try {
             const property = await prisma.property.findUnique({
