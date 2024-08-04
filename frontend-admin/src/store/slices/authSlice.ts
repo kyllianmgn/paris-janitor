@@ -1,6 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AuthState, TokenResponse, DecodedAdminToken } from '@/types';
 import { jwtDecode } from 'jwt-decode';
+import {cookies} from "next/headers";
+import {RootState} from "@/store";
 
 const initialState: AuthState = {
     admin: null,
@@ -34,3 +36,4 @@ const authSlice = createSlice({
 
 export const { setAdminCredentials, logoutAdmin } = authSlice.actions;
 export default authSlice.reducer;
+export const selectCurrentAdmin =(state: RootState) => state.auth.admin;

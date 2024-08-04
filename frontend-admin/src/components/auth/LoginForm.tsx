@@ -1,12 +1,14 @@
 "use client";
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React, {useEffect, useState} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
 import { authService } from '@/api/services/authService';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AdminLoginRequest } from '@/types';
 import {useRouter} from "next/navigation";
+import {setCookie} from "cookies-next"
+import {RootState} from "@/store";
 
 
 export default function LoginForm() {
@@ -15,19 +17,25 @@ export default function LoginForm() {
     const [error, setError] = useState('');
     const dispatch = useDispatch();
     const router = useRouter();
+    const admin = useSelector((state: RootState) => state.auth.admin)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         try {
             const loginData: AdminLoginRequest = { username, password };
-            await authService.loginAdmin(loginData, dispatch);
+            const response = await authService.loginAdmin(loginData, dispatch);
+            setCookie("currentUser", {adminId: 1, username: "admin"})
             router.push('/dashboard');
         } catch (error) {
             console.error(error);
             setError('Invalid login credentials');
         }
     };
+
+    useEffect(() => {
+        if (admin) router.push('/dashboard')
+    }, [admin]);
 
     return (
         <form onSubmit={handleSubmit}>

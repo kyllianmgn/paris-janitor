@@ -1,6 +1,6 @@
-import {Dashboard} from "@/app/dashboard/Dashboard";
+import {Dashboard} from "@/app/(protected)/dashboard/Dashboard";
 
-export default function Page() {
+export default () => {
     return (
             <Dashboard></Dashboard>
     );
