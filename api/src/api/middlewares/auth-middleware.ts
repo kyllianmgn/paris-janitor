@@ -3,7 +3,8 @@ import jwt from "jsonwebtoken"
 import {RequestUser} from "../../index";
 
 export const isAuthenticated = async (req: Request, res: Response, next: any) => {
-    const authHeader = req.cookies.authorization
+    console.log(req.headers)
+    const authHeader = req.headers.authorization
     if (!authHeader) {
         return res.status(401).json({error: "Unauthorized"})
     }
@@ -57,7 +58,6 @@ export const isRole = (role: UserRole) => {
 
 export const isRoleOrAdmin = (role: UserRole) => {
     return (req: Request, res: Response, next: NextFunction) => {
-        console.log(req.user)
         if (req.user?.adminId){
             next()
             return;
@@ -88,13 +88,10 @@ export const isRoleOrAdmin = (role: UserRole) => {
 }
 
 export const isSuperAdmin = async (req: Request, res: Response, next: NextFunction) => {
-    const user = req.user;
-
     console.log(req.user)
-
-    /*if (user?.isSuperAdmin !== true) {
-        return res.status(403).json({error: "Forbidden"});
-    }*/
-
-    return next();
+    if (!req.user?.adminId){
+        res.status(401).json({error: "Unauthorized"})
+        return;
+    }
+    next()
 };

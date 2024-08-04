@@ -96,6 +96,14 @@ export const findUserById = async (
   });
 };
 
+export const findAdminById = async (
+    id: number
+): Promise<AdminWithoutPassword | null> => {
+    return prisma.admin.findUnique({
+        where: { id }
+    });
+};
+
 export const getSafeUserById = async (id: number): Promise<UserWithoutPassword | null> => {
     return await findUserById(id);
 };

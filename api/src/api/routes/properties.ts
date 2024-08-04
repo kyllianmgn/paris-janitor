@@ -21,6 +21,17 @@ export const initProperties = (app: express.Express) => {
         }
     });
 
+    app.get("/properties/all", async (_req, res) => {
+        try {
+            const allProperties = await prisma.property.findMany({include: {landlord: {include: {user: true}}}});
+            res.status(200).json({data: allProperties});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+
     app.get("/properties/pending", async (req, res) => {
         try {
             console.log(req.query)

@@ -4,12 +4,13 @@ import {v4 as uuidv4} from "uuid";
 import {generateAdminTokens, generateTokens, hashToken} from "../../utils/token";
 import {isAuthenticated} from "../middlewares/auth-middleware";
 import {
-    addRefreshTokenToWhitelist,
-    deleteRefreshToken,
+    addAdminRefreshTokenToWhitelist,
+    addRefreshTokenToWhitelist, deleteAdminRefreshToken,
+    deleteRefreshToken, findAdminRefreshTokenById,
     findRefreshTokenById,
     revokeTokens
 } from "../services/auth-services";
-import {getSafeUserById, verifyAdminPassword, verifyUserPassword} from "../services/users-services";
+import {findAdminById, getSafeUserById, verifyAdminPassword, verifyUserPassword} from "../services/users-services";
 import {
     adminLoginValidation,
     loginValidation,
@@ -49,8 +50,6 @@ export const initAuth = (app: express.Express) => {
                     userId: user.id,
                 });
 
-                req.headers.authorization = `Bearer ${accessToken}`;
-                res.cookie("authorization", `Bearer ${accessToken}`)
                 return res.json({accessToken, refreshToken});
             } catch (error) {
                 console.error(error);
@@ -81,14 +80,12 @@ export const initAuth = (app: express.Express) => {
                     admin,
                     jti
                 );
-                await addRefreshTokenToWhitelist({
+                await addAdminRefreshTokenToWhitelist({
                     jti,
                     refreshToken,
-                    userId: admin.id,
+                    adminId: admin.id,
                 });
 
-                req.headers.authorization = `Bearer ${accessToken}`;
-                res.cookie("authorization", `Bearer ${accessToken}`)
                 return res.json({accessToken, refreshToken});
             } catch (error) {
                 console.error(error);
@@ -227,6 +224,7 @@ export const initAuth = (app: express.Express) => {
                     process.env.JWT_REFRESH_SECRET!
                 );
                 const savedRefreshToken = await findRefreshTokenById(payload.jti);
+                console.log(savedRefreshToken)
                 if (!savedRefreshToken || savedRefreshToken.revoked === true) {
                     return res.status(401).send({error: "Refresh token revoked"});
                 }
@@ -258,7 +256,57 @@ export const initAuth = (app: express.Express) => {
                     refreshToken: newRefreshToken,
                 });
             } catch (error) {
-                return res.status(400).send({error: "Refresh token invalid"});
+                return res.status(500).send({error: "Refresh token invalid"});
+            }
+        }
+    );
+
+    app.post(`/auth/admin/refreshToken`, async (req: express.Request, res: express.Response) => {
+            try {
+                const validation = refreshTokenValidation.validate(req.body);
+                if (validation.error) {
+                    return res.status(400).send({error: validation.error});
+                }
+
+                const refreshTokenRequest = validation.value;
+                const payload: any = jwt.verify(
+                    refreshTokenRequest.token,
+                    process.env.JWT_REFRESH_SECRET!
+                );
+                const savedRefreshToken = await findAdminRefreshTokenById(payload.jti);
+                console.log(savedRefreshToken)
+                if (!savedRefreshToken || savedRefreshToken.revoked === true) {
+                    return res.status(401).send({error: "Refresh token revoked"});
+                }
+
+                const hashedToken = hashToken(refreshTokenRequest.token);
+                if (hashedToken !== savedRefreshToken.hashedToken) {
+                    return res.status(401).send({error: "Refresh token invalid"});
+                }
+
+                const admin = await findAdminById(payload.adminId);
+                if (!admin) {
+                    return res.status(401).send({error: "Refresh token invalid"});
+                }
+
+                await deleteAdminRefreshToken(savedRefreshToken.id);
+                const jti = uuidv4();
+                const {accessToken, refreshToken: newRefreshToken} = generateAdminTokens(
+                    admin,
+                    jti
+                );
+                await addAdminRefreshTokenToWhitelist({
+                    jti,
+                    refreshToken: newRefreshToken,
+                    adminId: admin.id,
+                });
+
+                return res.json({
+                    accessToken,
+                    refreshToken: newRefreshToken,
+                });
+            } catch (error) {
+                return res.status(500).send({error: "Refresh token invalid"});
             }
         }
     );

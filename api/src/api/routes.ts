@@ -14,10 +14,15 @@ import {initPropertyReservations} from "./routes/property-reservations";
 import {initPropertyOccupations} from "./routes/property-occupations";
 import {initPropertyReviews} from "./routes/property-reviews";
 import {initTravelers} from "./routes/travelers";
+import {isAuthenticated, isSuperAdmin} from "./middlewares/auth-middleware";
 
 export const initRoutes = (app: express.Express) => {
     app.get("/health", (_req, res) => {
         res.status(200).json({ data: "API Healthy." });
+    });
+
+    app.get("/amiadmin", isAuthenticated, isSuperAdmin, (_req, res) => {
+        res.status(200).json({ data: "Yes." });
     });
 
     initAuth(app);

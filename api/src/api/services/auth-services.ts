@@ -44,3 +44,43 @@ export const revokeTokens = (userId: number) => {
     },
   });
 };
+
+export const addAdminRefreshTokenToWhitelist = ({jti, refreshToken, adminId,}: any) => {
+  return prisma.adminRefreshToken.create({
+    data: {
+      id: jti,
+      hashedToken: hashToken(refreshToken),
+      adminId: adminId,
+    },
+  });
+};
+
+export const findAdminRefreshTokenById = (id: string) => {
+  return prisma.adminRefreshToken.findUnique({
+    where: {
+      id,
+    },
+  });
+};
+
+export const deleteAdminRefreshToken = (id: string) => {
+  return prisma.adminRefreshToken.update({
+    where: {
+      id,
+    },
+    data: {
+      revoked: true,
+    },
+  });
+};
+
+export const revokeAdminTokens = (adminId: number) => {
+  return prisma.adminRefreshToken.updateMany({
+    where: {
+      adminId: adminId,
+    },
+    data: {
+      revoked: true,
+    },
+  });
+};
