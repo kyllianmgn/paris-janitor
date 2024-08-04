@@ -10,7 +10,7 @@ import {
     findRefreshTokenById,
     revokeTokens
 } from "../services/auth-services";
-import {findAdminById, getSafeUserById, verifyAdminPassword, verifyUserPassword} from "../services/users-services";
+import {findUserByEmail, findAdminById, getSafeUserById, verifyAdminPassword, verifyUserPassword} from "../services/users-services";
 import {
     adminLoginValidation,
     loginValidation,
@@ -105,16 +105,32 @@ export const initAuth = (app: express.Express) => {
         const userRequest = validation.value;
         userRequest.password = await bcrypt.hash(userRequest.password, 10);
         try {
-            const user = await prisma.user.create({
+            await prisma.user.create({
                 data: {
                     firstName: userRequest.firstName,
                     lastName: userRequest.lastName,
                     email: userRequest.email,
                     password: userRequest.password,
                 },
-
             });
-            res.json(user);
+
+            const userSignup = await findUserByEmail(userRequest.email);
+
+            if (!userSignup) {
+                return res.status(400).send({ error: "User not found" });
+            }
+
+            const jti = uuidv4();
+            const { accessToken, refreshToken } = generateTokens(userSignup, jti);
+            await addRefreshTokenToWhitelist({
+                jti,
+                refreshToken,
+                userId: userSignup.id,
+            });
+
+            req.headers.authorization = `Bearer ${accessToken}`;
+            res.cookie("authorization", `Bearer ${accessToken}`);
+            return res.json({ accessToken, refreshToken });
         } catch (e) {
             res.status(500).send({ error: e });
             return;
@@ -132,19 +148,81 @@ export const initAuth = (app: express.Express) => {
         const userRequest = validation.value;
         userRequest.password = await bcrypt.hash(userRequest.password, 10);
         try {
-            const user = await prisma.user.create({
+            await prisma.user.create({
                 data: {
                     firstName: userRequest.firstName,
                     lastName: userRequest.lastName,
                     email: userRequest.email,
                     password: userRequest.password,
                     Landlord: {
-                        create: {}
-                    }
+                        create: {},
+                    },
                 },
-
             });
-            res.json(user);
+
+            const userSignup = await findUserByEmail(userRequest.email);
+
+            if (!userSignup) {
+                return res.status(400).send({ error: "User not found" });
+            }
+
+            const jti = uuidv4();
+            const { accessToken, refreshToken } = generateTokens(userSignup, jti);
+            await addRefreshTokenToWhitelist({
+                jti,
+                refreshToken,
+                userId: userSignup.id,
+            });
+
+            req.headers.authorization = `Bearer ${accessToken}`;
+            res.cookie("authorization", `Bearer ${accessToken}`);
+            return res.json({ accessToken, refreshToken });
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.post("/auth/signup/service-provider", async (req, res) => {
+        const validation = userValidation.validate(req.body);
+
+        if (validation.error) {
+            res.status(400).send({ error: validation.error });
+            return;
+        }
+
+        const userRequest = validation.value;
+        userRequest.password = await bcrypt.hash(userRequest.password, 10);
+        try {
+            await prisma.user.create({
+                data: {
+                    firstName: userRequest.firstName,
+                    lastName: userRequest.lastName,
+                    email: userRequest.email,
+                    password: userRequest.password,
+                    ServiceProvider: {
+                        create: {},
+                    },
+                },
+            });
+
+            const userSignup = await findUserByEmail(userRequest.email);
+
+            if (!userSignup) {
+                return res.status(400).send({ error: "User not found" });
+            }
+
+            const jti = uuidv4();
+            const { accessToken, refreshToken } = generateTokens(userSignup, jti);
+            await addRefreshTokenToWhitelist({
+                jti,
+                refreshToken,
+                userId: userSignup.id,
+            });
+
+            req.headers.authorization = `Bearer ${accessToken}`;
+            res.cookie("authorization", `Bearer ${accessToken}`);
+            return res.json({ accessToken, refreshToken });
         } catch (e) {
             res.status(500).send({ error: e });
             return;
@@ -174,37 +252,26 @@ export const initAuth = (app: express.Express) => {
                 },
 
             });
-            res.json(user);
-        } catch (e) {
-            res.status(500).send({ error: e });
-            return;
-        }
-    });
 
-    app.post("/auth/signup/service-provider", async (req, res) => {
-        const validation = userValidation.validate(req.body);
+            const userSignup = await findUserByEmail(userRequest.email);
 
-        if (validation.error) {
-            res.status(400).send({ error: validation.error });
-            return;
-        }
-
-        const userRequest = validation.value;
-        userRequest.password = await bcrypt.hash(userRequest.password, 10);
-        try {
-            const user = await prisma.user.create({
-                data: {
-                    firstName: userRequest.firstName,
-                    lastName: userRequest.lastName,
-                    email: userRequest.email,
-                    password: userRequest.password,
-                    ServiceProvider: {
-                        create: {}
-                    }
-                },
-
+            if(!userSignup){
+                return res.status(400).send({error: "User not found"});
+            }
+            const jti = uuidv4();
+            const {accessToken, refreshToken} = generateTokens(
+                userSignup,
+                jti
+            );
+            await addRefreshTokenToWhitelist({
+                jti,
+                refreshToken,
+                userId: userSignup.id,
             });
-            res.json(user);
+
+            req.headers.authorization = `Bearer ${accessToken}`;
+            res.cookie("authorization", `Bearer ${accessToken}`)
+            return res.json({accessToken, refreshToken});
         } catch (e) {
             res.status(500).send({ error: e });
             return;

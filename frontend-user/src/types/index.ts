@@ -58,7 +58,7 @@ export interface SignUpRequest {
   lastName: string;
   email: string;
   password: string;
-  role: 'TRAVELER' | 'LANDLORD' | 'SERVICE_PROVIDER';
+
 }
 export interface AdminLoginRequest {
   username: string;
@@ -71,4 +71,8 @@ export interface RefreshTokenRequest {
 
 export interface RevokeRefreshTokenRequest {
   userId: number;
+}
+
+export interface ApiResponse<T> {
+  data: T
 }
