@@ -52,9 +52,23 @@ export interface User{
 }
 
 export enum PropertyStatus {
-    PENDING,
-    APPROVED,
-    REJECTED,
+    PENDING="PENDING",
+    APPROVED="APPROVED",
+    REJECTED="REJECTED",
+}
+
+enum ServiceProviderStatus {
+    PENDING="PENDING",
+    ACCEPTED="ACCEPTED",
+    REFUSED="REFUSED"
+}
+
+export interface Service{
+    id: number,
+    providerId: number,
+    name: string,
+    description: string,
+    basePrice: number
 }
 
 export interface ApiResponse<T>{

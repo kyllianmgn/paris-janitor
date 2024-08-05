@@ -58,6 +58,7 @@ export const initProperties = (app: express.Express) => {
         try {
             const property = await prisma.property.findUnique({
                 where: { id: Number(req.params.id) },
+                include: {landlord: {include: {user: true}}}
             });
             res.status(200).json({data: property});
         } catch (e) {
@@ -86,6 +87,7 @@ export const initProperties = (app: express.Express) => {
                     status: PropertyStatus.PENDING,
                     landlordId: req.user.landlordId
                 },
+                include: {landlord: {include: {user: true}}}
             });
             res.status(200).json({data: property});
         } catch (e) {
@@ -111,6 +113,7 @@ export const initProperties = (app: express.Express) => {
                     status: propertyRequest.status,
                     landlordId: propertyRequest.landlordId,
                 },
+                include: {landlord: {include: {user: true}}}
             });
             res.status(200).json({data: property});
         } catch (e) {
@@ -138,6 +141,7 @@ export const initProperties = (app: express.Express) => {
                     description: propertyRequest.description,
                     status: PropertyStatus.PENDING
                 },
+                include: {landlord: {include: {user: true}}}
             });
             res.status(200).json({data: property});
         } catch (e) {
@@ -155,12 +159,14 @@ export const initProperties = (app: express.Express) => {
         }
 
         const propertyRequest = validation.value;
+        console.log(propertyRequest)
         try {
             const property = await prisma.property.update({
                 where: {
                     id: +req.params.id,
                 },
                 data: {status: propertyRequest.status},
+                include: {landlord: {include: {user: true}}}
             });
             res.status(200).json({data: property});
         } catch (e) {

@@ -11,7 +11,8 @@ export default ({children}: {children: React.ReactNode}) => {
     const admin = useSelector((state: RootState) => state.auth.admin)
 
     useEffect(() => {
-        if (!admin) {
+        console.log(admin)
+        if (admin === null) {
             router.push('/')
         }
     }, [admin]);

@@ -1,3 +1,4 @@
+"use client"
 import {DoorOpen} from "lucide-react";
 import React from "react";
 import {Admin} from "@/types";
