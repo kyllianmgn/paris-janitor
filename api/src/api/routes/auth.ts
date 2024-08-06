@@ -396,13 +396,13 @@ export const initAuth = (app: express.Express) => {
         }
     );
 
+    // api/auth.ts
     app.get(`/auth/check`, isAuthenticated, async (req: express.Request, res: express.Response) => {
-            try {
-                const payload = (req as any).payload;
-                return res.json(payload);
-            } catch (error) {
-                return res.status(500).send({error: error});
-            }
+        try {
+            const payload = (req as any).payload;
+            return res.status(200).json(payload);
+        } catch (error) {
+            return res.status(401).send({ error: 'Unauthorized' });
         }
-    );
+    });
 };
