@@ -3,8 +3,7 @@ import { Inter as FontSans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import {Providers} from "@/components/public/providers";
-import { PersistGate } from 'redux-persist/integration/react';
-import { persistor, store } from "@/store/store";
+
 
 
 const fontSans = FontSans({

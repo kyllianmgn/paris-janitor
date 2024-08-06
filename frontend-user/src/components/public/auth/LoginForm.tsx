@@ -77,6 +77,7 @@ export default function LoginForm({ onSignUpClick, onClose }: LoginFormProps ) {
           <Button type="button" variant="outline" onClick={onSignUpClick}>
             Don&apos;t have an account? Sign Up
           </Button>
+
         </div>
       </form>
   );

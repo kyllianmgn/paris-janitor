@@ -1,6 +1,9 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { AuthState, TokenResponse, DecodedToken } from '@/types';
 import { jwtDecode } from 'jwt-decode';
+import {authService} from "@/api/services/authService";
+import {RootState} from "@/store/store";
+import {tokenUtils} from "@/api/config";
 
 const initialState: AuthState = {
     user: null,
@@ -52,3 +55,37 @@ const authSlice = createSlice({
 
 export const { setCredentials, logout } = authSlice.actions;
 export default authSlice.reducer;
+
+const refreshAccessToken = async (refreshToken: string): Promise<string> => {
+    try {
+        const response = await authService.refreshToken(refreshToken);
+        return response.accessToken;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const checkAuth = createAsyncThunk(
+    'auth/checkAuth',
+    async (_, { dispatch, getState }) => {
+        const { auth } = getState() as RootState;
+        const { accessToken, refreshToken } = auth;
+
+        // Vérifier la validité de l'access token
+        if (accessToken && tokenUtils.isTokenValid(accessToken)) {
+            return;
+        }
+
+        // Si l'access token est expiré, essayer de le rafraîchir avec le refresh token
+        if (refreshToken && tokenUtils.isTokenValid(refreshToken)) {
+            try {
+                const newAccessToken = await refreshAccessToken(refreshToken);
+                dispatch(setCredentials({ accessToken: newAccessToken, refreshToken }));
+            } catch (error) {
+                dispatch(logout());
+            }
+        } else {
+            dispatch(logout());
+        }
+    }
+);
