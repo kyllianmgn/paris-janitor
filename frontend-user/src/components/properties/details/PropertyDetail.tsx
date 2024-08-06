@@ -1,7 +1,7 @@
 "use client"
 import {useEffect, useState} from "react";
 import {Property} from "../Properties";
-import {getPropertyById} from "@/services/properties";
+import {getPropertyById} from "@/api/services/properties";
 import "./PropertyDetail.css"
 
 export interface PropertyDetailProps {
