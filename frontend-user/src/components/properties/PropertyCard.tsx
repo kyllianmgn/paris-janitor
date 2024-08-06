@@ -8,7 +8,7 @@ export interface PropertyCardProps {
 }
 
 export const PropertyCard = ({property}: PropertyCardProps) => {
-    const router = useRouter()
+    const router = useRouter();
     const onClickCard = () => {
         router.push(`/properties/${property.id}`);
     }

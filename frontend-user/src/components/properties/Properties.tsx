@@ -1,6 +1,6 @@
 "use client"
 import {useEffect, useState} from "react";
-import {getProperties} from "@/services/properties";
+import {getProperties} from "@/api/services/properties";
 import {PropertyList} from "@/components/properties/PropertyList";
 
 export interface Property {
