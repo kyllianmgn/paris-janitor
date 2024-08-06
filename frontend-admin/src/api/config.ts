@@ -2,8 +2,8 @@ import {TokenResponse, DecodedAdminToken} from "@/types";
 import {jwtDecode} from "jwt-decode";
 import ky from "ky";
 import Cookies from "js-cookie";
-import {json} from "node:stream/consumers";
-import {authService} from "@/api/services/authService";
+import {logoutAdmin} from "@/store/slices/authSlice";
+import {store} from "@/store";
 
 const tokenUtils = {
     getTokens: (): Partial<TokenResponse> | null => {
@@ -40,6 +40,7 @@ const api = ky.create({
     retry: {
         limit: 1,
         statusCodes: [401],
+        methods: ["get","post","patch","put"],
     },
     hooks: {
         beforeRequest: [
@@ -52,7 +53,11 @@ const api = ky.create({
         ],
         beforeRetry: [
             async () => {
-                await refreshToken()
+                const response = await refreshToken()
+                console.log("RETRY")
+                if (!response){
+                    store.dispatch(logoutAdmin())
+                }
             }
         ],
     },
@@ -72,11 +77,11 @@ const refreshToken = async (): Promise<boolean> => {
 
         try {
             const refreshResponse = await api.post("auth/admin/refreshToken", {json: {token: tokens.refreshToken},}).json<TokenResponse>();
-            console.log(refreshResponse)
             tokenUtils.setTokens(refreshResponse);
             resolve(true);
         } catch (error) {
             tokenUtils.clearTokens();
+            alert("disconnected")
             resolve(false);
         } finally {
             refreshPromise = null;

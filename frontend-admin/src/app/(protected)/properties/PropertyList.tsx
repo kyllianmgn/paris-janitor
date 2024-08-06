@@ -22,14 +22,12 @@ export default function PropertyList({pending = false}: {pending?: boolean}) {
         loadProperties().then()
     }, []);
 
-    useEffect(() => {
-        console.log(propertyList)
-    }, [propertyList]);
-
     return (
         <div>
-            <h1>Property List</h1>
-            {propertyList?.map((property: Property) => <PropertyCard property={property}/>)}
+            <h1 className="text-3xl font-bold">Property List</h1>
+            <div className="flex flex-col gap-2.5 my-3">
+                {propertyList?.map((property: Property) => <PropertyCard key={property.id} property={property}/>)}
+            </div>
         </div>
     )
 }

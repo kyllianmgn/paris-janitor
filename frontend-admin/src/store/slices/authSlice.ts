@@ -26,6 +26,7 @@ const authSlice = createSlice({
             };
         },
         logoutAdmin: (state) => {
+            console.log("LOGOUT")
             state.admin = null;
             state.accessToken = null;
             state.refreshToken = null;

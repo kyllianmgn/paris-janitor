@@ -122,13 +122,20 @@ model Traveler {
 }
 
 model ServiceProvider {
-  id         Int                  @id @default(autoincrement())
-  userId     Int                  @unique
-  user       User                 @relation(references: [id], fields: [userId], onDelete: Cascade)
+  id         Int                   @id @default(autoincrement())
+  userId     Int                   @unique
+  user       User                  @relation(references: [id], fields: [userId], onDelete: Cascade)
   services   Service[]
   occupation ProviderOccupation[]
+  status     ServiceProviderStatus @default(PENDING)
 
   @@map("service_providers")
+}
+
+enum ServiceProviderStatus {
+  PENDING
+  ACCEPTED
+  REFUSED
 }
 
 model ProviderOccupation {
