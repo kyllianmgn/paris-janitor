@@ -33,9 +33,9 @@ export const Properties = () => {
 
     return (
         <>
-            <div>
-                <h1>Properties</h1>
-                <p>Properties List</p>
+            <div className="text-center my-8">
+                <h1 className="text-4xl font-bold mb-4">Properties</h1>
+                <p className="text-lg text-gray-600">Properties List</p>
             </div>
             <PropertyList properties={propertyList}></PropertyList>
         </>
