@@ -1,6 +1,6 @@
 "use client"
 import {useEffect, useState} from "react";
-import {getProperties} from "@/api/services/properties";
+import {propertiesService} from "@/api/services/properties";
 import {PropertyList} from "@/components/properties/PropertyList";
 
 export interface Property {
@@ -23,7 +23,7 @@ export const Properties = () => {
     const [propertyList, setPropertyList] = useState<Property[]>([]);
 
     const loadProperties = async () => {
-        const res = await getProperties();
+        const res = await propertiesService.getProperties();
         setPropertyList(res.data);
     };
 

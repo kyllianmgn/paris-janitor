@@ -1,11 +1,11 @@
 "use client"
 import {useEffect, useState} from "react";
 import {Property} from "../Properties";
-import {getPropertyById} from "@/api/services/properties";
+import {propertiesService} from "@/api/services/properties";
 import "./PropertyDetail.css"
 
 export interface PropertyDetailProps {
-    propertyId: string
+    propertyId: number
 }
 
 export const PropertyDetail = ({propertyId}: PropertyDetailProps) => {
@@ -14,7 +14,7 @@ export const PropertyDetail = ({propertyId}: PropertyDetailProps) => {
 
     const loadProperty = async () => {
         if (propertyId) {
-            const res = await getPropertyById(propertyId);
+            const res = await propertiesService.getPropertyById(propertyId);
             setProperty(res.data);
             setLoading(false);
         }
