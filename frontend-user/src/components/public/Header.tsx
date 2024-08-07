@@ -7,13 +7,46 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import UserMenu from "./UserMenu";
 import AuthButton from "./auth/AuthButton";
-import { useSelector } from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import { RootState } from "@/store/store";
+import {authService} from "@/api/services/authService";
+import {tokenUtils} from "@/api/config";
+import {DecodedToken, User} from "@/types";
+import {setCredentials} from "@/store/slices/authSlice";
+import {useEffect, useState} from "react";
+
+
 
 export default function Header() {
   const router = useRouter();
-  const { isAuthenticated, role } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const role = useSelector((state: RootState) => state.auth.role);
 
+  useEffect(() => {
+    const verifyAuth = async () => {
+      try {
+        const isAuthenticated = await authService.checkAuth(dispatch);
+        setIsAuthenticated(isAuthenticated);
+
+        if (isAuthenticated) {
+          const token = tokenUtils.getTokens();
+          if (!token) {
+            console.log("Authentifié mais pas de token");
+            return;
+          }
+          tokenUtils.setTokens(token);
+          dispatch(setCredentials(token));
+          console.log("token");
+          console.log(token);
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+      }
+    };
+
+    verifyAuth();
+  }, [dispatch]);
   return (
       <header className="border-b">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -77,7 +110,7 @@ export default function Header() {
 }
 
 // Helper functions
-function getDashboardPath(role: string) {
+function getDashboardPath(role: string | null) {
   switch (role) {
     case "TRAVELER":
       return "/";
@@ -90,7 +123,7 @@ function getDashboardPath(role: string) {
   }
 }
 
-function getNavLinks(role: string) {
+function getNavLinks(role: string | null) {
   switch (role) {
     case "TRAVELER":
       return [

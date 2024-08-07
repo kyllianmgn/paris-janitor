@@ -5,6 +5,9 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  Traveler?: Traveler;
+  Landlord?: Landlord;
+  ServiceProvider?: ServiceProvider;
 }
 
 export interface Landlord {

@@ -28,6 +28,14 @@ const tokenUtils = {
     Cookies.remove("refreshToken");
   },
   decodeToken: (token: string): DecodedToken => jwtDecode(token),
+  isTokenValid: (token: string): boolean => {
+    try {
+      const decodedToken = tokenUtils.decodeToken(token);
+      return decodedToken.exp > Date.now() / 1000;
+    } catch (error) {
+      return false;
+    }
+  },
 };
 
 const api = ky.create({

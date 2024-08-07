@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { logout } from "@/store/slices/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
+import {Fragment} from "react";
 
 export default function UserMenu() {
   const router = useRouter();
@@ -46,6 +47,10 @@ export default function UserMenu() {
           <DropdownMenuItem onClick={() => router.push("/settings")}>
             <Settings className="mr-2 h-4 w-4" />
             <span>Settings</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem onClick={() => router.push("/dashboard")}>
+            <span>Passez en mode hote</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout}>
