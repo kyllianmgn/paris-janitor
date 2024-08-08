@@ -1,11 +1,14 @@
 "use client"
-import {ChangeEvent, FormEvent, useRef, useState} from "react";
-import {createPropertyReservation} from "@/api/services/properties-reservations";
+import {ChangeEvent, FormEvent, useEffect, useRef, useState} from "react";
+import {propertiesReservationsService} from "@/api/services/properties-reservations";
+import {ReservationStatus} from "@/components/properties-reservations/PropertiesReservations";
+import {authService} from "@/api/services/authService";
+import {User} from "@/types";
 
-export interface PropertyReservation {
+export interface PropertyReservationPostReq {
     travelerId: number;
     occupationId: number; //not read by API but required
-    status: string; //not read by API but required
+    status: ReservationStatus; //not read by API but required
     totalPrice: number;
     propertyId: number;
     startDate: string;
@@ -14,11 +17,11 @@ export interface PropertyReservation {
 
 export interface PropertiesReservationsFormProps {
     propertyId: number;
-    travelerId: number;
     price: number;
 }
 
-export const PropertiesReservationsForm = ({propertyId, travelerId, price}: PropertiesReservationsFormProps) => {
+export const PropertyReservationForm = ({propertyId, price}: PropertiesReservationsFormProps) => {
+    const [user, setUser] = useState<User | null>(null);
     const [submitted, setSubmitted] = useState<boolean>(false);
     const [error, setError] = useState<boolean>(false);
     //TODO manage and use available dates with property occupation
@@ -76,24 +79,33 @@ export const PropertiesReservationsForm = ({propertyId, travelerId, price}: Prop
 
     const onFormSubmit = async (event: FormEvent) => {
         event.preventDefault();
-        if (!startDateInput.current?.value && !endDateInput.current?.value) {
+        if (!startDateInput.current?.value || !endDateInput.current?.value || !user?.Traveler?.id) {
             setError(true);
             return;
         }
 
-        const propertyReservation: PropertyReservation = {
-            travelerId: travelerId,
+        const propertyReservationPostReq: PropertyReservationPostReq = {
+            travelerId: user.Traveler.id,
             occupationId: 0, //not read by API but required
-            status: "PENDING", //not read by API but required
+            status: ReservationStatus.PENDING, //not read by API but required
             totalPrice: price,
             propertyId: propertyId,
             startDate: new Date(String(startDateInput.current?.value)).toISOString(),
             endDate: new Date(String(endDateInput.current?.value)).toISOString(),
         }
 
-        await createPropertyReservation(propertyReservation);
+        await propertiesReservationsService.createPropertyReservation(propertyReservationPostReq);
         setSubmitted(true);
     }
+
+    const loadUser = async () => {
+        const user = await authService.getUserInfo();
+        setUser(user);
+    }
+
+    useEffect(() => {
+        loadUser().then();
+    }, []);
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -107,7 +119,8 @@ export const PropertiesReservationsForm = ({propertyId, travelerId, price}: Prop
                                onChange={onStartDateChange}
                                min={minStartDate} defaultValue={defaultStartDate}
                                className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-                        <input placeholder="Date de départ" type={"date"} ref={endDateInput} onChange={onEndDateChange}
+                        <input placeholder="Date de départ" type={"date"} ref={endDateInput}
+                               onChange={onEndDateChange}
                                min={minEndDate} value={endDateInputValue}
                                className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"/>
                         <div className="mb-4 text-left">

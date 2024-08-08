@@ -29,6 +29,32 @@ export const initPropertyReservations = (app: express.Express) => {
         }
     });
 
+    app.get("/property-reservations/full/:id(\\d+)", async (req, res) => {
+        try {
+            const PropertyReservationFull = await prisma.propertyReservation.findUnique({
+                where: {id: Number(req.params.id)},
+                include: {occupation: true}
+            });
+            res.status(200).json({data: PropertyReservationFull});
+        } catch (e) {
+            res.status(500).send({error: e});
+            return;
+        }
+    });
+
+    app.get("/property-reservations/traveler/:id(\\d+)", isAuthenticated, async (req, res) => {
+        try {
+            const PropertiesReservationsFull = await prisma.propertyReservation.findMany({
+                where: {travelerId: Number(req.params.id)},
+                include: {occupation: true}
+            });
+            res.status(200).json({data: PropertiesReservationsFull});
+        } catch (e) {
+            res.status(500).send({error: e});
+            return;
+        }
+    });
+
     app.post("/property-reservations/", async (req, res) => {
         try {
             const validation = propertyReservationWithOccupationValidator.validate(req.body);
