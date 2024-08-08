@@ -1,7 +1,7 @@
 import { api, tokenUtils } from '@/api/config';
 import { setCredentials, logout } from '@/store/slices/authSlice';
 import { AppDispatch } from '@/store/store';
-import { LoginRequest, SignUpRequest, TokenResponse } from '@/types';
+import {LoginRequest, SignUpRequest, TokenResponse, User} from '@/types';
 
 export const authService = {
     login: async (loginData: LoginRequest, dispatch: AppDispatch): Promise<TokenResponse> => {
@@ -37,31 +37,44 @@ export const authService = {
         dispatch(logout());
     },
 
-    refreshToken: async (dispatch: AppDispatch): Promise<TokenResponse> => {
+    refreshToken: async (refreshToken: string): Promise<TokenResponse> => {
         try {
-            const tokens = tokenUtils.getTokens();
-            if (!tokens?.refreshToken) {
-                throw new Error('No refresh token available');
-            }
-            const response: TokenResponse = await api.post('auth/refreshToken', { json: { token: tokens.refreshToken } }).json();
+            const response: TokenResponse = await api.post('auth/refreshToken', { json: { token: refreshToken } }).json();
             tokenUtils.setTokens(response);
-            dispatch(setCredentials(response));
             return response;
         } catch (error) {
             console.error('Token refresh error:', error);
+            throw error;
+        }
+    },
+
+    checkAuth: async (dispatch: AppDispatch) => {
+        try {
+            const response = await api.get('auth/check');
+            if (response.status === 200) {
+                return true;
+            } else {
+                console.log("l'api renvoie : ", response.status);
+                console.log("donc je deconectte");
+                dispatch(logout());
+                return false;
+            }
+        } catch (error) {
+            console.error('Auth check error:', error);
             dispatch(logout());
             throw error;
         }
     },
 
-    checkAuth: async (dispatch: AppDispatch): Promise<TokenResponse> => {
+    getUserInfo: async (): Promise<User> => {
         try {
-            const response: TokenResponse = await api.get('auth/check').json();
-            dispatch(setCredentials(response));
-            return response;
+            console.log("je suis dans le getUserInfo");
+            const response = await api.get("users/me").json();
+            console.log("response");
+            console.log(response);
+            return response.data;
         } catch (error) {
-            console.error('Auth check error:', error);
-            dispatch(logout());
+            console.error("Error fetching user info:", error);
             throw error;
         }
     },

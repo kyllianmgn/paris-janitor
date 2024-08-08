@@ -1,14 +1,34 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/store";
+import {useDispatch} from "react-redux";
+import {useEffect, useState} from "react";
+import {authService} from "@/api/services/authService";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const router = useRouter();
-    const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+    const dispatch = useDispatch();
+    const [isLoading, setIsLoading] = useState(true);
+    useEffect(() => {
+        const verifyAuth = async () => {
+            try {
+                const isAuthenticated = await authService.checkAuth(dispatch);
+                if (isAuthenticated) {
 
-    if (!isAuthenticated) {
-        router.push("/");
+                    setIsLoading(false);
+                } else {
+                    router.push("/");
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+                router.push("/");
+            }
+        };
+
+        verifyAuth().then(r => console.log(r));
+    }, [dispatch, router]);
+
+    if (isLoading) {
+        return <div>Loading...</div>;
     }
 
     return <>{children}</>;

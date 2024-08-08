@@ -5,6 +5,9 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  Traveler?: Traveler;
+  Landlord?: Landlord;
+  ServiceProvider?: ServiceProvider;
 }
 
 export interface Landlord {
@@ -75,4 +78,23 @@ export interface RevokeRefreshTokenRequest {
 
 export interface ApiResponse<T> {
   data: T
+}
+
+export enum ReservationStatus {
+    PENDING="PENDING",
+    CONFIRMED="CONFIRMED",
+    CANCELLED="CANCELLED",
+}
+
+export interface PropertyReservation {
+    id: number
+    travelerId: number
+    occupationId: number
+    status: ReservationStatus
+    totalPrice: number
+}
+
+export interface DateRange {
+  from: Date;
+  to: Date;
 }
