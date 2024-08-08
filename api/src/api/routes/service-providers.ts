@@ -2,12 +2,15 @@ import express from "express";
 import { prisma } from "../../utils/prisma";
 import {serviceProviderValidator} from "../validators/service-provider-validator";
 import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
+import {ServiceProviderStatus} from "@prisma/client";
 
 export const initServiceProviders = (app: express.Express) => {
-    app.get("/service-providers", isAuthenticated, async (_req, res) => {
+    app.get("/service-providers", isAuthenticated, isSuperAdmin, async (_req, res) => {
         try {
             const allProviders = await prisma.serviceProvider.findMany({
                 select: {
+                    id: true,
+                    userId: true,
                     user: {
                         select: {
                             id: true,
@@ -19,6 +22,46 @@ export const initServiceProviders = (app: express.Express) => {
                 }
             });
             res.status(200).json({data: allProviders});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.get("/service-providers/pending", isAuthenticated, async (_req, res) => {
+        try {
+            const allProviders = await prisma.serviceProvider.findMany({
+                select: {
+                    id: true,
+                    userId: true,
+                    user: {
+                        select: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                            email: true
+                        }
+                    }
+                },
+                where: {
+                    status: ServiceProviderStatus.PENDING
+                }
+            });
+            res.status(200).json({data: allProviders});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.get("/service-providers/pending/count", isAuthenticated, async (_req, res) => {
+        try {
+            const count = await prisma.serviceProvider.count({
+                where: {
+                    status: ServiceProviderStatus.PENDING
+                }
+            });
+            res.status(200).json({data: {count: count}});
         } catch (e) {
             res.status(500).send({ error: e });
             return;
@@ -37,7 +80,31 @@ export const initServiceProviders = (app: express.Express) => {
                             lastName: true,
                             email: true
                         }
-                    }
+                    },
+                    services: true
+                }
+            });
+            res.status(200).json({data: user});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.get("/service-providers/user/:id(\\d+)", isAuthenticated, async (req, res) => {
+        try {
+            const user = await prisma.serviceProvider.findUnique({
+                where: { userId: +req.params.id },
+                select: {
+                    user: {
+                        select: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                            email: true
+                        }
+                    },
+                    services: true
                 }
             });
             res.status(200).json({data: user});

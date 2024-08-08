@@ -21,7 +21,9 @@ export default function Nav({children, admin}: {children: React.ReactNode, admin
                     </div>
                     <div className="flex flex-col items-center mt-2 h-full justify-center">
                         <NavItem menuName="Dashboard" iconName="layout-dashboard" route="/dashboard"/>
+                        <NavItem menuName="Users" iconName="user" route="/users"/>
                         <NavItem menuName="Properties" iconName="house" route="/properties"/>
+                        <NavItem menuName="Service Providers" iconName="handshake" route="/service-providers"/>
                     </div>
                 </div>
             </nav>

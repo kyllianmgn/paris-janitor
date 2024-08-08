@@ -48,7 +48,17 @@ export interface User{
     firstName: string;
     lastName: string;
     email: string;
-    password: string;
+    Landlord?: Landlord;
+    ServiceProvider?: ServiceProvider;
+    Traveler?: Traveler;
+    bannedUntil?: Date | null;
+}
+
+export interface ServiceProvider {
+    id: number,
+    userId: number;
+    status: ServiceProviderStatus
+    user?: User
 }
 
 export enum PropertyStatus {
@@ -57,7 +67,7 @@ export enum PropertyStatus {
     REJECTED="REJECTED",
 }
 
-enum ServiceProviderStatus {
+export enum ServiceProviderStatus {
     PENDING="PENDING",
     ACCEPTED="ACCEPTED",
     REFUSED="REFUSED"
@@ -71,6 +81,13 @@ export interface Service{
     basePrice: number
 }
 
+export interface Traveler {
+    id: number,
+    userId: number;
+    user?: User
+}
+
 export interface ApiResponse<T>{
-    data: T
+    data: T,
+    count?: number
 }
