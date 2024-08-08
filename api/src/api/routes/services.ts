@@ -29,6 +29,30 @@ export const initServices = (app: express.Express) => {
         }
     });
 
+    app.get("/services/provider/:id(\\d+)", async (req, res) => {
+        try {
+            const services = await prisma.service.findMany({
+                where: { providerId: +req.params.id },
+            });
+            res.status(200).json({data: services});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.get("/services/provider/:id(\\d+)/count", async (req, res) => {
+        try {
+            const services = await prisma.service.count({
+                where: { providerId: +req.params.id }
+            });
+            res.status(200).json({data: services});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
     app.post("/services/", async (req, res) => {
         try {
             const validation = serviceValidator.validate(req.body);

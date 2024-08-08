@@ -8,7 +8,7 @@ import {
     PropertyStatus,
     propertyValidator
 } from "../validators/property-validator";
-import {paginationValidator} from "../validators/pagination-validator";
+import {Filter, filterValidator} from "../validators/filter-validator";
 
 export const initProperties = (app: express.Express) => {
     app.get("/properties", async (_req, res) => {
@@ -21,9 +21,65 @@ export const initProperties = (app: express.Express) => {
         }
     });
 
-    app.get("/properties/all", async (_req, res) => {
+    app.get("/properties/all", async (req, res) => {
         try {
-            const allProperties = await prisma.property.findMany({include: {landlord: {include: {user: true}}}});
+            const validation = filterValidator.validate(req.query)
+
+            if (validation.error) {
+                res.status(400).json({error: validation.error});
+            }
+
+            const filter: Filter = validation.value;
+            const allProperties = await prisma.property.findMany({
+                include: {landlord: {include: {user: true}}},
+                where: filter.query ?
+                    {
+                        OR: [{
+                            address: {
+                                contains: filter.query,
+                                mode: "insensitive"
+                            }
+                        }, {
+                            description: {
+                                contains: filter.query,
+                                mode: "insensitive"
+                            }
+                        }]
+                    }
+                    : {},
+                take: (filter.pageSize) ? +filter.pageSize : 10,
+                skip: (filter.page) ? (filter.pageSize) ? +filter.page * +filter.pageSize : (+filter.page-1) * 10 : 0,
+            });
+            const countProperties = await prisma.property.count({
+                where: filter.query ?
+                    {
+                        OR: [{
+                            address: {
+                                contains: filter.query,
+                                mode: "insensitive"
+                            }
+                        }, {
+                            description: {
+                                contains: filter.query,
+                                mode: "insensitive"
+                            }
+                        }]
+                    }
+                    : {}
+            })
+            res.status(200).json({data: allProperties, count: countProperties});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.get("/properties/landlord/:id(\\d+)",isAuthenticated, isSuperAdmin, async (req, res) => {
+        try {
+            const allProperties = await prisma.property.findMany({
+                include: {landlord: {include: {user: true}}},
+                where: {landlordId: +req.params.id},
+            });
             res.status(200).json({data: allProperties});
         } catch (e) {
             res.status(500).send({ error: e });
@@ -34,20 +90,33 @@ export const initProperties = (app: express.Express) => {
 
     app.get("/properties/pending", async (req, res) => {
         try {
-            console.log(req.query)
-            const validation = paginationValidator.validate(req.query)
+            const validation = filterValidator.validate(req.query)
 
             if (validation.error) {
                 res.status(400).json({ error: validation.error });
                 return;
             }
 
-            const paginationParams = validation.value;
+            const filterParams = validation.value;
             const allProperties = await prisma.property.findMany({
-                take: (paginationParams.pageSize) ? +paginationParams.pageSize : undefined,
-                skip: (paginationParams.page && paginationParams.pageSize) ? +paginationParams.pageSize * +paginationParams.pageSize : undefined
+                take: (filterParams.pageSize) ? +filterParams.pageSize : undefined,
+                skip: (filterParams.page && filterParams.pageSize) ? +filterParams.pageSize * +filterParams.pageSize : undefined
             });
             res.status(200).json({data: allProperties});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.get("/properties/pending/count", async (req, res) => {
+        try {
+            const allProperties = await prisma.property.count({
+                where: {
+                    status: PropertyStatus.PENDING
+                }
+            });
+            res.status(200).json({data: {count: allProperties}});
         } catch (e) {
             res.status(500).send({ error: e });
             return;

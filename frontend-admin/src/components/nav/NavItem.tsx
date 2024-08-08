@@ -10,7 +10,7 @@ export default function NavItem({menuName, iconName, route}: { menuName: string,
         <Link href={route}>
             <div className={`m-1 w-24 h-24 cursor-pointer  flex flex-col justify-center items-center rounded-full ${pathname == route ? 'bg-black text-white' : 'hover:bg-gray-100 hover:transition-all'}`}>
                 <Icon name={iconName}/>
-                <h2>{menuName}</h2>
+                <h2 className="text-center">{menuName}</h2>
             </div>
         </Link>
     )

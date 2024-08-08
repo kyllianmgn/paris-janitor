@@ -3,11 +3,16 @@ import {DoorOpen} from "lucide-react";
 import React from "react";
 import {Admin} from "@/types";
 import NavItem from "@/components/nav/NavItem";
+import {authService} from "@/api/services/authService";
+import {useDispatch} from "react-redux";
+import {useRouter} from "next/navigation";
 
 export default function Nav({children, admin}: {children: React.ReactNode, admin: Admin}) {
+    const dispatch = useDispatch();
+    const router  = useRouter();
 
     const logout = () => {
-        alert("logout")
+        authService.logoutAdmin(dispatch)
     }
     return (
         <div className="min-h-screen bg-gray-100 flex ">
@@ -21,7 +26,9 @@ export default function Nav({children, admin}: {children: React.ReactNode, admin
                     </div>
                     <div className="flex flex-col items-center mt-2 h-full justify-center">
                         <NavItem menuName="Dashboard" iconName="layout-dashboard" route="/dashboard"/>
+                        <NavItem menuName="Users" iconName="user" route="/users"/>
                         <NavItem menuName="Properties" iconName="house" route="/properties"/>
+                        <NavItem menuName="Service Providers" iconName="handshake" route="/service-providers"/>
                     </div>
                 </div>
             </nav>

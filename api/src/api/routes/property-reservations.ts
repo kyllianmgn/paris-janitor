@@ -9,8 +9,22 @@ import {
 export const initPropertyReservations = (app: express.Express) => {
     app.get("/property-reservations", async (_req, res) => {
         try {
-            const allPropertyReservations = await prisma.propertyReservation.findMany();
-            res.status(200).json({data: allPropertyReservations});
+            const allPropertyReservations = await prisma.propertyReservation.findMany({
+                include: {
+                    traveler: {
+                        include: {
+                            user: true
+                        }
+                    },
+                    occupation: {
+                        include: {
+                            property: true
+                        }
+                    }
+                }
+            });
+            const countReservations = await prisma.propertyReservation.count()
+            res.status(200).json({data: allPropertyReservations, count: countReservations});
         } catch (e) {
             res.status(500).send({error: e});
             return;

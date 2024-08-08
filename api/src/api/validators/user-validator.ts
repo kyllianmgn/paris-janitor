@@ -19,3 +19,7 @@ export const userPatchValidation = Joi.object<Pick<userRequest, "firstName" | "l
   lastName: Joi.string(),
   email: Joi.string().email()
 }).options({ abortEarly: true });
+
+export const userBanValidation = Joi.object<{ date: Date }>({
+  date: Joi.date().required(),
+}).options({ abortEarly: true });

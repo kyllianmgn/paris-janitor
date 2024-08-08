@@ -1,5 +1,5 @@
 import {api} from "@/api/config";
-import {ApiResponse, Service} from "@/types";
+import {ApiResponse, Service, ServiceProvider} from "@/types";
 
 export const getService = async (id: number): Promise<ApiResponse<Service>> => {
     return await api.get(`services/${id}`).json()
@@ -17,6 +17,6 @@ export const updateService = async (service: Service): Promise<ApiResponse<any>>
     return await api.patch(`services/${service.id}`, {json: {...service}}).json();
 }
 
-export const updateServiceStatus = async (service: Service): Promise<ApiResponse<any>> => {
-    return await api.patch(`services/${service.id}/status`, {json: {status: service.status}}).json();
+export const getServiceCount = async (providerId: number): Promise<ApiResponse<any>> => {
+    return await api.get(`services/provider/${providerId}/count`).json()
 }
