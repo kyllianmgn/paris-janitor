@@ -1,8 +1,19 @@
 import {api} from "@/api/config";
 import {ApiResponse, Service, ServiceProvider} from "@/types";
 
-export const getServiceProviders = async (): Promise<ApiResponse<ServiceProvider[]>> => {
-    return await api.get(`service-providers`).json()
+export const getServiceProviders = async (query?: string, page?: number): Promise<ApiResponse<ServiceProvider[]>> => {
+    let searchParams = ""
+    if (query){
+        searchParams = `?query=${query}`
+    }
+    if (page){
+        if (searchParams == ""){
+            searchParams = `?page=${page}`
+        }else{
+            searchParams += `&page=${page}`
+        }
+    }
+    return await api.get(`service-providers${searchParams}`).json()
 }
 
 export const getPendingServiceProviders = async (): Promise<ApiResponse<ServiceProvider[]>> => {

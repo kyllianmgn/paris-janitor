@@ -48,9 +48,12 @@ export default function Pagination({count, itemsName}: {count: number, itemsName
                     }}
                 >
                     {
+                        options.length ?
                         options.map((option) => (
                             <option key={option} value={option}>{option}</option>
                         ))
+                            :
+                        <option>1</option>
                     }
 
                 </select>

@@ -26,18 +26,18 @@ export const Dashboard = () => {
 
     return (
         <div className="px-4 py-6 sm:px-0">
-            <h2 className="text-2xl font-semibold mb-4">Dashboard Content</h2>
+            <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
             <div className=" border-4 border-dashed border-gray-200 rounded-lg h-96 p-3 grid grid-cols-6 grid-rows-6 gap-3">
                 <Link href={"/properties/pending"} className="col-span-3 row-span-2">
                     <div className="p-2 shadow rounded-lg h-full w-full border-gray-200 border-2  bg-gradient-to-br from-gray-100 from-50% to-gray-300 hover:from-30% transition-all">
                         <h1 className="text-lg font-bold">Propritétiés en attente de validation</h1>
-                        <h1 className="text-3xl font-bold">{pendingProprietiesCount}</h1>
+                        <h1 className="text-3xl font-semibold">{pendingProprietiesCount}</h1>
                     </div>
                 </Link>
                 <Link href={"/service-providers/pending"} className="col-span-3 row-span-2">
-                    <div className="p-2 shadow rounded-lg h-full w-full border-gray-200 border-2  bg-gradient-to-br from-gray-100 from-50% to-gray-300 hover:from-30% transition-all">
+                    <div className="p-2 shadow rounded-lg h-full w-full border-gray-200 border-2  bg-gradient-to-bl from-gray-100 from-50% to-gray-300 hover:from-30% transition-all">
                         <h1 className="text-lg font-bold">Prestataires en attente de validation</h1>
-                        <h1 className="text-3xl font-bold">{pendingServiceProvidersCount}</h1>
+                        <h1 className="text-3xl font-semibold">{pendingServiceProvidersCount}</h1>
                     </div>
                 </Link>
             </div>

@@ -8,7 +8,8 @@ export default ({searchParams,}: { searchParams?: { query?: string; page?: strin
 
     return (
         <div>
-            <UserList query={query} page={currentPage} />
+            <h1 className="text-3xl font-bold m-2">Users</h1>
+            <UserList query={query} page={currentPage}/>
         </div>
     )
 }

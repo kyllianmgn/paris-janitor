@@ -10,10 +10,13 @@ import Pagination from "@/components/list/pagination";
 export default function UserList({pending = false, query, page}: {pending?: boolean, query?: string, page?: number}) {
     const [userList, setUserList] = useState<User[]>();
     const [totalCount, setTotalCount] = useState(0);
+    const [loading, setLoading] = useState(false);
 
     const loadUsers = async () => {
+        setLoading(true);
         let newUsers;
         newUsers = await getUsers(query, page)
+        setLoading(false)
         setUserList(newUsers.data)
         if (newUsers.count){
             setTotalCount(newUsers.count)
@@ -28,10 +31,15 @@ export default function UserList({pending = false, query, page}: {pending?: bool
 
     return (
         <div>
-            <h1 className="text-3xl font-bold">Users</h1>
             <Search placeholder={"Rechercher Utilisateur"}></Search>
             <div className="flex flex-col my-3">
-                {userList?.map((user: User) => <UserCard key={user.id} user={user}/>)}
+                {
+                    loading ? <h1 className="text-3xl text-center font-bold">Loading Users...</h1> :
+                        userList?.length ?
+                                userList.map((user: User) => <UserCard key={user.id} user={user}/>)
+                            :
+                                <h1 className="text-3xl text-center font-bold">No users found.</h1>
+                }
             </div>
             <Pagination count={totalCount} itemsName={"Users"}></Pagination>
         </div>
