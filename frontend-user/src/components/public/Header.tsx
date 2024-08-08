@@ -129,6 +129,7 @@ function getNavLinks(role: string | null) {
       return [
         { path: "/rentals", label: "Properties" },
         { path: "/services", label: "Services" },
+        { path: "/properties-reservations", label: "Properties Reservations" },
       ];
     case "LANDLORD":
       return [
