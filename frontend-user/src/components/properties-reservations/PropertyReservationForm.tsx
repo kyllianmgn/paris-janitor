@@ -108,7 +108,7 @@ export const PropertyReservationForm = ({propertyId, price}: PropertiesReservati
     }, []);
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div>
             {
                 submitted ? (
                     <p className="text-lg font-semibold text-green-600">Réservation effectué</p>
