@@ -88,7 +88,7 @@ export const PropertyReservationForm = ({propertyId, price}: PropertiesReservati
             travelerId: user.Traveler.id,
             occupationId: 0, //not read by API but required
             status: ReservationStatus.PENDING, //not read by API but required
-            totalPrice: price,
+            totalPrice: totalPrice,
             propertyId: propertyId,
             startDate: new Date(String(startDateInput.current?.value)).toISOString(),
             endDate: new Date(String(endDateInput.current?.value)).toISOString(),
