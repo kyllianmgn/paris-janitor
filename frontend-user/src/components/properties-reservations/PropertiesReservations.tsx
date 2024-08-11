@@ -43,7 +43,7 @@ export const PropertiesReservations = () => {
     const [propertiesReservationsFullList, setPropertiesReservationsFullList] = useState<PropertyReservationFull[]>([]);
 
     const loadPropertiesReservationsFull = async () => {
-        const res = await propertiesReservationsService.getPropertiesReservationsFullByUserId(1);
+        const res = await propertiesReservationsService.getPropertiesReservationsFullByUserId();
         setPropertiesReservationsFullList(res.data);
     }
 
@@ -51,7 +51,6 @@ export const PropertiesReservations = () => {
         loadPropertiesReservationsFull().then();
     }, []);
 
-    //TODO add list for properties reservations
     return (
         <>
             <div className="text-center my-8">
