@@ -9,8 +9,27 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function Header() {
   const router = useRouter();
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated, role, isLoading } = useAuth();
   const currentPath = usePathname();
+
+  if (isLoading) {
+    return (
+        <header className="border-b">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              {/* Logo */}
+              <div className="flex-shrink-0">
+                <Link href="/">
+                <span className="text-2xl font-bold text-red-500">
+                  Paris Janitor
+                </span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </header>
+    );
+  }
 
   return (
       <header className="border-b">

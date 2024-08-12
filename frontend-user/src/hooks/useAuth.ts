@@ -5,10 +5,12 @@ import { setCredentials, logout } from '@/store/slices/authSlice';
 import { authService } from '@/api/services/authService';
 import {LoginRequest, TokenResponse} from "@/types";
 import {tokenUtils} from "@/api/config";
+import {useEffect, useState} from "react";
 
 export const useAuth = () => {
     const dispatch = useDispatch();
     const auth = useSelector((state: RootState) => state.auth);
+    const [isLoading, setIsLoading] = useState(true);
 
     const login = async (loginData: LoginRequest) => {
         try {
@@ -37,9 +39,14 @@ export const useAuth = () => {
         } catch (error) {
             dispatch(logout());
             return false;
+        } finally {
+            setIsLoading(false);
         }
     };
 
+    useEffect(() => {
+        checkAuth().then(r => console.log(r));
+    }, []);
     return {
         ...auth,
         login,
