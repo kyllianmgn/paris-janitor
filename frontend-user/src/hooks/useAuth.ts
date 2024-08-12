@@ -49,6 +49,7 @@ export const useAuth = () => {
     }, []);
     return {
         ...auth,
+        isLoading,
         login,
         logout: logoutUser,
         checkAuth,
