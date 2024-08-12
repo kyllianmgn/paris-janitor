@@ -1,19 +1,19 @@
 // Header.tsx
 "use client";
-import { useRouter } from "next/navigation";
+import {usePathname, useRouter} from "next/navigation";
 import Link from "next/link";
 import {Bell, Search} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import UserMenu from "./UserMenu";
-import AuthButton from "./auth/AuthButton";
+import AuthButton from "../auth/AuthButton";
 import {useDispatch, useSelector} from "react-redux";
 import { RootState } from "@/store/store";
 import {authService} from "@/api/services/authService";
 import {tokenUtils} from "@/api/config";
-import {DecodedToken, User} from "@/types";
 import {setCredentials} from "@/store/slices/authSlice";
 import {useEffect, useState} from "react";
+import SearchBar from "@/components/public/Header/SearchBar";
 
 
 
@@ -22,6 +22,7 @@ export default function Header() {
   const dispatch = useDispatch();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const role = useSelector((state: RootState) => state.auth.role);
+  const currentPath = usePathname();
 
   useEffect(() => {
     const verifyAuth = async () => {
@@ -61,44 +62,30 @@ export default function Header() {
             </div>
 
             {/* Search bar */}
-
-                <div className="hidden sm:block flex-grow max-w-md mx-4">
-                  <div className="relative">
-                    <Input
-                        type="search"
-                        placeholder="Search for properties or services..."
-                        className="w-full pl-10 pr-4"
-                    />
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Search className="h-5 w-5 text-gray-400" />
-                    </div>
-                  </div>
-                </div>
-
+            {currentPath === "/" ? <SearchBar />:null}
 
             {/* Navigation */}
             {isAuthenticated && (
                 <nav className="hidden md:flex space-x-4">
-                  {getNavLinks(role).map((link) => (
+                  {(role === "LANDLORD" || role === "SERVICE_PROVIDER") && currentPath === "/" ? (
                       <Button
-                          key={link.path}
                           variant="ghost"
-                          onClick={() => router.push(link.path)}
+                          onClick={() => router.push(getDashboardPath(role))}
                       >
-                        {link.label}
+                        My Space
                       </Button>
-                  ))}
+                  ) : (
+                      getNavLinks(role).map((link) => (
+                          <Button
+                              key={link.path}
+                              variant="ghost"
+                              onClick={() => router.push(link.path)}
+                          >
+                            {link.label}
+                          </Button>
+                      ))
+                  )}
                 </nav>
-            )}
-
-            {/* Notifications */}
-            {role !== "TRAVELER" && isAuthenticated && (
-                <div className="ml-4">
-                  <Button variant="ghost" className="relative">
-                    <span className="sr-only">Notifications</span>
-                    <Bell />
-                  </Button>
-                </div>
             )}
 
             {/* Auth Button or User Menu */}
