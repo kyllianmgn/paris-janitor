@@ -1,12 +1,11 @@
-import { useState } from 'react';
-import { useDispatch } from "react-redux";
-import { authService } from '@/api/services/authService';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoginRequest } from '@/types';
-import {useRouter} from "next/navigation";
-import {store} from "@/store/store";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { store} from "@/store/store";
 
 interface LoginFormProps {
   onSignUpClick: () => void;
@@ -17,21 +16,20 @@ export default function LoginForm({ onSignUpClick, onClose }: LoginFormProps ) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const dispatch = useDispatch();
+  const { login } = useAuth();
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
 
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     try {
       const loginData: LoginRequest = { email, password };
-      console.log(loginData);
-      await authService.login(loginData, dispatch);
-      const {role} =store.getState().auth;
+      await login(loginData);
+      const { role } = store.getState().auth;
       switch (role) {
         case "LANDLORD":
-          router.push("/dashboard/");
+          router.push("/dashboard");
           break;
         case "TRAVELER":
           onClose();
@@ -77,7 +75,6 @@ export default function LoginForm({ onSignUpClick, onClose }: LoginFormProps ) {
           <Button type="button" variant="outline" onClick={onSignUpClick}>
             Don&apos;t have an account? Sign Up
           </Button>
-
         </div>
       </form>
   );

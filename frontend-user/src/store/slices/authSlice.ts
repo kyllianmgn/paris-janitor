@@ -49,6 +49,7 @@ const authSlice = createSlice({
             state.isAuthenticated = false;
             state.idRole = null;
             state.role = null;
+            tokenUtils.clearTokens();
         },
     },
 });
@@ -64,28 +65,3 @@ const refreshAccessToken = async (refreshToken: string): Promise<string> => {
         throw error;
     }
 };
-
-export const checkAuth = createAsyncThunk(
-    'auth/checkAuth',
-    async (_, { dispatch, getState }) => {
-        const { auth } = getState() as RootState;
-        const { accessToken, refreshToken } = auth;
-
-        // Vérifier la validité de l'access token
-        if (accessToken && tokenUtils.isTokenValid(accessToken)) {
-            return;
-        }
-
-        // Si l'access token est expiré, essayer de le rafraîchir avec le refresh token
-        if (refreshToken && tokenUtils.isTokenValid(refreshToken)) {
-            try {
-                const newAccessToken = await refreshAccessToken(refreshToken);
-                dispatch(setCredentials({ accessToken: newAccessToken, refreshToken }));
-            } catch (error) {
-                dispatch(logout());
-            }
-        } else {
-            dispatch(logout());
-        }
-    }
-);

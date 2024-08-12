@@ -1,53 +1,17 @@
-// Header.tsx
 "use client";
-import {usePathname, useRouter} from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import {Bell, Search} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import UserMenu from "./UserMenu";
 import AuthButton from "../auth/AuthButton";
-import {useDispatch, useSelector} from "react-redux";
-import { RootState } from "@/store/store";
-import {authService} from "@/api/services/authService";
-import {tokenUtils} from "@/api/config";
-import {setCredentials} from "@/store/slices/authSlice";
-import {useEffect, useState} from "react";
 import SearchBar from "@/components/public/Header/SearchBar";
-
-
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Header() {
   const router = useRouter();
-  const dispatch = useDispatch();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const role = useSelector((state: RootState) => state.auth.role);
+  const { isAuthenticated, role } = useAuth();
   const currentPath = usePathname();
 
-  useEffect(() => {
-    const verifyAuth = async () => {
-      try {
-        const isAuthenticated = await authService.checkAuth(dispatch);
-        setIsAuthenticated(isAuthenticated);
-
-        if (isAuthenticated) {
-          const token = tokenUtils.getTokens();
-          if (!token) {
-            console.log("Authentifié mais pas de token");
-            return;
-          }
-          tokenUtils.setTokens(token);
-          dispatch(setCredentials(token));
-          console.log("token");
-          console.log(token);
-        }
-      } catch (error) {
-        console.error("Auth check error:", error);
-      }
-    };
-
-    verifyAuth();
-  }, [dispatch]);
   return (
       <header className="border-b">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -62,7 +26,7 @@ export default function Header() {
             </div>
 
             {/* Search bar */}
-            {currentPath === "/" ? <SearchBar />:null}
+            {currentPath === "/" ? <SearchBar /> : null}
 
             {/* Navigation */}
             {isAuthenticated && (
@@ -95,7 +59,6 @@ export default function Header() {
       </header>
   );
 }
-
 // Helper functions
 function getDashboardPath(role: string | null) {
   switch (role) {
@@ -114,8 +77,6 @@ function getNavLinks(role: string | null) {
   switch (role) {
     case "TRAVELER":
       return [
-        { path: "/rentals", label: "Properties" },
-        { path: "/services", label: "Services" },
         { path: "/my-reservations", label: "Reservations" },
       ];
     case "LANDLORD":

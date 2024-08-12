@@ -6,13 +6,9 @@ import {ApiResponse, LoginRequest, SignUpRequest, TokenResponse, User} from '@/t
 export const authService = {
     login: async (loginData: LoginRequest, dispatch: AppDispatch): Promise<TokenResponse> => {
         try {
-            console.log("je suis dans le login fucntion");
-            console.log(loginData);
             const response: TokenResponse = await api.post('auth/login', { json: loginData }).json();
             tokenUtils.setTokens(response);
             dispatch(setCredentials(response));
-            console.log("response");
-            console.log(response);
             return response;
         } catch (error) {
             console.error('Login error:', error);
@@ -35,6 +31,7 @@ export const authService = {
     logout: (dispatch: AppDispatch): void => {
         tokenUtils.clearTokens();
         dispatch(logout());
+
     },
 
     refreshToken: async (refreshToken: string): Promise<TokenResponse> => {
@@ -54,8 +51,6 @@ export const authService = {
             if (response.status === 200) {
                 return true;
             } else {
-                console.log("l'api renvoie : ", response.status);
-                console.log("donc je deconectte");
                 dispatch(logout());
                 return false;
             }

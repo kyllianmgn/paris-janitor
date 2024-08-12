@@ -1,7 +1,6 @@
-// UserMenu.tsx
 "use client";
-import {usePathname, useRouter} from "next/navigation";
-import {User, Settings, LogOut, CircleUserRound} from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { User, LogOut, CircleUserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,20 +9,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { logout } from "@/store/slices/authSlice";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/store/store";
-import {Fragment} from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function UserMenu() {
   const router = useRouter();
-  const { user, role } = useSelector((state: RootState) => state.auth);
-  const dispatch = useDispatch();
+  const { user, role, logout } = useAuth();
 
   const handleLogout = () => {
-    dispatch(logout());
-    console.log("Logging out...");
+    logout();
+    router.push("/");
   };
 
   let currentPath = usePathname();
@@ -51,18 +45,14 @@ export default function UserMenu() {
               </>
           )}
           {role === "LANDLORD" && (
-              <>
-                <DropdownMenuItem onClick={() => router.push("/subscription")}>
-                  <span>Subscription</span>
-                </DropdownMenuItem>
-              </>
+              <DropdownMenuItem onClick={() => router.push("/subscription")}>
+                <span>Subscription</span>
+              </DropdownMenuItem>
           )}
           {role === "SERVICE_PROVIDER" && (
-              <>
-                <DropdownMenuItem onClick={() => router.push("/reviews")}>
-                  <span>Reviews</span>
-                </DropdownMenuItem>
-              </>
+              <DropdownMenuItem onClick={() => router.push("/reviews")}>
+                <span>Reviews</span>
+              </DropdownMenuItem>
           )}
           {(role === "LANDLORD" || role === "SERVICE_PROVIDER") && currentPath !== "/" && (
               <DropdownMenuItem onClick={() => router.push("/")}>
