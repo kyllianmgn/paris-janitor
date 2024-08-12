@@ -39,6 +39,6 @@ export const getServiceProvider = async (id: number): Promise<ApiResponse<Servic
     return await api.get(`service-providers/user/${id}`).json()
 }
 
-export const updateServiceProviderStatus = async (serviceProvider: ServiceProvider): Promise<ApiResponse<any>> => {
+export const updateServiceProviderStatus = async (serviceProvider: ServiceProvider): Promise<ApiResponse<ServiceProvider>> => {
     return await api.patch(`service-providers/${serviceProvider.id}/status`, {json: {status: serviceProvider.status}}).json();
 }

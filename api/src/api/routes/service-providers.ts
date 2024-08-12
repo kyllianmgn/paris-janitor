@@ -1,10 +1,9 @@
 import express from "express";
 import {prisma} from "../../utils/prisma";
-import {serviceProviderValidator} from "../validators/service-provider-validator";
+import {serviceProviderStatusPatchValidator} from "../validators/service-provider-validator";
 import {isAuthenticated, isSuperAdmin} from "../middlewares/auth-middleware";
 import {ServiceProviderStatus} from "@prisma/client";
 import {Filter, filterValidator} from "../validators/filter-validator";
-import e from "cors";
 
 export const initServiceProviders = (app: express.Express) => {
     app.get("/service-providers", isAuthenticated, isSuperAdmin, async (req, res) => {
@@ -201,6 +200,8 @@ export const initServiceProviders = (app: express.Express) => {
             const user = await prisma.serviceProvider.findUnique({
                 where: {userId: +req.params.id},
                 select: {
+                    id: true,
+                    status: true,
                     user: {
                         select: {
                             id: true,
@@ -215,6 +216,34 @@ export const initServiceProviders = (app: express.Express) => {
             res.status(200).json({data: user});
         } catch (e) {
             res.status(500).send({error: e});
+            return;
+        }
+    });
+
+    app.patch("/service-providers/:id(\\d+)/status", isAuthenticated, isSuperAdmin, async (req, res) => {
+        const validation = serviceProviderStatusPatchValidator.validate(req.body);
+
+        if (validation.error) {
+            res.status(400).json({ error: validation.error });
+            return;
+        }
+
+        const userRequest = validation.value;
+        try {
+            const serviceProvider = await prisma.serviceProvider.update({
+                where: {
+                    id: +req.params.id,
+                },
+                data: {
+                    status: userRequest.status
+                },
+                include: {
+                    user: true
+                }
+            });
+            res.status(200).json({data: serviceProvider});
+        } catch (e) {
+            res.status(500).json({ error: e });
             return;
         }
     });

@@ -1,10 +1,9 @@
 "use client"
 import {getServiceProvider, updateServiceProviderStatus} from "@/api/services/service-provider-service";
 import {ChangeEvent, useEffect, useState} from "react";
-import {Service, ServiceProvider, ServiceProviderStatus} from "@/types";
+import {PropertyStatus, ServiceProvider, ServiceProviderStatus} from "@/types";
 import {Undo2} from "lucide-react";
 import {Button} from "@/components/ui/button";
-import {getServiceProviders} from "@/api/services/service-provider-service";
 
 export const ServiceProviderDetails = ({id}: { id: number }) => {
     const [serviceProvider, setServiceProvider] = useState<ServiceProvider | null>(null);
@@ -12,6 +11,7 @@ export const ServiceProviderDetails = ({id}: { id: number }) => {
 
     const loadServices = async () => {
         const service = await getServiceProvider(id)
+        console.log(service.data)
         setServiceProvider(service.data)
         setServiceStatus(service.data.status)
     }
@@ -41,8 +41,16 @@ export const ServiceProviderDetails = ({id}: { id: number }) => {
             {
                 serviceProvider ?
                     <>
-                        <h1 className="text-xl font-bold">{serviceProvider.user?.firstName}</h1>
-                        <h2 className="text-lg">Landlord : {serviceProvider.user?.firstName} {serviceProvider.user?.lastName}</h2>
+                        <h1 className="text-xl font-bold">{serviceProvider.user?.firstName} {serviceProvider.user?.lastName}</h1>
+                        <div className="text-lg flex">Status :
+                            <select className="cursor-pointer" onChange={serviceStatusChange} value={serviceStatus}>
+                                <option className="cursor-pointer" value={ServiceProviderStatus.PENDING}>PENDING</option>
+                                <option className="cursor-pointer" value={ServiceProviderStatus.ACCEPTED}>ACCEPTED</option>
+                                <option className="cursor-pointer" value={ServiceProviderStatus.REFUSED}>REFUSED</option>
+                            </select>
+                            {serviceProvider?.status.toString() !== serviceStatus &&
+                                <Undo2 onClick={revertServiceStatus} className="cursor-pointer"/>}
+                        </div>
                         <Button onClick={applyChanges}>Appliquer</Button>
                     </>
                     :
