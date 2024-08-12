@@ -74,7 +74,7 @@ export const initProperties = (app: express.Express) => {
         }
     });
 
-    app.get("/properties/landlord/:id(\\d+)",isAuthenticated, isSuperAdmin, async (req, res) => {
+    app.get("/properties/landlord/:id(\\d+)",isAuthenticated, async (req, res) => {
         try {
             const allProperties = await prisma.property.findMany({
                 include: {landlord: {include: {user: true}}},

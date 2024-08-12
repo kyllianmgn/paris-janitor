@@ -23,7 +23,7 @@ export const Properties = () => {
     const [propertyList, setPropertyList] = useState<Property[]>([]);
 
     const loadProperties = async () => {
-        const res = await propertiesService.getProperties();
+        const res = await propertiesService.getPropertiesByUserId();
         setPropertyList(res.data);
     };
 
@@ -34,8 +34,8 @@ export const Properties = () => {
     return (
         <>
             <div className="text-center my-8">
-                <h1 className="text-4xl font-bold mb-4">Properties</h1>
-                <p className="text-lg text-gray-600">Properties List</p>
+                <h1 className="text-4xl font-bold mb-4">My Properties</h1>
+                <p className="text-lg text-gray-600">List of all your properties</p>
             </div>
             <PropertyList properties={propertyList}></PropertyList>
         </>

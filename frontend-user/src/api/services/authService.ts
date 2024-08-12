@@ -1,7 +1,7 @@
 import { api, tokenUtils } from '@/api/config';
 import { setCredentials, logout } from '@/store/slices/authSlice';
 import { AppDispatch } from '@/store/store';
-import {LoginRequest, SignUpRequest, TokenResponse, User} from '@/types';
+import {ApiResponse, LoginRequest, SignUpRequest, TokenResponse, User} from '@/types';
 
 export const authService = {
     login: async (loginData: LoginRequest, dispatch: AppDispatch): Promise<TokenResponse> => {
@@ -69,10 +69,8 @@ export const authService = {
     getUserInfo: async (): Promise<User> => {
         try {
             console.log("je suis dans le getUserInfo");
-            const response = await api.get("users/me").json();
-            console.log("response");
-            console.log(response);
-            return response.data;
+            const res = await api.get("users/me").json<ApiResponse<User>>();
+            return res.data;
         } catch (error) {
             console.error("Error fetching user info:", error);
             throw error;
