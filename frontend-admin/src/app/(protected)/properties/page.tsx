@@ -1,4 +1,4 @@
-import PropertyList from "@/app/(protected)/properties/PropertyList";
+import PropertyList from "@/components/list/property/PropertyList";
 
 export default ({searchParams,}: { searchParams?: { query?: string; page?: string; };
 }) => {

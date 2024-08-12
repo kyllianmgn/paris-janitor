@@ -43,6 +43,30 @@ export const initPropertyReservations = (app: express.Express) => {
         }
     });
 
+    app.get("/property-reservations/traveler/:id(\\d+)", async (req, res) => {
+        try {
+            const PropertyReservations = await prisma.propertyReservation.findMany({
+                where: {travelerId: +req.params.id},
+            });
+            res.status(200).json({data: PropertyReservations});
+        } catch (e) {
+            res.status(500).send({error: e});
+            return;
+        }
+    });
+
+    app.get("/property-reservations/property/:id(\\d+)", async (req, res) => {
+        try {
+            const PropertyReservations = await prisma.propertyReservation.findMany({
+                where: {occupation: {propertyId: +req.params.id}},
+            });
+            res.status(200).json({data: PropertyReservations});
+        } catch (e) {
+            res.status(500).send({error: e});
+            return;
+        }
+    });
+
     app.post("/property-reservations/", async (req, res) => {
         try {
             const validation = propertyReservationWithOccupationValidator.validate(req.body);

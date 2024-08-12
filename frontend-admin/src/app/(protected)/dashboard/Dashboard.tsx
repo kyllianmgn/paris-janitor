@@ -3,7 +3,7 @@ import {api} from "@/api/config";
 import {useEffect, useState} from "react";
 import {getPendingPropertiesCount} from "@/api/services/property-service";
 import Link from "next/link";
-import {getPendingServiceProviders, getPendingServiceProvidersCount} from "@/api/services/service-provider-service";
+import {getPendingServiceProvidersCount} from "@/api/services/service-provider-service";
 
 export const Dashboard = () => {
     const [pendingProprietiesCount, setPendingProprietiesCount] = useState(0);

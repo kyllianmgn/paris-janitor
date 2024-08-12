@@ -1,7 +1,7 @@
 "use client";
 import {ChangeEvent, useEffect, useState} from "react";
 import {User} from "@/types";
-import UserCard from "@/app/(protected)/users/UserCard";
+import UserCard from "@/components/list/users/UserCard";
 import {getUsers} from "@/api/services/user-service";
 import Search from "@/components/list/search";
 import Pagination from "@/components/list/pagination";

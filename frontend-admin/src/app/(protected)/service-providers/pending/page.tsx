@@ -1,5 +1,5 @@
-import PropertyList from "@/app/(protected)/properties/PropertyList";
-import ServiceProviderList from "@/app/(protected)/service-providers/ServiceProviderList";
+import PropertyList from "@/components/list/property/PropertyList";
+import ServiceProviderList from "@/components/list/service-provider/ServiceProviderList";
 
 export default () => {
     return (

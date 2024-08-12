@@ -16,8 +16,19 @@ export const getServiceProviders = async (query?: string, page?: number): Promis
     return await api.get(`service-providers${searchParams}`).json()
 }
 
-export const getPendingServiceProviders = async (): Promise<ApiResponse<ServiceProvider[]>> => {
-    return await api.get(`service-providers/pending`).json()
+export const getPendingServiceProviders = async (query?: string, page?: number): Promise<ApiResponse<ServiceProvider[]>> => {
+    let searchParams = ""
+    if (query){
+        searchParams = `?query=${query}`
+    }
+    if (page){
+        if (searchParams == ""){
+            searchParams = `?page=${page}`
+        }else{
+            searchParams += `&page=${page}`
+        }
+    }
+    return await api.get(`service-providers/pending${searchParams}`).json()
 }
 
 export const getPendingServiceProvidersCount = async (): Promise<ApiResponse<{count: number}>> => {

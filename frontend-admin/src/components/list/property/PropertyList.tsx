@@ -1,12 +1,10 @@
 "use client";
 import {useEffect, useState} from "react";
 import {getPendingProperties, getProperties, getPropertiesByLandlordId} from "@/api/services/property-service";
-import {Property, ServiceProvider} from "@/types";
-import PropertyCard from "@/app/(protected)/properties/PropertyCard";
+import {Property} from "@/types";
+import PropertyCard from "@/components/list/property/PropertyCard";
 import Search from "@/components/list/search";
 import Pagination from "@/components/list/pagination";
-import ServiceProviderCard from "@/app/(protected)/service-providers/ServiceProviderCard";
-
 
 export default function PropertyList({pending = false, landlordId = undefined, query, page}: {pending?: boolean, landlordId?: number, query?: string, page?: number}) {
     const [propertyList, setPropertyList] = useState<Property[]>();

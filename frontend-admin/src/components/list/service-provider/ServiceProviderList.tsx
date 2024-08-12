@@ -1,12 +1,10 @@
 "use client";
 import {useEffect, useState} from "react";
-import {ServiceProvider, User} from "@/types";
-import {getServiceProviders} from "@/api/services/service-provider-service";
-import ServiceProviderCard from "@/app/(protected)/service-providers/ServiceProviderCard";
+import {ServiceProvider} from "@/types";
+import {getPendingServiceProviders, getServiceProviders} from "@/api/services/service-provider-service";
+import ServiceProviderCard from "@/components/list/service-provider/ServiceProviderCard";
 import Search from "@/components/list/search";
 import Pagination from "@/components/list/pagination";
-import UserCard from "@/app/(protected)/users/UserCard";
-
 
 export default function ServiceProviderList({pending = false,query, page}: {pending?: boolean, query?: string, page?: number}) {
     const [serviceList, setServiceList] = useState<ServiceProvider[]>();
@@ -16,7 +14,11 @@ export default function ServiceProviderList({pending = false,query, page}: {pend
     const loadProviders = async () => {
         let newService;
         setLoading(true);
-        newService = await getServiceProviders(query, page)
+        if (pending){
+            newService = await getPendingServiceProviders(query, page)
+        }else{
+            newService = await getServiceProviders(query, page)
+        }
         setLoading(false);
         setServiceList(newService.data)
         if (newService.count){

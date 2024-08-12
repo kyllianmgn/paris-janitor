@@ -80,7 +80,10 @@ export const initProperties = (app: express.Express) => {
                 include: {landlord: {include: {user: true}}},
                 where: {landlordId: +req.params.id},
             });
-            res.status(200).json({data: allProperties});
+            const countProperties = await prisma.property.count({
+                where: {landlordId: +req.params.id},
+            });
+            res.status(200).json({data: allProperties, count: countProperties});
         } catch (e) {
             res.status(500).send({ error: e });
             return;
