@@ -2,7 +2,6 @@ import express from "express";
 import {prisma} from "../../utils/prisma";
 import {isAuthenticated, isSuperAdmin} from "../middlewares/auth-middleware";
 import {
-    propertyReservationValidator,
     propertyReservationPatchValidator, propertyReservationWithOccupationValidator, ReservationStatus
 } from "../validators/property-validator";
 
@@ -56,13 +55,26 @@ export const initPropertyReservations = (app: express.Express) => {
         }
     });
 
-    app.get("/property-reservations/traveler/:id(\\d+)", isAuthenticated, async (req, res) => {
+    app.get("/property-reservations/traveler/:id(\\d+)", async (req, res) => {
         try {
-            const PropertiesReservationsFull = await prisma.propertyReservation.findMany({
-                where: {travelerId: Number(req.params.id)},
+            const PropertyReservations = await prisma.propertyReservation.findMany({
+                where: {travelerId: +req.params.id},
                 include: {occupation: true}
             });
-            res.status(200).json({data: PropertiesReservationsFull});
+            res.status(200).json({data: PropertyReservations});
+        } catch (e) {
+            res.status(500).send({error: e});
+            return;
+        }
+    });
+
+    app.get("/property-reservations/property/:id(\\d+)", async (req, res) => {
+        try {
+            const PropertyReservations = await prisma.propertyReservation.findMany({
+                where: {occupation: {propertyId: +req.params.id}},
+                include: {traveler: true}
+            });
+            res.status(200).json({data: PropertyReservations});
         } catch (e) {
             res.status(500).send({error: e});
             return;

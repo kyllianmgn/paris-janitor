@@ -26,7 +26,7 @@ export default function ServiceProviderCard({serviceProvider}: {serviceProvider:
                     <h2 className="text-sm">{count} Services</h2>
                 </div>
             </div>
-            <Link href={"/service-providers/" + serviceProvider.id}>
+            <Link href={"/service-providers/" + serviceProvider.user?.id}>
                 <ArrowRight className="cursor-pointer"/>
             </Link>
         </div>

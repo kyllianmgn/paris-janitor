@@ -87,6 +87,27 @@ export interface Traveler {
     user?: User
 }
 
+export interface PropertyOccupation {
+    id: number
+    property?: Property
+    startDate: Date
+    endDate: Date
+}
+
+export interface PropertyReservation {
+    id: number
+    traveler?: Traveler
+    occupation?: PropertyOccupation
+    status: ReservationStatus
+    totalPrice: number
+}
+
+export enum ReservationStatus {
+    PENDING="PENDING",
+    CONFIRMED="CONFIRMED",
+    CANCELLED="CANCELLED",
+}
+
 export interface ApiResponse<T>{
     data: T,
     count?: number

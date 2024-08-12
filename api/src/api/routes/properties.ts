@@ -1,6 +1,6 @@
 import express from "express";
 import { prisma } from "../../utils/prisma";
-import {isAuthenticated, isRole, isRoleOrAdmin, isSuperAdmin, UserRole} from "../middlewares/auth-middleware";
+import {isAuthenticated, isRole, isSuperAdmin, UserRole} from "../middlewares/auth-middleware";
 import {
     propertyAdminValidator,
     propertyPatchStatusValidator,
@@ -80,7 +80,10 @@ export const initProperties = (app: express.Express) => {
                 include: {landlord: {include: {user: true}}},
                 where: {landlordId: +req.params.id},
             });
-            res.status(200).json({data: allProperties});
+            const countProperties = await prisma.property.count({
+                where: {landlordId: +req.params.id},
+            });
+            res.status(200).json({data: allProperties, count: countProperties});
         } catch (e) {
             res.status(500).send({ error: e });
             return;
@@ -109,7 +112,7 @@ export const initProperties = (app: express.Express) => {
         }
     });
 
-    app.get("/properties/pending/count", async (req, res) => {
+    app.get("/properties/pending/count", async (_req, res) => {
         try {
             const allProperties = await prisma.property.count({
                 where: {

@@ -1,5 +1,5 @@
-import ServiceProviderList from "@/app/(protected)/service-providers/ServiceProviderList";
-import UserList from "@/app/(protected)/users/UserList";
+import ServiceProviderList from "@/components/list/service-provider/ServiceProviderList";
+import UserList from "@/components/list/users/UserList";
 
 export default ({searchParams,}: { searchParams?: { query?: string; page?: string; };
 }) => {
