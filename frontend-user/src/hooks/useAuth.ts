@@ -45,7 +45,7 @@ export const useAuth = () => {
     };
 
     useEffect(() => {
-        checkAuth().then(r => console.log(r));
+        checkAuth().then();
     }, []);
     return {
         ...auth,
