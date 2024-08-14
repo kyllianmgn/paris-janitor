@@ -102,8 +102,8 @@ export const initProperties = (app: express.Express) => {
 
             const filterParams = validation.value;
             const allProperties = await prisma.property.findMany({
-                take: (filterParams.pageSize) ? +filterParams.pageSize : undefined,
-                skip: (filterParams.page && filterParams.pageSize) ? +filterParams.pageSize * +filterParams.pageSize : undefined
+                take: (filterParams.pageSize) ? +filterParams.pageSize : 10,
+                skip: (filterParams.page) ? (filterParams.pageSize) ? +filterParams.page * +filterParams.pageSize : (+filterParams.page-1) * 10 : 0,
             });
             res.status(200).json({data: allProperties});
         } catch (e) {

@@ -75,6 +75,7 @@ export enum ServiceProviderStatus {
 
 export interface Service{
     id: number,
+    provider?: ServiceProvider,
     providerId: number,
     name: string,
     description: string,
@@ -105,6 +106,29 @@ export interface PropertyReservation {
 export enum ReservationStatus {
     PENDING="PENDING",
     CONFIRMED="CONFIRMED",
+    CANCELLED="CANCELLED",
+}
+
+export interface ProviderOccupation{
+    id: number
+    providerId: number
+    startDate: Date
+    endDate: Date
+}
+
+export interface Intervention {
+    id: number,
+    service?: Service,
+    propertyOccupation?: PropertyOccupation
+    providerOccupationId?: ProviderOccupation
+    additionalPrice: number
+    status: InterventionStatus
+}
+
+export enum InterventionStatus {
+    PLANNED="PLANNED",
+    IN_PROGRESS="IN_PROGRESS",
+    COMPLETED="COMPLETED",
     CANCELLED="CANCELLED",
 }
 

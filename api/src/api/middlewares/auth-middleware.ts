@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken"
 import {RequestUser} from "../../index";
 
 export const isAuthenticated = async (req: Request, res: Response, next: any) => {
-    console.log(req.headers)
     const authHeader = req.headers.authorization
     if (!authHeader) {
         return res.status(401).json({error: "Unauthorized"})
@@ -62,7 +61,6 @@ export const isRoleOrAdmin = (role: UserRole) => {
             next()
             return;
         }
-        console.log(req.user)
         switch (role) {
             case UserRole.LANDLORD:
                 if (!req.user?.landlordId){
@@ -88,7 +86,6 @@ export const isRoleOrAdmin = (role: UserRole) => {
 }
 
 export const isSuperAdmin = async (req: Request, res: Response, next: NextFunction) => {
-    console.log(req.user)
     if (!req.user?.adminId){
         res.status(401).json({error: "Unauthorized"})
         return;
