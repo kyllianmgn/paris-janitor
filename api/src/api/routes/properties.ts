@@ -155,6 +155,9 @@ export const initProperties = (app: express.Express) => {
             const property = await prisma.property.create({
                 data: {
                     address: propertyRequest.address,
+                    postalCode: propertyRequest.postalCode,
+                    city: propertyRequest.city,
+                    country: propertyRequest.country,
                     description: propertyRequest.description,
                     status: PropertyStatus.PENDING,
                     landlordId: req.user.landlordId
@@ -181,6 +184,9 @@ export const initProperties = (app: express.Express) => {
             const property = await prisma.property.create({
                 data: {
                     address: propertyRequest.address,
+                    postalCode: propertyRequest.postalCode,
+                    city: propertyRequest.city,
+                    country: propertyRequest.country,
                     description: propertyRequest.description,
                     status: propertyRequest.status,
                     landlordId: propertyRequest.landlordId,

@@ -1,14 +1,12 @@
-
+"use client";
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-import { authService } from '@/api/services/authService';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SignUpRequest } from '@/types';
-import {store} from "@/store/store";
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 interface SignUpFormProps {
   onLoginClick: () => void;
@@ -22,20 +20,15 @@ export default function SignUpForm({ onLoginClick, onClose }: SignUpFormProps) {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"TRAVELER" | "LANDLORD" | "SERVICE_PROVIDER">("TRAVELER");
   const [error, setError] = useState("");
-  const dispatch = useDispatch();
-
+  const { signup } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     try {
-
-      const signUpData: SignUpRequest = { firstName, lastName, email, password};
-
-
-      const response = await authService.signup(signUpData, dispatch, role);
-
+      const signUpData: SignUpRequest = { firstName, lastName, email, password };
+      await signup(signUpData, role);
 
       switch (role) {
         case "LANDLORD":
@@ -51,8 +44,6 @@ export default function SignUpForm({ onLoginClick, onClose }: SignUpFormProps) {
           onClose();
           break;
       }
-
-
     } catch (error) {
       console.error("Error signing up:", error);
       setError("Failed to sign up. Please try again.");

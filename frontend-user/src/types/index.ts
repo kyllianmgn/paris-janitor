@@ -84,3 +84,25 @@ export interface DateRange {
   from: Date;
   to: Date;
 }
+
+
+export enum PropertyStatus {
+  PENDING = "PENDING",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED"
+}
+
+export interface Property {
+  id?: number,
+  landlordId?: number,
+  address: string,
+  postalCode: string,
+  city: string,
+  country: string,
+  description: string,
+  status?: PropertyStatus,
+  createdAt?: Date,
+  updatedAt?: Date
+}
+
+export type PropertyFormData = Omit<Property, 'id' | 'landlordId' | 'status' | 'createdAt' | 'updatedAt'>;

@@ -1,43 +1,59 @@
-"use client"
-import {useEffect, useState} from "react";
-import {propertiesService} from "@/api/services/properties";
-import {PropertyList} from "@/components/properties/PropertyList";
-
-export interface Property {
-    id?: number;
-    landlordId: number;
-    address: string;
-    description: string;
-    status: PropertyStatus;
-    createdAt: string;
-    updatedAt: string;
-}
-
-export enum PropertyStatus {
-    PENDING,
-    APPROVED,
-    REJECTED,
-}
+"use client";
+import { useState, useEffect } from "react";
+import { propertiesService } from "@/api/services/properties";
+import { PropertyList } from "@/components/properties/PropertyList";
+import { PropertyTable } from "@/components/properties/PropertyTable";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { PlusCircle, List, Grid } from "lucide-react";
+import { Property, PropertyStatus } from "@/types";
 
 export const Properties = () => {
+    const router = useRouter();
     const [propertyList, setPropertyList] = useState<Property[]>([]);
+    const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
 
     const loadProperties = async () => {
-        const res = await propertiesService.getPropertiesByUserId();
-        setPropertyList(res.data);
+        try {
+            const res = await propertiesService.getPropertiesByUserId();
+            setPropertyList(res.data);
+        } catch (error) {
+            console.error("Failed to load properties:", error);
+            alert("Failed to load properties. Please try again later.");
+        }
     };
 
     useEffect(() => {
         loadProperties().then();
     }, []);
 
+    const handleAddProperty = () => {
+        router.push("/my-properties/new");
+    }
+
+    const toggleViewMode = () => {
+        setViewMode(prevMode => prevMode === 'table' ? 'grid' : 'table');
+    }
+
     return (
-        <>
-            <div className="text-center my-8">
-                <h1 className="text-4xl font-bold mb-4">My Properties</h1>
-                <p className="text-lg text-gray-600">List of all your properties</p>
+        <div className="container mx-auto px-4 py-8">
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold">My Properties</h1>
+                <div className="flex space-x-2">
+                    <Button onClick={toggleViewMode} variant="outline">
+                        {viewMode === 'table' ? <Grid size={20} /> : <List size={20} />}
+                    </Button>
+                    <Button onClick={handleAddProperty}>
+                        <PlusCircle size={20} className="mr-2" />
+                        Add Property
+                    </Button>
+                </div>
             </div>
-            <PropertyList properties={propertyList}></PropertyList>
-        </>
+            {viewMode === 'table' ? (
+                <PropertyTable properties={propertyList} onRefresh={loadProperties} />
+            ) : (
+                <PropertyList properties={propertyList} />
+            )}
+        </div>
     );
 }

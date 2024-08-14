@@ -1,4 +1,4 @@
-import { TokenResponse, DecodedToken } from "@/types";
+import {TokenResponse, DecodedToken, User} from "@/types";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import ky from "ky";
@@ -60,19 +60,30 @@ const api = ky.create({
   },
 });
 
-const getUserRole = (decodedToken: DecodedToken) => {
-  if (decodedToken.landlordId) {
-    return "LANDLORD";
-  }
-  if (decodedToken.travelerId) {
-    return "TRAVELER";
-  }
-  if (decodedToken.serviceProviderId) {
-    return "SERVICE_PROVIDER";
+const getUserFromToken = (): User | null => {
+  const tokens = tokenUtils.getTokens();
+  if (tokens?.accessToken) {
+    const decodedToken = tokenUtils.decodeToken(tokens.accessToken);
+    const user: User = {
+      id: decodedToken.userId,
+      email: decodedToken.email,
+      firstName: decodedToken.firstName,
+      lastName: decodedToken.lastName,
+    };
+    if (decodedToken.landlordId) {
+      user.Landlord = { id: decodedToken.landlordId, userId: decodedToken.userId };
+    }
+    if (decodedToken.travelerId) {
+      user.Traveler = { id: decodedToken.travelerId, userId: decodedToken.userId };
+    }
+    if (decodedToken.serviceProviderId) {
+      user.ServiceProvider = { id: decodedToken.serviceProviderId, userId: decodedToken.userId };
+    }
+    return user;
   }
   return null;
 };
 
+export { api, getUserFromToken, tokenUtils };
 
 
-export { api, getUserRole, tokenUtils };

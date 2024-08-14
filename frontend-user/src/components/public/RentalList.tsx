@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import bien from "@/public/bien1.jpg";
+
 
 interface Rental {
   id: string;
@@ -22,13 +24,13 @@ export default function RentalList() {
         id: "1",
         title: "Cozy Apartment in Paris",
         price: 100,
-        image: "/rentals/1.jpg",
+        image: "",
       },
       {
         id: "2",
         title: "Luxury Villa in Nice",
         price: 250,
-        image: "/rentals/2.jpg",
+        image: "",
       },
       // Add more rental items...
     ]);

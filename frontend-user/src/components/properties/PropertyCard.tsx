@@ -1,30 +1,48 @@
-"use client"
-import {Property} from "@/components/properties/Properties";
-import {useRouter} from "next/navigation";
+import { Property, PropertyStatus } from "@/types";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {Badge, BadgeProps} from "@/components/ui/badge";
 
 export interface PropertyCardProps {
     property: Property
 }
 
-export const PropertyCard = ({property}: PropertyCardProps) => {
+export const PropertyCard = ({ property }: PropertyCardProps) => {
     const router = useRouter();
     const onClickCard = () => {
         router.push(`/properties/${property.id}`);
     }
 
+    const getBadgeVariant = (status: PropertyStatus): BadgeProps['variant'] => {
+        switch (status) {
+            case PropertyStatus.APPROVED:
+                return "secondary";
+            case PropertyStatus.PENDING:
+                return "default";
+            case PropertyStatus.REJECTED:
+                return "destructive";
+            default:
+                return "default";
+        }
+    }
+
     return (
-        <button onClick={onClickCard}
-                className="w-full max-w-md mx-auto bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 mt-6 text-left">
-            <h1 className="text-2xl font-bold mb-2">Property Details</h1>
-            <h3 className="text-lg mb-1"><strong>Adresse:</strong> {property.address}</h3>
-            <h3 className="text-lg mb-1"><strong>Status:</strong> {property.status}</h3>
-            <h3 className="text-lg font-semibold mt-3 mb-2">Description</h3>
-            <textarea
-                readOnly
-                value={property.description}
-                className="w-full p-2 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <h5 className="text-sm text-gray-500">Dernière MAJ : {property.updatedAt}</h5>
-        </button>
+        <Card className="hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={onClickCard}>
+            <CardHeader>
+                <CardTitle className="flex justify-between items-center">
+                    <span>{property.city}, {property.country}</span>
+                    <Badge variant={getBadgeVariant(property.status!)}>
+                        {property.status}
+                    </Badge>
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-gray-600">{property.address}</p>
+                <p className="mt-2 text-sm line-clamp-3">{property.description}</p>
+            </CardContent>
+            <CardFooter>
+                <p className="text-xs text-gray-500">Last updated: {new Date(property.updatedAt!).toLocaleDateString()}</p>
+            </CardFooter>
+        </Card>
     )
 }

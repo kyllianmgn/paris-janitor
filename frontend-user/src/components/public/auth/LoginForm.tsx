@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { useDispatch } from "react-redux";
-import { authService } from '@/api/services/authService';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoginRequest } from '@/types';
-import {useRouter} from "next/navigation";
-import {store} from "@/store/store";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { store} from "@/store/store";
+import {Eye, EyeOff} from "lucide-react";
 
 interface LoginFormProps {
   onSignUpClick: () => void;
@@ -17,21 +17,21 @@ export default function LoginForm({ onSignUpClick, onClose }: LoginFormProps ) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const dispatch = useDispatch();
+  const { login } = useAuth();
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
-
     e.preventDefault();
     setError('');
     try {
       const loginData: LoginRequest = { email, password };
-      console.log(loginData);
-      await authService.login(loginData, dispatch);
-      const {role} =store.getState().auth;
+      await login(loginData);
+      const { role } = store.getState().auth;
       switch (role) {
         case "LANDLORD":
-          router.push("/dashboard/");
+          router.push("/dashboard");
           break;
         case "TRAVELER":
           onClose();
@@ -48,6 +48,9 @@ export default function LoginForm({ onSignUpClick, onClose }: LoginFormProps ) {
       setError('Invalid login credentials');
     }
   };
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   return (
       <form onSubmit={handleSubmit}>
@@ -62,22 +65,33 @@ export default function LoginForm({ onSignUpClick, onClose }: LoginFormProps ) {
                 required
             />
           </div>
-          <div className="grid gap-2">
+          <div className="grid gap-2 relative">
             <Label htmlFor="password">Password</Label>
             <Input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="pr-10"
             />
+            <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute right-2 top-11 transform -translate-y-1/2 p-2 focus:outline-none"
+            >
+              {showPassword ? (
+                  <EyeOff className="h-5 w-5"/>
+              ) : (
+                  <Eye className="h-5 w-5"/>
+              )}
+            </button>
           </div>
           {error && <p className="text-red-500">{error}</p>}
           <Button type="submit">Login</Button>
           <Button type="button" variant="outline" onClick={onSignUpClick}>
             Don&apos;t have an account? Sign Up
           </Button>
-
         </div>
       </form>
   );

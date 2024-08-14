@@ -10,24 +10,36 @@ export interface Property {
     id: number,
     landlordId: number,
     address: string,
+    postalCode: string,
+    city: string,
+    country: string,
     description: string,
     status: PropertyStatus
 }
 
 export const propertyValidator = Joi.object<Omit<Property, "status" | "id">>({
     address: Joi.string().required(),
+    postalCode: Joi.string().required(),
+    city: Joi.string().required(),
+    country: Joi.string().required(),
     description: Joi.string().required()
 })
 
 export const propertyAdminValidator = Joi.object<Omit<Property, "id">>({
     landlordId: Joi.number().required(),
     address: Joi.string().required(),
+    postalCode: Joi.string().required(),
+    city: Joi.string().required(),
+    country: Joi.string().required(),
     description: Joi.string().required(),
     status: Joi.string().valid("PENDING", "APPROVED", "REJECTED").required()
 })
 
 export const propertyPatchValidator = Joi.object<Partial<Property>>({
     address: Joi.string().optional(),
+    postalCode: Joi.string().optional(),
+    city: Joi.string().optional(),
+    country: Joi.string().optional(),
     description: Joi.string().optional()
 })
 

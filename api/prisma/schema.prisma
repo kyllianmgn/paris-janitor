@@ -47,6 +47,9 @@ model Property {
   landlordId     Int
   landlord       Landlord             @relation(references: [id], fields: [landlordId])
   address        String
+  postalCode     String
+  city           String
+  country        String
   description    String
   status         PropertyStatus       @default(PENDING)
   occupations    PropertyOccupation[]
