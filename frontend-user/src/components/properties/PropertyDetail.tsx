@@ -1,10 +1,11 @@
 "use client"
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Property, PropertyStatus } from "@/types";
 import { propertiesService } from "@/api/services/properties";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Edit, Calendar, Settings } from "lucide-react";
+import {Edit, Calendar, Settings, ArrowLeft} from "lucide-react";
+import {useRouter} from "next/navigation";
 
 export interface PropertyDetailProps {
     propertyId: number
@@ -13,6 +14,7 @@ export interface PropertyDetailProps {
 export const PropertyDetail = ({ propertyId }: PropertyDetailProps) => {
     const [property, setProperty] = useState<Property | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const router = useRouter();
 
     const loadProperty = async () => {
         if (propertyId) {
@@ -25,6 +27,10 @@ export const PropertyDetail = ({ propertyId }: PropertyDetailProps) => {
     useEffect(() => {
         loadProperty().then();
     }, [propertyId]);
+
+    const handleGoBack = () => {
+        router.push('/properties');
+    };
 
     if (loading) {
         return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -39,6 +45,13 @@ export const PropertyDetail = ({ propertyId }: PropertyDetailProps) => {
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">Property Details</h1>
                 <div className="space-x-2">
+                    <Button
+                        onClick={handleGoBack}
+                        variant="ghost"
+                        className="mb-4"
+                    >
+                        <ArrowLeft className="mr-2 h-4 w-4" /> Back
+                    </Button>
                     <Button variant="outline">
                         <Edit className="mr-2 h-4 w-4" />
                         Edit Property
@@ -51,6 +64,7 @@ export const PropertyDetail = ({ propertyId }: PropertyDetailProps) => {
                         <Settings className="mr-2 h-4 w-4" />
                         Property Services
                     </Button>
+
                 </div>
             </div>
 
