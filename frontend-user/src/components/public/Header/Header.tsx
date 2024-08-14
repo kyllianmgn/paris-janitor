@@ -6,11 +6,16 @@ import UserMenu from "./UserMenu";
 import AuthButton from "../auth/AuthButton";
 import SearchBar from "@/components/public/Header/SearchBar";
 import { useAuth } from "@/hooks/useAuth";
+import {BadgeProps} from "@/components/ui/badge";
 
 export default function Header() {
   const router = useRouter();
   const { isAuthenticated, role, isLoading } = useAuth();
   const currentPath = usePathname();
+
+  const isLinkActive = (path: string) => {
+    return currentPath.startsWith(path);
+  };
 
   if (isLoading) {
     return (
@@ -61,7 +66,7 @@ export default function Header() {
                       getNavLinks(role).map((link) => (
                           <Button
                               key={link.path}
-                              variant="ghost"
+                              variant={isLinkActive(link.path) ? "default" as BadgeProps['variant'] : "ghost" as BadgeProps['variant']}
                               onClick={() => router.push(link.path)}
                           >
                             {link.label}
