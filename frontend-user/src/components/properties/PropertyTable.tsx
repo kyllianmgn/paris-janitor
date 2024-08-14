@@ -31,7 +31,7 @@ export const PropertyTable = ({ properties, onRefresh }: PropertyTableProps) => 
     const router = useRouter();
 
     const handleViewDetails = (propertyId: number) => {
-        router.push(`/properties/${propertyId}`);
+        router.push(`/my-properties/${propertyId}`);
     };
 
 
