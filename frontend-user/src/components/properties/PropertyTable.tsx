@@ -1,11 +1,12 @@
 "use client";
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Eye } from "lucide-react";
 import { Property, PropertyStatus } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
-import {CrudModal, Field} from "@/components/public/CrudModal";
+import { CrudModal, Field } from "@/components/public/CrudModal";
+import { useRouter } from 'next/navigation';
 
 interface PropertyTableProps {
     properties: Property[];
@@ -27,6 +28,12 @@ export const PropertyTable = ({ properties, onRefresh }: PropertyTableProps) => 
         property: null
     });
     const { toast } = useToast();
+    const router = useRouter();
+
+    const handleViewDetails = (propertyId: number) => {
+        router.push(`/properties/${propertyId}`);
+    };
+
 
     const handleEditClick = (property: Property) => {
         setModalState({ isOpen: true, mode: 'edit', property });
@@ -39,6 +46,8 @@ export const PropertyTable = ({ properties, onRefresh }: PropertyTableProps) => 
     const handleModalClose = () => {
         setModalState({ isOpen: false, mode: 'edit', property: null });
     };
+
+
 
     const handleModalSubmit = async (data: Partial<Property>) => {
         try {
@@ -66,14 +75,17 @@ export const PropertyTable = ({ properties, onRefresh }: PropertyTableProps) => 
             <table className="min-w-full bg-white">
                 <thead className="bg-gray-100">
                 <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                 {properties.map((property) => (
-                    <tr key={property.id}>
+                    <tr key={property.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleViewDetails(property.id!)}>
+                        <td className="px-6 py-4 whitespace-nowrap">{property.address}</td>
                         <td className="px-6 py-4 whitespace-nowrap">{property.city}, {property.country}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
                                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -84,19 +96,24 @@ export const PropertyTable = ({ properties, onRefresh }: PropertyTableProps) => 
                                     {property.status}
                                 </span>
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap">{new Date(property.updatedAt!).toLocaleDateString()}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
+                                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                                     <Button variant="ghost" className="h-8 w-8 p-0">
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => handleEditClick(property)}>
+                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleViewDetails(property.id!); }}>
+                                        <Eye className="mr-2 h-4 w-4" />
+                                        <span>View Details</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEditClick(property); }}>
                                         <Edit className="mr-2 h-4 w-4" />
                                         <span>Edit</span>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleDeleteClick(property)}>
+                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(property); }}>
                                         <Trash2 className="mr-2 h-4 w-4" />
                                         <span>Delete</span>
                                     </DropdownMenuItem>
