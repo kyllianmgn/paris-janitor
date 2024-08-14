@@ -2,14 +2,41 @@ import express from "express";
 import { prisma } from "../../utils/prisma";
 import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
 import {
-    servicePatchValidator,
     serviceValidator
 } from "../validators/service-validator";
+import {filterValidator} from "../validators/filter-validator";
 
 export const initServices = (app: express.Express) => {
-    app.get("/services", async (_req, res) => {
+    app.get("/services", async (req, res) => {
         try {
-            const allservices = await prisma.service.findMany();
+            const validation = filterValidator.validate(req.query)
+
+            if (validation.error) {
+                res.status(400).json({ error: validation.error });
+                return;
+            }
+
+            const filterParams = validation.value;
+            const allservices = await prisma.service.findMany({
+                    where: filterParams.query ?
+                        {
+                            OR: [{
+                                name: {
+                                    contains: filterParams.query,
+                                    mode: "insensitive"
+                                }
+                            }, {
+                                description: {
+                                    contains: filterParams.query,
+                                    mode: "insensitive"
+                                }
+                            }]
+                        }
+                        : {},
+                    take: (filterParams.pageSize) ? +filterParams.pageSize : 10,
+                    skip: (filterParams.page) ? (filterParams.pageSize) ? +filterParams.page * +filterParams.pageSize : (+filterParams.page-1) * 10 : 0,
+                }
+            );
             res.status(200).json({data: allservices});
         } catch (e) {
             res.status(500).send({ error: e });
@@ -21,6 +48,7 @@ export const initServices = (app: express.Express) => {
         try {
             const services = await prisma.service.findUnique({
                 where: { id: Number(req.params.id) },
+                include: {provider: {include: {user: true}}}
             });
             res.status(200).json({data: services});
         } catch (e) {
@@ -31,10 +59,41 @@ export const initServices = (app: express.Express) => {
 
     app.get("/services/provider/:id(\\d+)", async (req, res) => {
         try {
+            const validation = filterValidator.validate(req.query)
+
+            if (validation.error) {
+                res.status(400).json({ error: validation.error });
+                return;
+            }
+
+            const filterParams = validation.value;
             const services = await prisma.service.findMany({
-                where: { providerId: +req.params.id },
+                where: filterParams.query ?
+                    {
+                        providerId: +req.params.id,
+                        OR: [{
+                            name: {
+                                contains: filterParams.query,
+                                mode: "insensitive"
+                            }
+                        }, {
+                            description: {
+                                contains: filterParams.query,
+                                mode: "insensitive"
+                            }
+                        }]
+                    }
+                    : {
+                        providerId: +req.params.id,
+
+                    },
+                take: (filterParams.pageSize) ? +filterParams.pageSize : 10,
+                skip: (filterParams.page) ? (filterParams.pageSize) ? +filterParams.page * +filterParams.pageSize : (+filterParams.page-1) * 10 : 0,
             });
-            res.status(200).json({data: services});
+            const countServices = await prisma.service.count({
+                where: { providerId: +req.params.id }
+            });
+            res.status(200).json({data: services, count: countServices});
         } catch (e) {
             res.status(500).send({ error: e });
             return;

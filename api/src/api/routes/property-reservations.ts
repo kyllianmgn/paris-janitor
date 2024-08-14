@@ -4,6 +4,7 @@ import {isAuthenticated, isSuperAdmin} from "../middlewares/auth-middleware";
 import {
     propertyReservationPatchValidator, propertyReservationWithOccupationValidator, ReservationStatus
 } from "../validators/property-validator";
+import {filterValidator} from "../validators/filter-validator";
 
 export const initPropertyReservations = (app: express.Express) => {
     app.get("/property-reservations", async (_req, res) => {
@@ -57,11 +58,35 @@ export const initPropertyReservations = (app: express.Express) => {
 
     app.get("/property-reservations/traveler/:id(\\d+)", async (req, res) => {
         try {
+            const validation = filterValidator.validate(req.query)
+
+            if (validation.error) {
+                res.status(400).json({error: validation.error});
+                return;
+            }
+
+            const filterParams = validation.value;
             const PropertyReservations = await prisma.propertyReservation.findMany({
-                where: {travelerId: +req.params.id},
-                include: {occupation: true}
+                where: filterParams.query ? {
+                    travelerId: +req.params.id,
+                    OR: [{occupation:
+                                {property:
+                                        {address:
+                                                {contains: filterParams.query,
+                                                    mode: "insensitive"
+                                                }
+                                        }
+                                }
+                        }]
+                } : {travelerId: +req.params.id},
+                include: {occupation: {include: {property: {include: {landlord: {include: {user: true}}}}}}},
+                take: (filterParams.pageSize) ? +filterParams.pageSize : 10,
+                skip: (filterParams.page) ? (filterParams.pageSize) ? +filterParams.page * +filterParams.pageSize : (+filterParams.page - 1) * 10 : 0,
             });
-            res.status(200).json({data: PropertyReservations});
+            const countReservations = await prisma.propertyReservation.count({
+                where: {travelerId: +req.params.id}
+            });
+            res.status(200).json({data: PropertyReservations, count: countReservations});
         } catch (e) {
             res.status(500).send({error: e});
             return;
@@ -70,11 +95,27 @@ export const initPropertyReservations = (app: express.Express) => {
 
     app.get("/property-reservations/property/:id(\\d+)", async (req, res) => {
         try {
-            const PropertyReservations = await prisma.propertyReservation.findMany({
+            const validation = filterValidator.validate(req.query)
+
+            if (validation.error) {
+                res.status(400).json({error: validation.error});
+                return;
+            }
+
+            const filterParams = validation.value;
+            const propertyReservations = await prisma.propertyReservation.findMany({
                 where: {occupation: {propertyId: +req.params.id}},
-                include: {traveler: true}
+                include: {
+                    traveler: {include: {user: true}},
+                    occupation: true
+                },
+                take: (filterParams.pageSize) ? +filterParams.pageSize : 10,
+                skip: (filterParams.page) ? (filterParams.pageSize) ? +filterParams.page * +filterParams.pageSize : (+filterParams.page - 1) * 10 : 0,
             });
-            res.status(200).json({data: PropertyReservations});
+            const countReservations = await prisma.propertyReservation.count({
+                where: {occupation: {propertyId: +req.params.id}}
+            });
+            res.status(200).json({data: propertyReservations, count: countReservations});
         } catch (e) {
             res.status(500).send({error: e});
             return;

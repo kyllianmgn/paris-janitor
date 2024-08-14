@@ -227,6 +227,8 @@ model Invoice {
   status      InvoiceStatus
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+
+  @@map("invoice")
 }
 
 enum InvoiceStatus {

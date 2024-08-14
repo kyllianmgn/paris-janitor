@@ -20,8 +20,31 @@ export const initInterventions = (app: express.Express) => {
         try {
             const Interventions = await prisma.intervention.findUnique({
                 where: { id: +req.params.id },
+                include: {
+                    service: true,
+                    providerOccupation: true
+                }
             });
             res.status(200).json({data: Interventions});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.get("/interventions/service/:id(\\d+)", async (req, res) => {
+        try {
+            const interventions = await prisma.intervention.findMany({
+                where: { serviceId: +req.params.id },
+                include: {
+                    propertyOccupation: {include: {property: true}},
+                    service: {include: {provider: {include: {user: true}}}}
+                }
+            });
+            const countInterventions = await prisma.intervention.count({
+                where: { serviceId: +req.params.id }
+            });
+            res.status(200).json({data: interventions, count: countInterventions});
         } catch (e) {
             res.status(500).send({ error: e });
             return;

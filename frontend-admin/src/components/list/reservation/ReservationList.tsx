@@ -23,7 +23,7 @@ export default function ReservationList({travelerId = undefined, propertyId = un
             if (!travelerId){
                 return;
             }
-            newReservations = await getReservationsByUser(travelerId);
+            newReservations = await getReservationsByUser(travelerId, query, page);
         }else {
             return;
         }

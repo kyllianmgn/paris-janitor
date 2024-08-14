@@ -17,7 +17,6 @@ export const getProperties = async (query?: string, page?: number): Promise<ApiR
             searchParams += `&page=${page}`
         }
     }
-    console.log(`properties/all${searchParams}`)
     return await api.get(`properties/all${searchParams}`).json()
 }
 

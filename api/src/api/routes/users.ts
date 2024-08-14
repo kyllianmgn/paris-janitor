@@ -133,7 +133,7 @@ export const initUsers = (app: express.Express) => {
         }
     });
 
-    app.patch("/users/:id(\\d+)", async (req, res) => {
+    app.patch("/users/:id(\\d+)", isAuthenticated, isSuperAdmin, async (req, res) => {
         const validation = userPatchValidation.validate(req.body);
 
         if (validation.error) {
