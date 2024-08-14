@@ -1,7 +1,17 @@
 "use client"
 import {useEffect, useState} from "react";
-import {Property} from "./Properties";
+import {Property, PropertyStatus} from "@/types";
 import {propertiesService} from "@/api/services/properties";
+import {
+    Details,
+    DetailsContent,
+    DetailsField,
+    DetailsFieldName,
+    DetailsFooter,
+    DetailsHeader,
+    DetailsTitle
+} from "@/components/ui/details";
+import {Badge, BadgeProps} from "@/components/ui/badge";
 
 export interface PropertyDetailProps {
     propertyId: number
@@ -19,6 +29,19 @@ export const PropertyDetail = ({propertyId}: PropertyDetailProps) => {
         }
     };
 
+    const getBadgeVariant = (status: PropertyStatus): BadgeProps['variant'] => {
+        switch (status) {
+            case PropertyStatus.APPROVED:
+                return "secondary";
+            case PropertyStatus.PENDING:
+                return "default";
+            case PropertyStatus.REJECTED:
+                return "destructive";
+            default:
+                return "default";
+        }
+    };
+
     useEffect(() => {
         loadProperty().then();
     }, [loadProperty, propertyId]);
@@ -30,20 +53,38 @@ export const PropertyDetail = ({propertyId}: PropertyDetailProps) => {
     return (
         <>
             {property ? (
-                <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md mt-10">
-                    <h1 className="text-3xl font-bold mb-4">Property Details</h1>
-                    <h3 className="text-xl mb-2"><strong>Adresse:</strong> {property.address}</h3>
-                    <h3 className="text-xl mb-2"><strong>Status:</strong> {property.status}</h3>
-                    <h3 className="text-xl font-semibold mb-2">Description</h3>
-                    <textarea
-                        readOnly
-                        value={property.description}
-                        className="w-full p-2 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <h5 className="text-sm text-gray-500">Dernière MAJ : {property.updatedAt}</h5>
-                </div>
+                <Details>
+                    <DetailsHeader>
+                        <DetailsTitle>
+                            <span>{property.city}, {property.country}</span>
+                            <Badge variant={getBadgeVariant(property.status!)}>
+                                {property.status}
+                            </Badge>
+                        </DetailsTitle>
+                    </DetailsHeader>
+                    <DetailsContent>
+                        <DetailsFieldName>Address</DetailsFieldName>
+                        <DetailsField>{property.address}</DetailsField>
+                        <DetailsFieldName>City</DetailsFieldName>
+                        <DetailsField>{property.city}</DetailsField>
+                        <DetailsFieldName>Country</DetailsFieldName>
+                        <DetailsField>{property.country}</DetailsField>
+                        <DetailsFieldName>Postal Code</DetailsFieldName>
+                        <DetailsField>{property.postalCode}</DetailsField>
+                        <DetailsFieldName>Description</DetailsFieldName>
+                        <textarea
+                            readOnly
+                            value={property.description}
+                            className="w-full p-2 border border-gray-300 rounded mb-4 focus:outline-none border-input bg-background px-3 py-2 ring-offset-background focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                        />
+                    </DetailsContent>
+                    <DetailsFooter>
+                        <p className="text-sm text-gray-500">Last
+                            updated: {new Date(property.updatedAt!).toLocaleDateString()}</p>
+                    </DetailsFooter>
+                </Details>
             ) : (
-                <h1 className="text-2xl font-semibold text-center mt-10">Property not Found</h1>
+                <div className="text-2xl font-semibold text-center mt-10">Property not Found</div>
             )}
         </>
     );
