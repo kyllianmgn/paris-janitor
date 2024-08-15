@@ -6,7 +6,7 @@ import { PropertyTable } from "@/components/properties/PropertyTable";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, List, Grid } from "lucide-react";
-import { Property, PropertyStatus } from "@/types";
+import { Property } from "@/types";
 
 export const Properties = () => {
     const router = useRouter();
