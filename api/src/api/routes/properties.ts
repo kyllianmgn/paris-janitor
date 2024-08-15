@@ -263,4 +263,16 @@ export const initProperties = (app: express.Express) => {
             res.status(500).send({ error: e });
         }
     });
+
+    app.put("/property/:id/disabled", isAuthenticated, isRole(UserRole.LANDLORD), async (req, res) => {
+        try {
+            const property = await prisma.property.update({
+                where: { id: parseInt(req.params.id) },
+                data: { status: PropertyStatus.DISABLED },
+            });
+            res.status(200).json({data: property});
+        } catch (e) {
+            res.status(500).send({ error: e });
+        }
+    });
 };
