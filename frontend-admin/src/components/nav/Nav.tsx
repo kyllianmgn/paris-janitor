@@ -29,6 +29,7 @@ export default function Nav({children, admin}: {children: React.ReactNode, admin
                         <NavItem menuName="Users" iconName="user" route="/users"/>
                         <NavItem menuName="Properties" iconName="house" route="/properties"/>
                         <NavItem menuName="Service Providers" iconName="handshake" route="/service-providers"/>
+                        <NavItem menuName="Services" iconName="hand-coins" route="/services"/>
                     </div>
                 </div>
             </nav>
