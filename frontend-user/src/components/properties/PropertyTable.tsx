@@ -7,6 +7,7 @@ import { Property, PropertyStatus } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { CrudModal, Field } from "@/components/public/CrudModal";
 import { useRouter } from 'next/navigation';
+import {propertiesService} from "@/api/services/properties";
 
 interface PropertyTableProps {
     properties: Property[];
@@ -34,7 +35,6 @@ export const PropertyTable = ({ properties, onRefresh }: PropertyTableProps) => 
         router.push(`/my-properties/${propertyId}`);
     };
 
-
     const handleEditClick = (property: Property) => {
         setModalState({ isOpen: true, mode: 'edit', property });
     };
@@ -48,14 +48,14 @@ export const PropertyTable = ({ properties, onRefresh }: PropertyTableProps) => 
     };
 
 
-
     const handleModalSubmit = async (data: Partial<Property>) => {
         try {
             if (modalState.mode === 'edit') {
                 //await propertiesService.updateProperty(data as Property);
                 toast({ title: "Success", description: "Property updated successfully" });
             } else if (modalState.mode === 'delete') {
-                //await propertiesService.deleteProperty(modalState.property!.id!);
+                await propertiesService.disableProperty(modalState.property!.id!);
+                onRefresh();
                 toast({ title: "Success", description: "Property deleted successfully" });
             }
             onRefresh();
@@ -69,6 +69,7 @@ export const PropertyTable = ({ properties, onRefresh }: PropertyTableProps) => 
         }
         handleModalClose();
     };
+
 
     return (
         <div className="overflow-x-auto">
@@ -99,21 +100,40 @@ export const PropertyTable = ({ properties, onRefresh }: PropertyTableProps) => 
                         <td className="px-6 py-4 whitespace-nowrap">{new Date(property.updatedAt!).toLocaleDateString()}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        className="h-8 w-8 p-0"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleViewDetails(property.id!); }}>
+                                <DropdownMenuContent className="w-56">
+                                    <DropdownMenuItem
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleViewDetails(property.id!);
+                                        }}
+                                    >
                                         <Eye className="mr-2 h-4 w-4" />
                                         <span>View Details</span>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEditClick(property); }}>
+                                    <DropdownMenuItem
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleEditClick(property);
+                                        }}
+                                    >
                                         <Edit className="mr-2 h-4 w-4" />
                                         <span>Edit</span>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(property); }}>
+                                    <DropdownMenuItem
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteClick(property);
+                                        }}
+                                    >
                                         <Trash2 className="mr-2 h-4 w-4" />
                                         <span>Delete</span>
                                     </DropdownMenuItem>
