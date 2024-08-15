@@ -1,6 +1,6 @@
 import express from "express";
 import { prisma } from "../../utils/prisma";
-import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
+import {isAuthenticated, isRole, isSuperAdmin, UserRole} from "../middlewares/auth-middleware";
 import {
     propertyOccupationValidator,
     propertyOccupationPatchValidator
@@ -26,6 +26,31 @@ export const initPropertyOccupations = (app: express.Express) => {
         } catch (e) {
             res.status(500).send({ error: e });
             return;
+        }
+    });
+
+
+    app.get("/property-occupations/landlord", isAuthenticated, isRole(UserRole.LANDLORD), async (req, res) => {
+        try {
+            const landlordId = req.user?.landlordId;
+            if (!landlordId) {
+                return res.status(400).json({ error: "Landlord ID not found" });
+            }
+
+            const occupations = await prisma.propertyOccupation.findMany({
+                where: {
+                    property: {
+                        landlordId: landlordId
+                    }
+                },
+                include: {
+                    property: true,
+                    reservation: true
+                }
+            });
+            res.status(200).json({data: occupations});
+        } catch (e) {
+            res.status(500).send({ error: e });
         }
     });
 
