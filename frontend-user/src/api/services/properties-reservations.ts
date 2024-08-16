@@ -30,5 +30,9 @@ export const propertiesReservationsService = {
             return await api.get(`property-reservations/traveler/${travelerId}`).json<ApiResponse<PropertyReservationFull[]>>();
         }
         return new Promise<ApiResponse<PropertyReservationFull[]>>(() => {});
+    },
+
+    getPropertiesReservationsFullByPropertyId: async (id: number) => {
+        return api.get(`property-reservations/property/${id}`).json<ApiResponse<PropertyReservationFull[]>>();
     }
 }
