@@ -10,36 +10,22 @@ import {BadgeProps} from "@/components/ui/badge";
 import {useSelector} from "react-redux";
 import {RootState} from "@/store";
 import {useEffect, useState} from "react";
-import {User} from "@/types";
+
 
 export default function Header() {
   const router = useRouter();
   const user = useSelector((state: RootState) => state.auth.user)
   const { role, isLoading } = useAuth();
   const currentPath = usePathname();
+  const [showNav, setShowNav] = useState(false);
 
     const isLinkActive = (path: string) => {
         return currentPath.startsWith(path);
     };
 
-  if (isLoading) {
-    return (
-        <header className="border-b">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              {/* Logo */}
-              <div className="flex-shrink-0">
-                <Link href="/">
-                <span className="text-2xl font-bold text-red-500">
-                  Paris Janitor
-                </span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </header>
-    );
-  }
+  useEffect(() => {
+    setShowNav(true);
+  }, []);
 
   return (
       <header className="border-b">
@@ -58,7 +44,7 @@ export default function Header() {
             {currentPath === "/" && <SearchBar />}
 
             {/* Navigation */}
-            {user && (
+            {user && showNav && (
                 <nav className="hidden md:flex space-x-4">
                   {(role === "LANDLORD" || role === "SERVICE_PROVIDER") && currentPath === "/" ? (
                       <Button
@@ -82,7 +68,7 @@ export default function Header() {
             )}
 
             {/* Auth Button or User Menu */}
-            <div>{user ? <UserMenu /> : <AuthButton />}</div>
+            <div>{user && showNav ? <UserMenu /> : <AuthButton />}</div>
           </div>
         </div>
       </header>
