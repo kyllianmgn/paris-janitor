@@ -1,9 +1,7 @@
 import express from "express";
-import { prisma } from "../../utils/prisma";
-import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
-import {
-    serviceValidator
-} from "../validators/service-validator";
+import {prisma} from "../../utils/prisma";
+import {isAuthenticated, isRole, isSuperAdmin, UserRole} from "../middlewares/auth-middleware";
+import {serviceValidator} from "../validators/service-validator";
 import {filterValidator} from "../validators/filter-validator";
 
 export const initServices = (app: express.Express) => {
@@ -34,6 +32,44 @@ export const initServices = (app: express.Express) => {
                         }
                         : {},
                     take: (filterParams.pageSize) ? +filterParams.pageSize : 10,
+                    skip: (filterParams.page) ? (filterParams.pageSize) ? +filterParams.page * +filterParams.pageSize : (+filterParams.page-1) * 10 : 0,
+                }
+            );
+            res.status(200).json({data: allservices});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.get("/services/me", isAuthenticated, isRole(UserRole.SERVICE_PROVIDER), async (req, res) => {
+        try {
+            const validation = filterValidator.validate(req.query)
+
+            if (validation.error) {
+                res.status(400).json({ error: validation.error });
+                return;
+            }
+
+            const filterParams = validation.value;
+            const allservices = await prisma.service.findMany({
+                    where: filterParams.query ?
+                        {
+                            providerId: req.user?.serviceProviderId,
+                            OR: [{
+                                name: {
+                                    contains: filterParams.query,
+                                    mode: "insensitive"
+                                }
+                            }, {
+                                description: {
+                                    contains: filterParams.query,
+                                    mode: "insensitive"
+                                }
+                            }]
+                        }
+                        : {providerId: req.user?.serviceProviderId},
+                    take: (filterParams.pageSize) ? +filterParams.pageSize : undefined,
                     skip: (filterParams.page) ? (filterParams.pageSize) ? +filterParams.page * +filterParams.pageSize : (+filterParams.page-1) * 10 : 0,
                 }
             );
@@ -112,7 +148,7 @@ export const initServices = (app: express.Express) => {
         }
     });
 
-    app.post("/services/", async (req, res) => {
+    app.post("/services", isAuthenticated, isRole(UserRole.SERVICE_PROVIDER), async (req, res) => {
         try {
             const validation = serviceValidator.validate(req.body);
 
@@ -121,9 +157,18 @@ export const initServices = (app: express.Express) => {
                 return;
             }
 
+            if (!req.user?.serviceProviderId){
+                res.status(401).json({error: "Unauthorized"})
+                return;
+            }
+
             const serviceRequest = validation.value;
             const service = await prisma.service.create({
-                data: serviceRequest
+                data: {...serviceRequest, providerId: req.user.serviceProviderId}
+            })
+            await prisma.serviceProvider.update({
+                where: {id: req.user.serviceProviderId},
+                data: {status: "PENDING"}
             })
             res.status(200).json({data: service});
         } catch (e) {

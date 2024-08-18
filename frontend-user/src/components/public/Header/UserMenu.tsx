@@ -10,10 +10,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
+import {useSelector} from "react-redux";
+import {RootState} from "@/store";
 
 export default function UserMenu() {
   const router = useRouter();
-  const { user, role, logout } = useAuth();
+  const user = useSelector((state: RootState) => state.auth.user)
+  const { role, logout } = useAuth();
 
   const handleLogout = () => {
     logout();

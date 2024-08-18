@@ -7,15 +7,20 @@ import AuthButton from "../auth/AuthButton";
 import SearchBar from "@/components/public/Header/SearchBar";
 import { useAuth } from "@/hooks/useAuth";
 import {BadgeProps} from "@/components/ui/badge";
+import {useSelector} from "react-redux";
+import {RootState} from "@/store";
+import {useEffect, useState} from "react";
+import {User} from "@/types";
 
 export default function Header() {
   const router = useRouter();
-  const { isAuthenticated, role, isLoading } = useAuth();
+  const user = useSelector((state: RootState) => state.auth.user)
+  const { role, isLoading } = useAuth();
   const currentPath = usePathname();
 
-  const isLinkActive = (path: string) => {
-    return currentPath.startsWith(path);
-  };
+    const isLinkActive = (path: string) => {
+        return currentPath.startsWith(path);
+    };
 
   if (isLoading) {
     return (
@@ -42,18 +47,18 @@ export default function Header() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex-shrink-0">
-              <Link href={isAuthenticated ? getDashboardPath(role) : "/"}>
-              <span className="text-2xl font-bold text-red-500">
-                Paris Janitor
-              </span>
-              </Link>
+                <Link href={"/dashboard"}>
+                  <span className="text-2xl font-bold text-red-500">
+                    Paris Janitor
+                  </span>
+                </Link>
             </div>
 
             {/* Search bar */}
-            {currentPath === "/" ? <SearchBar /> : null}
+            {currentPath === "/" && <SearchBar />}
 
             {/* Navigation */}
-            {isAuthenticated && (
+            {user && (
                 <nav className="hidden md:flex space-x-4">
                   {(role === "LANDLORD" || role === "SERVICE_PROVIDER") && currentPath === "/" ? (
                       <Button
@@ -77,7 +82,7 @@ export default function Header() {
             )}
 
             {/* Auth Button or User Menu */}
-            <div>{isAuthenticated ? <UserMenu /> : <AuthButton />}</div>
+            <div>{user ? <UserMenu /> : <AuthButton />}</div>
           </div>
         </div>
       </header>
@@ -112,7 +117,7 @@ function getNavLinks(role: string | null) {
       ];
     case "SERVICE_PROVIDER":
       return [
-        { path: "services", label: "My Services" },
+        { path: "my-services", label: "My Services" },
         {
           path: "/calendar",
           label: "Calendar",

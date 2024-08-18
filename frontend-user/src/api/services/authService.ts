@@ -1,6 +1,6 @@
 import { api, tokenUtils } from '@/api/config';
 import { setCredentials, logout } from '@/store/slices/authSlice';
-import { AppDispatch } from '@/store/store';
+import { AppDispatch } from '@/store';
 import {ApiResponse, LoginRequest, SignUpRequest, TokenResponse, User} from '@/types';
 
 export const authService = {

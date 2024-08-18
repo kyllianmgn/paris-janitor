@@ -2,18 +2,18 @@ import {TokenResponse, DecodedToken, User} from "@/types";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import ky from "ky";
+import {logout} from "@/store/slices/authSlice";
 
 const tokenUtils = {
-  getTokens: (): TokenResponse | null => {
+  getTokens: (): Partial<TokenResponse> | null => {
     const accessToken = Cookies.get("authorization");
     const refreshToken = Cookies.get("refreshToken");
-    return accessToken && refreshToken
-        ? { accessToken: accessToken.replace("Bearer ", ""), refreshToken }
-        : null;
+    return {accessToken, refreshToken};
   },
-  setTokens: (tokenObject: TokenResponse) => {
+  setTokens: (tokenObject: TokenResponse): void => {
+    console.log(tokenObject.accessToken)
     Cookies.set("authorization", `Bearer ${tokenObject.accessToken}`, {
-      expires: 1, // 1 day
+      expires: 1,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
@@ -23,42 +23,73 @@ const tokenUtils = {
       sameSite: "strict",
     });
   },
-  clearTokens: () => {
+  clearTokens: (): void => {
     Cookies.remove("authorization");
     Cookies.remove("refreshToken");
   },
   decodeToken: (token: string): DecodedToken => jwtDecode(token),
-  isTokenValid: (token: string): boolean => {
-    try {
-      const decodedToken = tokenUtils.decodeToken(token);
-      return decodedToken.exp > Date.now() / 1000;
-    } catch (error) {
-      return false;
-    }
-  },
 };
 
 const api = ky.create({
   prefixUrl: process.env.NEXT_PUBLIC_API_URL,
   timeout: 8000,
+  retry: {
+    limit: 1,
+    statusCodes: [401],
+    methods: ["get","post","patch","put"],
+  },
   hooks: {
     beforeRequest: [
       (request) => {
         const tokens = tokenUtils.getTokens();
         if (tokens?.accessToken) {
-          request.headers.set("Authorization", `Bearer ${tokens.accessToken}`);
+          request.headers.set("Authorization", `${tokens.accessToken}`);
         }
       },
     ],
-    afterResponse: [
-      async (request, options, response) => {
-        if (response.status === 401) {
-          tokenUtils.clearTokens();
+    beforeRetry: [
+      async () => {
+        const response = await refreshToken()
+        console.log("RETRY")
+        if (!response){
+          console.log("cleareddd")
+          tokenUtils.clearTokens()
         }
-      },
-    ],
+      }
+    ]
   },
 });
+
+
+let refreshPromise: Promise<boolean> | null = null;
+
+const refreshToken = async (): Promise<boolean> => {
+  console.log("here")
+  console.log(refreshPromise)
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = new Promise(async (resolve) => {
+    const tokens = tokenUtils.getTokens();
+    if (!tokens?.refreshToken) {
+      resolve(false);
+      return;
+    }
+
+    try {
+      const refreshResponse = await api.post("auth/refreshToken", {json: {token: tokens.refreshToken},}).json<TokenResponse>();
+      tokenUtils.setTokens(refreshResponse);
+      resolve(true);
+    } catch (error) {
+      tokenUtils.clearTokens();
+      alert("disconnected")
+      resolve(false);
+    } finally {
+      refreshPromise = null;
+    }
+  });
+
+  return refreshPromise;
+};
 
 const getUserFromToken = (): User | null => {
   const tokens = tokenUtils.getTokens();
@@ -83,6 +114,8 @@ const getUserFromToken = (): User | null => {
   }
   return null;
 };
+
+
 
 export { api, getUserFromToken, tokenUtils };
 
