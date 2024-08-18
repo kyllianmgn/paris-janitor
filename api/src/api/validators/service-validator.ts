@@ -9,7 +9,6 @@ export interface Service{
 }
 
 export const serviceValidator = Joi.object<Service>({
-    providerId: Joi.number().required(),
     name: Joi.string().required(),
     description: Joi.string().required(),
     basePrice: Joi.number().required()

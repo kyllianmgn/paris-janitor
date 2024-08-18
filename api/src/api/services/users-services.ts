@@ -92,7 +92,17 @@ export const findUserById = async (
   id: number
 ): Promise<UserWithoutPassword | null> => {
   return prisma.user.findUnique({
-    where: { id }
+    where: { id },
+      select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          password: true,
+          Landlord: true,
+          Traveler: true,
+          ServiceProvider: true,
+      }
   });
 };
 

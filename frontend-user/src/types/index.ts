@@ -23,7 +23,27 @@ export interface Traveler {
 export interface ServiceProvider {
   id: number;
   userId: number;
+  status?: ServiceProviderStatus;
 }
+
+export enum ServiceProviderStatus {
+  PENDING="PENDING",
+  ACCEPTED="ACCEPTED",
+  REFUSED="REFUSED"
+}
+
+export interface Service{
+  id: number,
+  provider?: ServiceProvider,
+  providerId: number,
+  name: string,
+  description: string,
+  basePrice: number
+  createdAt?: Date,
+  updatedAt?: Date
+}
+
+export type ServiceFormData = Omit<Service, "id" | "providerId" | "provider" | "createdAt" | "updatedAt">
 
 export interface AuthState {
   user: User | null;

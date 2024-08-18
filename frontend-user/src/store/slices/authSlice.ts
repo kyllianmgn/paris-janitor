@@ -2,7 +2,6 @@ import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { AuthState, TokenResponse, DecodedToken } from '@/types';
 import { jwtDecode } from 'jwt-decode';
 import {authService} from "@/api/services/authService";
-import {RootState} from "@/store/store";
 import {tokenUtils} from "@/api/config";
 
 const initialState: AuthState = {

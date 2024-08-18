@@ -1,6 +1,6 @@
 "use client";
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
+import { RootState } from '@/store';
 import { setCredentials, logout } from '@/store/slices/authSlice';
 import { authService } from '@/api/services/authService';
 import {LoginRequest, TokenResponse} from "@/types";
@@ -26,32 +26,10 @@ export const useAuth = () => {
         dispatch(logout());
     };
 
-    const checkAuth = async () => {
-        try {
-            const isAuthenticated = await authService.checkAuth(dispatch);
-            if (isAuthenticated){
-                dispatch(setCredentials(tokenUtils.getTokens() as TokenResponse));
-            } else{
-                dispatch(logout());
-            }
-
-            return isAuthenticated;
-        } catch (error) {
-            dispatch(logout());
-            return false;
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        checkAuth().then();
-    }, []);
     return {
         ...auth,
         isLoading,
         login,
-        logout: logoutUser,
-        checkAuth,
+        logout: logoutUser
     };
 };

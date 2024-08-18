@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { LoginRequest } from '@/types';
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { store} from "@/store/store";
+import { store} from "@/store";
 import {Eye, EyeOff} from "lucide-react";
 
 interface LoginFormProps {

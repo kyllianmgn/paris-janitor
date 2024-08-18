@@ -66,6 +66,8 @@ const api = ky.create({
 let refreshPromise: Promise<boolean> | null = null;
 
 const refreshToken = async (): Promise<boolean> => {
+    console.log("here")
+    console.log(refreshPromise)
     if (refreshPromise) return refreshPromise;
 
     refreshPromise = new Promise(async (resolve) => {

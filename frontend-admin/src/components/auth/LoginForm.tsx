@@ -34,7 +34,6 @@ export default function LoginForm() {
     };
 
     useEffect(() => {
-        console.log(admin)
         if (admin) router.push('/dashboard')
     }, [admin]);
 
