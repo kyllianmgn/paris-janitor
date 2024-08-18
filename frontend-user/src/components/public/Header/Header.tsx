@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import UserMenu from "./UserMenu";
 import AuthButton from "../auth/AuthButton";
 import SearchBar from "@/components/public/Header/SearchBar";
 import { useAuth } from "@/hooks/useAuth";
+import {BadgeProps} from "@/components/ui/badge";
 import {useSelector} from "react-redux";
 import {RootState} from "@/store";
 import {useEffect, useState} from "react";
@@ -14,11 +15,31 @@ import {User} from "@/types";
 export default function Header() {
   const router = useRouter();
   const user = useSelector((state: RootState) => state.auth.user)
-  const { role } = useAuth();
+  const { role, isLoading } = useAuth();
   const currentPath = usePathname();
 
-  useEffect(() => {
-  }, []);
+    const isLinkActive = (path: string) => {
+        return currentPath.startsWith(path);
+    };
+
+  if (isLoading) {
+    return (
+        <header className="border-b">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              {/* Logo */}
+              <div className="flex-shrink-0">
+                <Link href="/">
+                <span className="text-2xl font-bold text-red-500">
+                  Paris Janitor
+                </span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </header>
+    );
+  }
 
   return (
       <header className="border-b">
@@ -50,7 +71,7 @@ export default function Header() {
                       getNavLinks(role).map((link) => (
                           <Button
                               key={link.path}
-                              variant="ghost"
+                              variant={isLinkActive(link.path) ? "default" as BadgeProps['variant'] : "ghost" as BadgeProps['variant']}
                               onClick={() => router.push(link.path)}
                           >
                             {link.label}

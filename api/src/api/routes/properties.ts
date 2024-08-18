@@ -74,19 +74,24 @@ export const initProperties = (app: express.Express) => {
         }
     });
 
-    app.get("/properties/landlord/:id(\\d+)",isAuthenticated, async (req, res) => {
+    app.get("/properties/landlord/:id", isAuthenticated, async (req, res) => {
         try {
             const allProperties = await prisma.property.findMany({
-                include: {landlord: {include: {user: true}}},
-                where: {landlordId: +req.params.id},
+                include: { landlord: { include: { user: true } } },
+                where: {
+                    landlordId: parseInt(req.params.id),
+                    status: { not: PropertyStatus.DISABLED }
+                }
             });
             const countProperties = await prisma.property.count({
-                where: {landlordId: +req.params.id},
+                where: {
+                    landlordId: parseInt(req.params.id),
+                    status: { not: PropertyStatus.DISABLED }
+                }
             });
-            res.status(200).json({data: allProperties, count: countProperties});
-        } catch (e) {
-            res.status(500).send({ error: e });
-            return;
+            res.status(200).json({ data: allProperties, count: countProperties });
+        } catch (error) {
+            res.status(500).json({ error: "An error occurred while fetching properties." });
         }
     });
 
@@ -263,4 +268,16 @@ export const initProperties = (app: express.Express) => {
             res.status(500).send({ error: e });
         }
     });
+
+        app.put("/property/:id/disable", isAuthenticated, isRole(UserRole.LANDLORD), async (req, res) => {
+            try {
+                const property = await prisma.property.update({
+                    where: { id: parseInt(req.params.id) },
+                    data: { status: PropertyStatus.DISABLED },
+                });
+                res.status(200).json({ data: property });
+            } catch (error) {
+                res.status(500).json({ error: "An error occurred while disabling the property." });
+            }
+        });
 };

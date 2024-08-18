@@ -144,6 +144,8 @@ export function CrudModal<T>({
                     <Alert>
                         <AlertDescription>
                             Are you sure you want to delete this item? This action cannot be undone.
+                            If you deleted this item by mistake, please contact our support team at
+                            support@example.com to recover the deleted item.
                         </AlertDescription>
                     </Alert>
                     <DialogFooter>

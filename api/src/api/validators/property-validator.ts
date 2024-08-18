@@ -3,7 +3,8 @@ import Joi from "joi";
 export enum PropertyStatus {
     PENDING="PENDING",
     APPROVED="APPROVED",
-    REJECTED="REJECTED"
+    REJECTED="REJECTED",
+    DISABLED="DISABLED"
 }
 
 export interface Property {
@@ -32,7 +33,7 @@ export const propertyAdminValidator = Joi.object<Omit<Property, "id">>({
     city: Joi.string().required(),
     country: Joi.string().required(),
     description: Joi.string().required(),
-    status: Joi.string().valid("PENDING", "APPROVED", "REJECTED").required()
+    status: Joi.string().valid("PENDING", "APPROVED", "REJECTED", "DISABLED").required()
 })
 
 export const propertyPatchValidator = Joi.object<Partial<Property>>({
@@ -44,7 +45,7 @@ export const propertyPatchValidator = Joi.object<Partial<Property>>({
 })
 
 export const propertyPatchStatusValidator = Joi.object<Pick<Property, "status">>({
-    status: Joi.string().required().valid("PENDING", "APPROVED", "REJECTED")
+    status: Joi.string().required().valid("PENDING", "APPROVED", "REJECTED" , "DISABLED")
 })
 
 export interface PropertyReview {
@@ -84,6 +85,7 @@ export enum ReservationStatus {
     PENDING="PENDING",
     CONFIRMED="CONFIRMED",
     CANCELLED="CANCELLED",
+    DISABLED="DISABLED"
 }
 
 export interface PropertyReservation {

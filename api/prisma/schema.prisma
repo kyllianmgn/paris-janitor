@@ -78,6 +78,7 @@ enum PropertyStatus {
   PENDING
   APPROVED
   REJECTED
+  DISABLED
 }
 
 model PropertyOccupation {
@@ -112,6 +113,7 @@ enum ReservationStatus {
   PENDING
   CONFIRMED
   CANCELLED
+  DISABLED
 }
 
 model Traveler {

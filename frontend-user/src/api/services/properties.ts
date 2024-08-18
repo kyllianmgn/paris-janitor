@@ -28,7 +28,12 @@ export const propertiesService = {
         }
     },
 
-    //deleteProperty: async (id: number): Promise<void> => {
-    //    return api.delete(`properties/${id}`).json<ApiResponse<Property>>();
-    //}
+    disableProperty: async (id: number): Promise<ApiResponse<Property>> => {
+        try {
+            return await api.put(`property/${id}/disable`).json<ApiResponse<Property>>();
+        } catch (error) {
+            console.error('Error disabling property:', error);
+            throw error;
+        }
+    }
 };
