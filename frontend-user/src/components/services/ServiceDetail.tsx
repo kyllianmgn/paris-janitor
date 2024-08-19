@@ -45,7 +45,7 @@ export const ServiceDetail = ({ serviceId }: ServiceDetailProps) => {
                     </Button>
                     <Button variant="outline">
                         <Calendar className="mr-2 h-4 w-4" />
-                        Manage Reservations
+                        Manage Interventions
                     </Button>
                     <Button variant="outline">
                         <Settings className="mr-2 h-4 w-4" />

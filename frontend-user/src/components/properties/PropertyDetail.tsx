@@ -29,7 +29,7 @@ export const PropertyDetail = ({ propertyId }: PropertyDetailProps) => {
     }, [propertyId]);
 
     const handleGoBack = () => {
-        router.push('/properties');
+        router.push('/my-properties');
     };
 
     if (loading) {

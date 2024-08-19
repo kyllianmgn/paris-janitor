@@ -14,11 +14,9 @@ interface ServiceTableProps {
 }
 
 const serviceFields: Field[] = [
-    { name: 'address', label: 'Address', type: 'text', required: true },
-    { name: 'postalCode', label: 'Postal Code', type: 'text', required: true },
-    { name: 'city', label: 'City', type: 'text', required: true },
-    { name: 'country', label: 'Country', type: 'text', required: true },
+    { name: 'name', label: 'Nom', type: 'text', required: true },
     { name: 'description', label: 'Description', type: 'textarea', required: true },
+    { name: 'basePrice', label: 'Prix de base', type: 'number', required: true },
 ];
 
 export const ServiceTable = ({ services, onRefresh }: ServiceTableProps) => {

@@ -184,15 +184,16 @@ export const PropertyForm = () => {
                             Précédent
                         </Button>
                     )}
-                    {currentStep < steps.length - 1 ? (
+                    {currentStep < steps.length - 1 && (
                         <Button type="button" onClick={handleNext}>
                             Suivant
                         </Button>
-                    ) : (
+                    )}
+                    {currentStep >= steps.length - 1 &&
                         <Button type="submit">
                             Soumettre
                         </Button>
-                    )}
+                    }
                 </div>
             </form>
         </div>

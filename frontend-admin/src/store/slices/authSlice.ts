@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AuthState, TokenResponse, DecodedAdminToken } from '@/types';
 import { jwtDecode } from 'jwt-decode';
-import {cookies} from "next/headers";
 import {RootState} from "@/store";
 
 const initialState: AuthState = {
