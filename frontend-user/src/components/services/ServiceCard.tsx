@@ -9,7 +9,7 @@ export interface ServiceCardProps {
 export const ServiceCard = ({ service }: ServiceCardProps) => {
     const router = useRouter();
     const onClickCard = () => {
-        router.push(`/services/${service.id}`);
+        router.push(`/my-services/${service.id}`);
     }
 
     return (

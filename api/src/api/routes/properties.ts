@@ -13,7 +13,7 @@ import {Filter, filterValidator} from "../validators/filter-validator";
 export const initProperties = (app: express.Express) => {
     app.get("/properties", async (_req, res) => {
         try {
-            const allProperties = await prisma.property.findMany();
+            const allProperties = await prisma.property.findMany({});
             res.status(200).json({data: allProperties});
         } catch (e) {
             res.status(500).send({ error: e });
@@ -66,6 +66,64 @@ export const initProperties = (app: express.Express) => {
                         }]
                     }
                     : {}
+            })
+            res.status(200).json({data: allProperties, count: countProperties});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.get("/properties/available", async (req, res) => {
+        try {
+            const validation = filterValidator.validate(req.query)
+
+            if (validation.error) {
+                res.status(400).json({error: validation.error});
+            }
+
+            const filter: Filter = validation.value;
+            const allProperties = await prisma.property.findMany({
+                where: filter.query ?
+                    {
+                        status: PropertyStatus.APPROVED,
+                        OR: [{
+                            address: {
+                                contains: filter.query,
+                                mode: "insensitive"
+                            }
+                        }, {
+                            description: {
+                                contains: filter.query,
+                                mode: "insensitive"
+                            }
+                        }]
+                    }
+                    : {
+                        status: PropertyStatus.APPROVED
+                    },
+                take: (filter.pageSize) ? +filter.pageSize : 10,
+                skip: (filter.page) ? (filter.pageSize) ? +filter.page * +filter.pageSize : (+filter.page-1) * 10 : 0,
+            });
+            const countProperties = await prisma.property.count({
+                where: filter.query ?
+                    {
+                        status: PropertyStatus.APPROVED,
+                        OR: [{
+                            address: {
+                                contains: filter.query,
+                                mode: "insensitive"
+                            }
+                        }, {
+                            description: {
+                                contains: filter.query,
+                                mode: "insensitive"
+                            }
+                        }]
+                    }
+                    : {
+                        status: PropertyStatus.APPROVED
+                    }
             })
             res.status(200).json({data: allProperties, count: countProperties});
         } catch (e) {

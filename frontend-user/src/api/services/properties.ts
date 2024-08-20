@@ -11,6 +11,21 @@ export const propertiesService = {
         return api.get('properties').json<ApiResponse<Property[]>>();
     },
 
+    getAvailableProperties: async (query?: string, page?: number): Promise<ApiResponse<Property[]>> => {
+        let searchParams = ""
+        if (query){
+            searchParams = `?query=${query}`
+        }
+        if (page){
+            if (searchParams == ""){
+                searchParams = `?page=${page}`
+            }else{
+                searchParams += `&page=${page}`
+            }
+        }
+        return api.get(`properties/available${searchParams}`).json<ApiResponse<Property[]>>();
+    },
+
     getPropertiesByUserId: async (): Promise<ApiResponse<Property[]>> => {
         const user = getUserFromToken();
         if (user?.Landlord?.id) {

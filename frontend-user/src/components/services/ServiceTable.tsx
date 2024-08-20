@@ -29,7 +29,7 @@ export const ServiceTable = ({ services, onRefresh }: ServiceTableProps) => {
     const router = useRouter();
 
     const handleViewDetails = (serviceId: number) => {
-        router.push(`/services/${serviceId}`);
+        router.push(`/my-services/${serviceId}`);
     };
 
 
