@@ -10,17 +10,22 @@ import {BadgeProps} from "@/components/ui/badge";
 import {useSelector} from "react-redux";
 import {RootState} from "@/store";
 import {useEffect, useState} from "react";
-import {User} from "@/types";
+
 
 export default function Header() {
   const router = useRouter();
   const user = useSelector((state: RootState) => state.auth.user)
   const { role, isLoading } = useAuth();
   const currentPath = usePathname();
+  const [showNav, setShowNav] = useState(false);
 
     const isLinkActive = (path: string) => {
         return currentPath.startsWith(path);
     };
+
+  useEffect(() => {
+    setShowNav(true);
+  }, []);
 
   return (
       <header className="border-b">
@@ -39,7 +44,7 @@ export default function Header() {
             {currentPath === "/" && <SearchBar />}
 
             {/* Navigation */}
-            {user && (
+            {user && showNav && (
                 <nav className="hidden md:flex space-x-4">
                   {(role === "LANDLORD" || role === "SERVICE_PROVIDER") && currentPath === "/" ? (
                       <Button
@@ -63,7 +68,7 @@ export default function Header() {
             )}
 
             {/* Auth Button or User Menu */}
-            <div>{user ? <UserMenu /> : <AuthButton />}</div>
+            <div>{user && showNav ? <UserMenu /> : <AuthButton />}</div>
           </div>
         </div>
       </header>

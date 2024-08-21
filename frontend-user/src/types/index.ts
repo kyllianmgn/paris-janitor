@@ -126,3 +126,32 @@ export interface Property {
 }
 
 export type PropertyFormData = Omit<Property, 'id' | 'landlordId' | 'status' | 'createdAt' | 'updatedAt'>;
+
+export enum ReservationStatus {
+  PENDING = "PENDING",
+  CONFIRMED = "CONFIRMED",
+  CANCELLED = "CANCELLED"
+}
+
+export interface PropertyOccupation {
+  id: number;
+  propertyId: number;
+  startDate: string;
+  endDate: string;
+  reservation?: PropertyReservation;
+}
+
+export interface PropertyReservation {
+  id: number;
+  travelerId: number;
+  occupationId: number;
+  status: ReservationStatus;
+  totalPrice: number;
+}
+
+export interface CalendarEvent extends PropertyOccupation {
+  title: string;
+  resourceId?: number;
+  start: Date; // ajouté pour react-big-calendar
+  end: Date; // ajouté pour react-big-calendar
+}

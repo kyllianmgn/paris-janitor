@@ -3,9 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { setCredentials, logout } from '@/store/slices/authSlice';
 import { authService } from '@/api/services/authService';
-import {LoginRequest, TokenResponse} from "@/types";
-import {tokenUtils} from "@/api/config";
-import {useEffect, useState} from "react";
+import {LoginRequest, SignUpRequest, TokenResponse} from "@/types";
+import { useState} from "react";
 
 export const useAuth = () => {
     const dispatch = useDispatch();
@@ -26,10 +25,21 @@ export const useAuth = () => {
         dispatch(logout());
     };
 
+    const signup = async (signupData: SignUpRequest,role: string) => {
+        try {
+            const response = await authService.signup(signupData, dispatch, role);
+            dispatch(setCredentials(response));
+        } catch (error) {
+            throw error;
+        }
+    };
+
+
     return {
         ...auth,
         isLoading,
         login,
-        logout: logoutUser
+        logout: logoutUser,
+        signup
     };
 };
