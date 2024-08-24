@@ -51,6 +51,7 @@ export interface AuthState {
   refreshToken: string | null;
   isAuthenticated: boolean;
   role: 'LANDLORD' | 'TRAVELER' | 'SERVICE_PROVIDER' | null;
+  serviceProviderStatus: 'PENDING' | 'ACCEPTED' | 'REJECTED' | null
   idRole: number | null;
 }
 
@@ -62,6 +63,7 @@ export interface DecodedToken {
   landlordId?: number;
   travelerId?: number;
   serviceProviderId?: number;
+  serviceProviderStatus?: 'PENDING' | 'ACCEPTED' | 'REJECTED' ;
   role:string;
   exp: number;
 }

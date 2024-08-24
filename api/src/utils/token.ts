@@ -13,6 +13,7 @@ export const generateAccessToken = (user: UserWithoutPassword) => {
             landlordId: user.Landlord?.id,
             travelerId: user.Traveler?.id,
             serviceProviderId: user.ServiceProvider?.id,
+            serviceProviderStatus: user.ServiceProvider?.status,
         },
         process.env.JWT_ACCESS_SECRET!,
         {

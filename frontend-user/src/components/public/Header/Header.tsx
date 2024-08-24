@@ -26,8 +26,6 @@ export default function Header() {
 
   useEffect(() => {
     setShowNav(true);
-    console.log(user)
-    console.log(role)
   }, []);
 
   return (
@@ -36,11 +34,19 @@ export default function Header() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex-shrink-0">
-                <Link href={"/dashboard"}>
+              {
+                user && showNav && (role === "LANDLORD" || role === "SERVICE_PROVIDER") ? <Link href={"/dashboard"}>
                   <span className="text-2xl font-bold text-red-500">
                     Paris Janitor
                   </span>
-                </Link>
+                </Link> :
+                    <Link href={"/"}>
+                  <span className="text-2xl font-bold text-red-500">
+                    Paris Janitor
+                  </span>
+                    </Link>
+              }
+
             </div>
 
             {/* Search bar */}

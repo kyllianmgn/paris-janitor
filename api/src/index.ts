@@ -36,6 +36,7 @@ const main = async () => {
     process.exit(1);
   }
 
+  app.use('/public',express.static(__dirname + '/../public'))
   app.use(express.json({ limit: "50mb" }));
   app.use(cookieParser())
   app.use(cors());
