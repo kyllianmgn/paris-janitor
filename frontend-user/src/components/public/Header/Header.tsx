@@ -15,7 +15,8 @@ import {useEffect, useState} from "react";
 export default function Header() {
   const router = useRouter();
   const user = useSelector((state: RootState) => state.auth.user)
-  const { role, isLoading } = useAuth();
+  const role = useSelector((state: RootState) => state.auth.role)
+  const { isLoading } = useAuth();
   const currentPath = usePathname();
   const [showNav, setShowNav] = useState(false);
 
@@ -25,6 +26,8 @@ export default function Header() {
 
   useEffect(() => {
     setShowNav(true);
+    console.log(user)
+    console.log(role)
   }, []);
 
   return (
@@ -103,7 +106,7 @@ function getNavLinks(role: string | null) {
       ];
     case "SERVICE_PROVIDER":
       return [
-        { path: "my-services", label: "My MyServices" },
+        { path: "my-services", label: "My Services" },
         {
           path: "/calendar",
           label: "Calendar",
