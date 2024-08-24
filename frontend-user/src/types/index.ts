@@ -156,3 +156,9 @@ export interface CalendarEvent extends PropertyOccupation {
   start: Date; // ajouté pour react-big-calendar
   end: Date; // ajouté pour react-big-calendar
 }
+
+export interface Filter {
+  page?: number;
+  pageSize?: number;
+  query?: string;
+}
