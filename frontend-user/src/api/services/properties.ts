@@ -1,5 +1,5 @@
 
-import { ApiResponse, Property, PropertyFormData, User } from "@/types";
+import {ApiResponse, Property, PropertyFormData, PropertyOccupation, User} from "@/types";
 import { api, getUserFromToken } from "@/api/config";
 
 export const propertiesService = {
@@ -35,5 +35,22 @@ export const propertiesService = {
             console.error('Error disabling property:', error);
             throw error;
         }
-    }
+    },
+
+    //Occupations
+    getPropertyOccupations: async (propertyId: number): Promise<ApiResponse<PropertyOccupation[]>> => {
+        return api.get(`property-occupations/property/${propertyId}`).json<ApiResponse<PropertyOccupation[]>>();
+    },
+
+    createPropertyOccupation: async (occupationData: Omit<PropertyOccupation, "id">): Promise<ApiResponse<PropertyOccupation>> => {
+        return api.post('property-occupations', { json: occupationData }).json<ApiResponse<PropertyOccupation>>();
+    },
+
+    updatePropertyOccupation: async (id: number, occupationData: Partial<PropertyOccupation>): Promise<ApiResponse<PropertyOccupation>> => {
+        return api.patch(`property-occupations/${id}`, { json: occupationData }).json<ApiResponse<PropertyOccupation>>();
+    },
+
+    deletePropertyOccupation: async (id: number): Promise<ApiResponse<PropertyOccupation>> => {
+        return api.delete(`property-occupations/${id}`).json<ApiResponse<PropertyOccupation>>();
+    },
 };
