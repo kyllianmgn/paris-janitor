@@ -139,6 +139,7 @@ export interface PropertyOccupation {
   startDate: string;
   endDate: string;
   reservation?: PropertyReservation;
+
 }
 
 export interface PropertyReservation {

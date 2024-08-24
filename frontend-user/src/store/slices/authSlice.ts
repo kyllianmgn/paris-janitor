@@ -1,8 +1,7 @@
-import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AuthState, TokenResponse, DecodedToken } from '@/types';
 import { jwtDecode } from 'jwt-decode';
-import {authService} from "@/api/services/authService";
-import {tokenUtils} from "@/api/config";
+import { tokenUtils } from "@/api/config";
 
 const initialState: AuthState = {
     user: null,
@@ -21,7 +20,7 @@ const authSlice = createSlice({
             state.accessToken = action.payload.accessToken;
             state.refreshToken = action.payload.refreshToken;
             state.isAuthenticated = true;
-            const decodedToken = jwtDecode(action.payload.accessToken) as DecodedToken;
+            const decodedToken = jwtDecode<DecodedToken>(action.payload.accessToken);
             state.user = {
                 id: decodedToken.userId,
                 email: decodedToken.email,
@@ -31,23 +30,16 @@ const authSlice = createSlice({
             if (decodedToken.landlordId) {
                 state.idRole = decodedToken.landlordId;
                 state.role = 'LANDLORD';
-            }
-            if (decodedToken.travelerId) {
+            } else if (decodedToken.travelerId) {
                 state.idRole = decodedToken.travelerId;
                 state.role = 'TRAVELER';
-            }
-            if (decodedToken.serviceProviderId) {
+            } else if (decodedToken.serviceProviderId) {
                 state.idRole = decodedToken.serviceProviderId;
                 state.role = 'SERVICE_PROVIDER';
             }
         },
         logout: (state) => {
-            state.user = null;
-            state.accessToken = null;
-            state.refreshToken = null;
-            state.isAuthenticated = false;
-            state.idRole = null;
-            state.role = null;
+            Object.assign(state, initialState);
             tokenUtils.clearTokens();
         },
     },
@@ -55,12 +47,3 @@ const authSlice = createSlice({
 
 export const { setCredentials, logout } = authSlice.actions;
 export default authSlice.reducer;
-
-const refreshAccessToken = async (refreshToken: string): Promise<string> => {
-    try {
-        const response = await authService.refreshToken(refreshToken);
-        return response.accessToken;
-    } catch (error) {
-        throw error;
-    }
-};
