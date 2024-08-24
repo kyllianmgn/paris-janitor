@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle, List, Grid } from "lucide-react";
 import { Service } from "@/types";
 
-export const Services = ({query, page}: {query?: string, page?: number}) => {
+export const MyServices = () => {
     const router = useRouter();
     const [serviceList, setServiceList] = useState<Service[]>([]);
     const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
@@ -21,7 +21,7 @@ export const Services = ({query, page}: {query?: string, page?: number}) => {
 
     const loadServices = async () => {
         try {
-            const res = await servicesService.getServices(query, page);
+            const res = await servicesService.getMyServices();
             setServiceList(res.data);
         } catch (error) {
             console.error("Failed to load services:", error);

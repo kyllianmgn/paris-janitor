@@ -3,6 +3,7 @@ import { Inter as FontSans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import {Providers} from "@/components/public/providers";
+import Header from "@/components/public/Header/Header";
 
 
 
@@ -31,6 +32,7 @@ export default function RootLayout({
         )}
       >
       <Providers>
+          <Header />
               {children}
       </Providers>
       </body>

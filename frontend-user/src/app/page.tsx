@@ -4,7 +4,6 @@ import Header from "@/components/public/Header/Header";
 export default function HomePage() {
   return (
     <div>
-        <Header />
         <main>
             <RentalList />
         </main>

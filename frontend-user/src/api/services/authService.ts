@@ -63,7 +63,6 @@ export const authService = {
 
     getUserInfo: async (): Promise<User> => {
         try {
-            console.log("je suis dans le getUserInfo");
             const res = await api.get("users/me").json<ApiResponse<User>>();
             return res.data;
         } catch (error) {
