@@ -54,8 +54,28 @@ export const initPropertyOccupations = (app: express.Express) => {
         }
     });
 
-    app.post("/property-occupations/", async (req, res) => {
+    //recupere les occupation d'une propriété
+    app.get("/property-occupations/property/:id(\\d+)",isAuthenticated, async (req, res) => {
         try {
+            const propertyId = parseInt(req.params.id);
+            const occupations = await prisma.propertyOccupation.findMany({
+                where: {
+                    propertyId: propertyId
+                },
+                include: {
+                    property: true,
+                    reservation: true
+                }
+            });
+            res.status(200).json({data: occupations});
+        } catch (e) {
+            res.status(500).send({ error: e });
+        }
+    });
+
+    app.post("/property-occupations/",isAuthenticated, async (req, res) => {
+        try {
+            console.log(req.body)
             const validation = propertyOccupationValidator.validate(req.body);
 
             if (validation.error) {
@@ -69,6 +89,7 @@ export const initPropertyOccupations = (app: express.Express) => {
             })
             res.status(200).json({data: propertyOccupation});
         } catch (e) {
+            console.log(e);
             res.status(500).send({ error: e });
             return;
         }
@@ -101,7 +122,7 @@ export const initPropertyOccupations = (app: express.Express) => {
         }
     });*/
 
-    app.patch("/property-occupations/:id(\\d+)/status", isAuthenticated, isSuperAdmin, async (req, res) => {
+    /*app.patch("/property-occupations/:id(\\d+)/status", isAuthenticated, async (req, res) => {
         const validation = propertyOccupationPatchValidator.validate(req.body);
 
         if (validation.error) {
@@ -122,14 +143,42 @@ export const initPropertyOccupations = (app: express.Express) => {
             res.status(500).json({ error: e });
             return;
         }
+    });*/
+
+    app.patch("/property-occupations/:id(\\d+)", isAuthenticated, async (req, res) => {
+        const validation = propertyOccupationPatchValidator.validate(req.body);
+        console.log(validation.value);
+
+        if (validation.error) {
+            res.status(400).json({ error: validation.error });
+            return;
+        }
+
+        const propertyRequest = validation.value;
+        try {
+            const property = await prisma.propertyOccupation.update({
+                where: {
+                    id: +req.params.id,
+                },
+                data: {
+                    startDate: propertyRequest.startDate,
+                    endDate: propertyRequest.endDate,
+                },
+            });
+            res.status(200).json({data: property});
+        } catch (e) {
+            res.status(500).json({ error: e });
+            return;
+        }
     });
 
-    app.delete("/property-occupations/:id(\\d+)", isAuthenticated, isSuperAdmin, async (req, res) => {
+
+    app.delete("/property-occupations/:id(\\d+)", isAuthenticated, async (req, res) => {
         try {
             const deletedProperty = await prisma.propertyOccupation.delete({
                 where: { id: Number(req.params.id) },
             });
-            res.status(200).json({data: deletedProperty});
+            res.status(200);
         } catch (e) {
             res.status(500).send({ error: e });
         }
