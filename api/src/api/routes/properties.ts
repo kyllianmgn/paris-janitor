@@ -11,6 +11,55 @@ import {
 import {Filter, filterValidator} from "../validators/filter-validator";
 
 export const initProperties = (app: express.Express) => {
+    app.get("/properties/public", async (req, res) => {
+        try {
+            console.log("public");
+            const validation = filterValidator.validate(req.query);
+            if (validation.error) {
+                return res.status(400).json({error: validation.error});
+            }
+
+            const filter: Filter = validation.value;
+
+            const allProperties = await prisma.property.findMany({
+                where: {status: PropertyStatus.APPROVED,
+                    ...(filter.query ? {
+                        OR: [{
+                            address: { contains: filter.query, mode: "insensitive" }
+                        }, {
+                            description: { contains: filter.query, mode: "insensitive" }
+                        }]
+                    } : {})
+                },
+                include: {landlord: {include: {user: true}}},
+                take: filter.pageSize ? +filter.pageSize : 10,
+                skip: filter.page ? (filter.pageSize ? +filter.page * +filter.pageSize : (+filter.page-1) * 10) : 0,
+            });
+
+            const countProperties = await prisma.property.count({
+                where: filter.query ?
+                    {
+                        OR: [{
+                            address: {
+                                contains: filter.query,
+                                mode: "insensitive"
+                            }
+                        }, {
+                            description: {
+                                contains: filter.query,
+                                mode: "insensitive"
+                            }
+                        }]
+                    }
+                    : {}
+                })
+
+            res.status(200).json({data: allProperties, count: countProperties});
+        } catch (e) {
+            res.status(500).send({ error: e });
+        }
+    });
+
     app.get("/properties", async (_req, res) => {
         try {
             const allProperties = await prisma.property.findMany();
@@ -23,7 +72,7 @@ export const initProperties = (app: express.Express) => {
 
     app.get("/properties/all", async (req, res) => {
         try {
-            const validation = filterValidator.validate(req.query)
+            const validation = filterValidator.validate(req.query);
 
             if (validation.error) {
                 res.status(400).json({error: validation.error});
@@ -95,6 +144,21 @@ export const initProperties = (app: express.Express) => {
         }
     });
 
+    app.get("/properties/landlord/:id/approved", isAuthenticated, async (req, res) => {
+        try {
+            const approvedProperties = await prisma.property.findMany({
+                where: {
+                    landlordId: parseInt(req.params.id),
+                    status: PropertyStatus.APPROVED
+                },
+                include: { occupations: true }
+            });
+            res.status(200).json({ data: approvedProperties });
+        } catch (error) {
+            res.status(500).json({ error: "An error occurred while fetching approved properties." });
+        }
+    });
+
 
     app.get("/properties/pending", async (req, res) => {
         try {
@@ -134,7 +198,7 @@ export const initProperties = (app: express.Express) => {
     app.get("/properties/:id(\\d+)", async (req, res) => {
         try {
             const property = await prisma.property.findUnique({
-                where: { id: Number(req.params.id) },
+                where: { id: Number(req.params.id),status: PropertyStatus.APPROVED },
                 include: {landlord: {include: {user: true}}}
             });
             res.status(200).json({data: property});
