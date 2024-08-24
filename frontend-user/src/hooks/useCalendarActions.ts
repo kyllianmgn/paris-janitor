@@ -13,7 +13,7 @@ const useCalendarActions = () => {
   useEffect(() => {
     const fetchProperties = async () => {
       if (role === "LANDLORD" && idRole) {
-        const response = await propertiesService.getPropertiesByUserId();
+        const response = await propertiesService.getApprovedPropertiesByLandlord(idRole);
         setProperties(response.data);
       }
     };
@@ -38,7 +38,7 @@ const useCalendarActions = () => {
 
   const deleteOccupation = async (id: number) => {
     await propertiesService.deletePropertyOccupation(id);
-    setOccupations(occupations.filter(o => o.id !== id));
+    await refreshCalendar();
   };
 
   const refreshCalendar = async () => {

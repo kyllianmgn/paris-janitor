@@ -11,7 +11,7 @@ export default function RentalList() {
     const [propertyList, setPropertyList] = useState<Property[]>([]);
 
     const loadProperties = async () => {
-        const res = await propertiesService.getProperties();
+        const res = await propertiesService.getPublicProperties();
         setPropertyList(res.data);
     }
 
