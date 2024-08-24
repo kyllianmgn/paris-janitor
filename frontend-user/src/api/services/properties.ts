@@ -1,8 +1,11 @@
-
-import {ApiResponse, Property, PropertyFormData, PropertyOccupation, User} from "@/types";
+import { ApiResponse, Property, PropertyFormData, PropertyOccupation, User, Filter } from "@/types";
 import { api, getUserFromToken } from "@/api/config";
 
 export const propertiesService = {
+    getPublicProperties: async (filter: Partial<Filter>): Promise<ApiResponse<Property[]>> => {
+        return api.get('properties/public', { searchParams: filter }).json<ApiResponse<Property[]>>();
+    },
+
     getPropertyById: async (id: number): Promise<ApiResponse<Property>> => {
         return api.get(`properties/${id}`).json<ApiResponse<Property>>();
     },
@@ -10,6 +13,7 @@ export const propertiesService = {
     getProperties: async (): Promise<ApiResponse<Property[]>> => {
         return api.get('properties').json<ApiResponse<Property[]>>();
     },
+
 
     getPropertiesByUserId: async (): Promise<ApiResponse<Property[]>> => {
         const user = getUserFromToken();
@@ -19,11 +23,25 @@ export const propertiesService = {
         throw new Error("User is not a landlord");
     },
 
+    getApprovedPropertiesByLandlord: async (landlordId: number): Promise<ApiResponse<Property[]>> => {
+        return api.get(`properties/landlord/${landlordId}/approved`).json<ApiResponse<Property[]>>();
+    },
+
+
     createProperty: async (propertyData: PropertyFormData): Promise<ApiResponse<Property>> => {
         try {
             return await api.post('properties', { json: propertyData }).json<ApiResponse<Property>>();
         } catch (e) {
             console.error('Error creating property:', e);
+            throw e;
+        }
+    },
+
+    updateProperty: async (id: number, propertyData: Partial<PropertyFormData>): Promise<ApiResponse<Property>> => {
+        try {
+            return await api.patch(`properties/${id}`, { json: propertyData }).json<ApiResponse<Property>>();
+        } catch (e) {
+            console.error('Error updating property:', e);
             throw e;
         }
     },
@@ -37,7 +55,7 @@ export const propertiesService = {
         }
     },
 
-    //Occupations
+    // Occupations
     getPropertyOccupations: async (propertyId: number): Promise<ApiResponse<PropertyOccupation[]>> => {
         return api.get(`property-occupations/property/${propertyId}`).json<ApiResponse<PropertyOccupation[]>>();
     },
