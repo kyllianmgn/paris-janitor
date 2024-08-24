@@ -97,8 +97,6 @@ export interface PropertyReservation {
 }
 
 export const propertyReservationWithOccupationValidator = Joi.object<PropertyReservation & PropertyOccupation>({
-    travelerId: Joi.number().required(),
-    occupationId: Joi.number().required(),
     status: Joi.string().required().valid("PENDING", "CONFIRMED", "CANCELLED"),
     totalPrice: Joi.number().required(),
     propertyId: Joi.number().required(),

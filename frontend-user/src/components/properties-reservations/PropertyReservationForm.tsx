@@ -21,7 +21,6 @@ export interface PropertiesReservationsFormProps {
 }
 
 export const PropertyReservationForm = ({propertyId, price}: PropertiesReservationsFormProps) => {
-    const [user, setUser] = useState<User | null>(null);
     const [submitted, setSubmitted] = useState<boolean>(false);
     const [error, setError] = useState<boolean>(false);
     //TODO manage and use available dates with property occupation
@@ -79,13 +78,12 @@ export const PropertyReservationForm = ({propertyId, price}: PropertiesReservati
 
     const onFormSubmit = async (event: FormEvent) => {
         event.preventDefault();
-        if (!startDateInput.current?.value || !endDateInput.current?.value || !user?.Traveler?.id) {
+        if (!startDateInput.current?.value || !endDateInput.current?.value) {
             setError(true);
             return;
         }
 
         const propertyReservationPostReq: PropertyReservationPostReq = {
-            travelerId: user.Traveler.id,
             occupationId: 0, //not read by API but required
             status: ReservationStatus.PENDING, //not read by API but required
             totalPrice: totalPrice,
@@ -97,15 +95,6 @@ export const PropertyReservationForm = ({propertyId, price}: PropertiesReservati
         await propertiesReservationsService.createPropertyReservation(propertyReservationPostReq);
         setSubmitted(true);
     }
-
-    const loadUser = async () => {
-        const user = await authService.getUserInfo();
-        setUser(user);
-    }
-
-    useEffect(() => {
-        loadUser().then();
-    }, []);
 
     return (
         <div>

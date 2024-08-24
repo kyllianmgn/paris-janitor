@@ -2,7 +2,7 @@ import express from "express";
 import { prisma } from "../../utils/prisma";
 import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
 import {
-    interventionPatchValidator, InterventionWithOccupationValidator, InterventionStatus
+    interventionPatchValidator, InterventionWithOccupationValidator, InterventionStatus, InterventionInPropertyValidator
 } from "../validators/service-validator";
 
 export const initInterventions = (app: express.Express) => {
@@ -73,6 +73,45 @@ export const initInterventions = (app: express.Express) => {
                             serviceId: serviceRequest.serviceId
                         }
                     }
+                }
+            })
+            res.status(200).json({data: intervention});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.post("/interventions/property", async (req, res) => {
+        try {
+            const validation = InterventionInPropertyValidator.validate(req.body);
+
+            if (validation.error) {
+                res.status(400).json({ error: validation.error });
+                return;
+            }
+
+            const serviceRequest = validation.value;
+            const intervention = await prisma.providerOccupation.create({
+                data: {
+                    startDate: serviceRequest.startDate,
+                    endDate: serviceRequest.endDate,
+                    providerId: serviceRequest.providerId,
+                    intervention: {
+                        create: {
+                            status: InterventionStatus.PLANNED,
+                            additionalPrice: serviceRequest.additionalPrice,
+                            serviceId: serviceRequest.serviceId,
+                        }
+                    }
+                }
+            })
+            const occupation = await prisma.propertyOccupation.create({
+                data: {
+                    startDate: serviceRequest.startDate,
+                    endDate: serviceRequest.endDate,
+                    propertyId: serviceRequest.propertyId,
+
                 }
             })
             res.status(200).json({data: intervention});

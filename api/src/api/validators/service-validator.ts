@@ -56,6 +56,7 @@ export interface Intervention {
     id: number,
     serviceId: number,
     propertyOccupationId?: number
+    propertyId?: number
     providerOccupationId: number
     additionalPrice: number
     status: InterventionStatus
@@ -63,7 +64,27 @@ export interface Intervention {
 
 export const InterventionWithOccupationValidator = Joi.object<Intervention & ProviderOccupation>({
     serviceId: Joi.number().required(),
-    propertyOccupationId: Joi.number().optional(),
+    propertyId: Joi.number().optional(),
+    providerOccupationId: Joi.number().required(),
+    additionalPrice: Joi.number().required(),
+    status: Joi.string().required(),
+    startDate: Joi.date().required(),
+    endDate: Joi.date().required(),
+    providerId: Joi.number().required(),
+})
+
+export interface InterventionInProperty {
+    id: number,
+    serviceId: number,
+    propertyId: number
+    providerOccupationId: number
+    additionalPrice: number
+    status: InterventionStatus
+}
+
+export const InterventionInPropertyValidator = Joi.object<InterventionInProperty & ProviderOccupation>({
+    serviceId: Joi.number().required(),
+    propertyId: Joi.number().required(),
     providerOccupationId: Joi.number().required(),
     additionalPrice: Joi.number().required(),
     status: Joi.string().required(),
