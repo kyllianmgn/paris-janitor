@@ -27,7 +27,7 @@ export const PropertyPage = ({propertyId}: PropertyDetailProps) => {
 
     useEffect(() => {
         loadProperty().then();
-    }, [loadProperty, propertyId]);
+    }, [propertyId]);
 
     const handleGoBack = () => {
         router.back();

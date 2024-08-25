@@ -33,6 +33,35 @@ export const initPropertyReservations = (app: express.Express) => {
         }
     });
 
+    app.get("/property-reservations/me/future",isAuthenticated, isRole(UserRole.TRAVELER), async (req, res) => {
+        try {
+            const todayWithoutHours = new Date()
+            todayWithoutHours.setHours(0,0,0,0)
+            const allPropertyReservations = await prisma.propertyReservation.findMany({
+                include: {
+                    occupation: {
+                        include: {
+                            property: true
+                        }
+                    }
+                },
+                where: {
+                    travelerId: req.user?.travelerId,
+                    occupation: {
+                        startDate: {
+                            gte: todayWithoutHours
+                        }
+                    }
+                }
+            });
+            const countReservations = await prisma.propertyReservation.count()
+            res.status(200).json({data: allPropertyReservations, count: countReservations});
+        } catch (e) {
+            res.status(500).send({error: e});
+            return;
+        }
+    });
+
     app.get("/property-reservations/:id(\\d+)", async (req, res) => {
         try {
             const PropertyReservations = await prisma.propertyReservation.findUnique({

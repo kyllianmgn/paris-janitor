@@ -3,13 +3,18 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 export interface ServiceCardProps {
-    service: Service
+    service: Service,
+    personal?: boolean
 }
 
-export const ServiceCard = ({ service }: ServiceCardProps) => {
+export const ServiceCard = ({ service, personal = false }: ServiceCardProps) => {
     const router = useRouter();
     const onClickCard = () => {
-        router.push(`/my-services/${service.id}`);
+        if (personal){
+            router.push(`/my-services/${service.id}`);
+        }else{
+            router.push(`/services/${service.id}`);
+        }
     }
 
     return (

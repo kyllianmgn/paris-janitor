@@ -11,6 +11,11 @@ export interface ServiceDetailProps {
     serviceId: number
 }
 
+export enum ServiceType {
+    INTERVENTION= "INTERVENTION",
+    MISSION = "MISSION",
+}
+
 export const ServiceDetail = ({ serviceId }: ServiceDetailProps) => {
     const [service, setService] = useState<Service | null>(null);
     const [loading, setLoading] = useState<boolean>(true);

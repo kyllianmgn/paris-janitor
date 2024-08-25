@@ -61,11 +61,18 @@ export const initInterventions = (app: express.Express) => {
             }
 
             const serviceRequest = validation.value;
+            const service = await prisma.service.findUnique({
+                where: { id: serviceRequest.serviceId },
+                include: {
+                    provider: true
+                }
+            })
+            if (!service) return res.sendStatus(404)
             const intervention = await prisma.providerOccupation.create({
                 data: {
                     startDate: serviceRequest.startDate,
                     endDate: serviceRequest.endDate,
-                    providerId: serviceRequest.providerId,
+                    providerId: service.provider.id,
                     intervention: {
                         create: {
                             status: InterventionStatus.PLANNED,
@@ -92,20 +99,13 @@ export const initInterventions = (app: express.Express) => {
             }
 
             const serviceRequest = validation.value;
-            const intervention = await prisma.providerOccupation.create({
-                data: {
-                    startDate: serviceRequest.startDate,
-                    endDate: serviceRequest.endDate,
-                    providerId: serviceRequest.providerId,
-                    intervention: {
-                        create: {
-                            status: InterventionStatus.PLANNED,
-                            additionalPrice: serviceRequest.additionalPrice,
-                            serviceId: serviceRequest.serviceId,
-                        }
-                    }
+            const service = await prisma.service.findUnique({
+                where: { id: serviceRequest.serviceId },
+                include: {
+                    provider: true
                 }
             })
+            if (!service) return res.sendStatus(404)
             const occupation = await prisma.propertyOccupation.create({
                 data: {
                     startDate: serviceRequest.startDate,
@@ -114,6 +114,22 @@ export const initInterventions = (app: express.Express) => {
 
                 }
             })
+            const intervention = await prisma.providerOccupation.create({
+                data: {
+                    startDate: serviceRequest.startDate,
+                    endDate: serviceRequest.endDate,
+                    providerId: service.provider.id,
+                    intervention: {
+                        create: {
+                            status: InterventionStatus.PLANNED,
+                            additionalPrice: serviceRequest.additionalPrice,
+                            serviceId: serviceRequest.serviceId,
+                            propertyOccupationId: occupation.id
+                        }
+                    }
+                }
+            })
+
             res.status(200).json({data: intervention});
         } catch (e) {
             res.status(500).send({ error: e });

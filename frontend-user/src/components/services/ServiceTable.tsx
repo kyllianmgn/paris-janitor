@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 interface ServiceTableProps {
     services: Service[];
     onRefresh: () => void;
+    personal?: boolean
 }
 
 const serviceFields: Field[] = [
@@ -19,7 +20,7 @@ const serviceFields: Field[] = [
     { name: 'basePrice', label: 'Prix de base', type: 'number', required: true },
 ];
 
-export const ServiceTable = ({ services, onRefresh }: ServiceTableProps) => {
+export const ServiceTable = ({ services, onRefresh, personal = false }: ServiceTableProps) => {
     const [modalState, setModalState] = useState<{isOpen: boolean, mode: 'edit' | 'delete', service: Service | null}>({
         isOpen: false,
         mode: 'edit',
@@ -29,7 +30,11 @@ export const ServiceTable = ({ services, onRefresh }: ServiceTableProps) => {
     const router = useRouter();
 
     const handleViewDetails = (serviceId: number) => {
-        router.push(`/my-services/${serviceId}`);
+        if (personal){
+            router.push(`/my-services/${serviceId}`);
+        }else{
+            router.push(`/services/${serviceId}`);
+        }
     };
 
 

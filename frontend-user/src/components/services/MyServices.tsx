@@ -66,7 +66,7 @@ export const MyServices = () => {
             {viewMode === 'table' ? (
                 <ServiceTable services={serviceList} onRefresh={loadServices} />
             ) : (
-                <ServiceList services={serviceList} />
+                <ServiceList services={serviceList} personal={true} />
             )}
         </div>
     );

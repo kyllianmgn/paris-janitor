@@ -1,4 +1,3 @@
-import ky from "ky";
 import {ApiResponse, User} from "@/types";
 import {
     PropertyReservation,
@@ -10,17 +9,17 @@ import {authService} from "@/api/services/authService";
 
 export const propertiesReservationsService = {
     createPropertyReservation: async (propertyReservationPostReq: PropertyReservationPostReq) => {
-        return await ky.post('http://localhost:3000/property-reservations', {
+        return await api.post('property-reservations', {
             json: propertyReservationPostReq
         }).json();
     },
 
     getPropertyReservationById: async (id: number) => {
-        return await ky.get(`http://localhost:3000/property-reservations/${id}`).json<ApiResponse<PropertyReservation>>();
+        return await api.get(`property-reservations/${id}`).json<ApiResponse<PropertyReservation>>();
     },
 
     getPropertyReservationFullById: async (id: number) => {
-        return await ky.get(`http://localhost:3000/property-reservations/full/${id}`).json<ApiResponse<PropertyReservationFull>>();
+        return await api.get(`property-reservations/full/${id}`).json<ApiResponse<PropertyReservationFull>>();
     },
 
     getPropertiesReservationsFullByUserId: async () => {
@@ -34,5 +33,9 @@ export const propertiesReservationsService = {
 
     getPropertiesReservationsFullByPropertyId: async (id: number) => {
         return api.get(`property-reservations/property/${id}`).json<ApiResponse<PropertyReservationFull[]>>();
-    }
+    },
+
+    getMyFutureReservations: async (): Promise<ApiResponse<PropertyReservation[]>> => {
+        return api.get('property-reservations/me/future').json<ApiResponse<PropertyReservation[]>>();
+    },
 }

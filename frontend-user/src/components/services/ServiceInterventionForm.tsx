@@ -1,27 +1,39 @@
 "use client"
-import {ChangeEvent, FormEvent, useEffect, useRef, useState} from "react";
-import {propertiesReservationsService} from "@/api/services/properties-reservations";
-import {ReservationStatus} from "@/components/properties-reservations/PropertiesReservations";
-import {authService} from "@/api/services/authService";
-import {User} from "@/types";
+import React, {ChangeEvent, FormEvent, useEffect, useRef, useState} from "react";
+import {serviceInterventionsService} from "@/api/services/service-interventions";
+import {ServiceType} from "@/components/services/ServiceDetail";
+import {Property} from "@/types";
+import {Select, SelectContent, SelectItem} from "@/components/ui/select";
+import {useSelector} from "react-redux";
+import {RootState} from "@/store";
 
-export interface PropertyReservationPostReq {
-    occupationId: number; //not read by API but required
-    status: ReservationStatus; //not read by API but required
-    totalPrice: number;
-    propertyId: number;
-    startDate: string;
-    endDate: string;
+export interface ServiceInterventionPostReq {
+    serviceId: number,
+    propertyId?: number
+    startDate: Date
+    endDate?: Date
+    additionalPrice: number
 }
 
-export interface PropertiesReservationsFormProps {
-    propertyId: number;
+export interface ServiceInterventionFormProps {
+    serviceId: number;
+    serviceType: ServiceType;
     price: number;
+    properties: Property[]
 }
 
-export const PropertyReservationForm = ({propertyId, price}: PropertiesReservationsFormProps) => {
+export enum InterventionStatus {
+    PLANNED="PLANNED",
+    IN_PROGRESS="IN_PROGRESS",
+    COMPLETED="COMPLETED",
+    CANCELLED="CANCELLED",
+}
+
+export const ServiceInterventionForm = ({serviceId, serviceType, price, properties}: ServiceInterventionFormProps) => {
     const [submitted, setSubmitted] = useState<boolean>(false);
     const [error, setError] = useState<boolean>(false);
+    const propertySelectRef = useRef<HTMLSelectElement>(null);
+    const role = useSelector((state: RootState) => state.auth.role)
     //TODO manage and use available dates with property occupation
     //const [datesAvailable, setDatesAvailables] = useState<DateRange[]>([]);
 
@@ -61,13 +73,6 @@ export const PropertyReservationForm = ({propertyId, price}: PropertiesReservati
         }
     }
 
-    const onEndDateChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setEndDateInputValue(event.target.value);
-        if (startDateInput.current?.value && endDateInput.current?.value) {
-            updateTotalPrice(startDateInput.current.value, endDateInput.current.value);
-        }
-    }
-
     const updateTotalPrice = (startDate: string, endDate: string) => {
         const date1 = new Date(endDate);
         const date2 = new Date(startDate);
@@ -77,19 +82,28 @@ export const PropertyReservationForm = ({propertyId, price}: PropertiesReservati
 
     const onFormSubmit = async (event: FormEvent) => {
         event.preventDefault();
-        if (!startDateInput.current?.value || !endDateInput.current?.value) {
+        if (!startDateInput.current?.value || !propertySelectRef.current?.value) {
             setError(true);
             return;
         }
 
-        const propertyReservationPostReq: PropertyReservationPostReq = {
-            totalPrice: totalPrice,
-            propertyId: propertyId,
-            startDate: new Date(String(startDateInput.current?.value)).toISOString(),
-            endDate: new Date(String(endDateInput.current?.value)).toISOString(),
+        console.log(propertySelectRef.current?.value)
+
+        let endDate = new Date(String(startDateInput.current?.value));
+        endDate.setHours(endDate.getHours() + 4);
+        const serviceInterventionPostReq: ServiceInterventionPostReq = {
+            serviceId: serviceId,
+            propertyId: +propertySelectRef.current?.value,
+            startDate: new Date(String(startDateInput.current?.value)),
+            additionalPrice: price,
+            endDate: endDate,
         }
 
-        await propertiesReservationsService.createPropertyReservation(propertyReservationPostReq);
+        if (role == "TRAVELER"){
+            await serviceInterventionsService.createServiceInterventionAsTraveler(serviceInterventionPostReq);
+        }else{
+            await serviceInterventionsService.createServiceInterventionAsLandlord(serviceInterventionPostReq);
+        }
         setSubmitted(true);
     }
 
@@ -100,17 +114,19 @@ export const PropertyReservationForm = ({propertyId, price}: PropertiesReservati
                     <p className="text-lg font-semibold text-green-600">Réservation effectué</p>
                 ) : (
                     <form onSubmit={onFormSubmit} className="bg-white p-8 rounded-lg shadow-md w-96">
-                        <p className="text-xl font-bold mb-4">Réserver une propriété</p>
-                        <input placeholder="Date d'arrivé" type={"date"} ref={startDateInput}
+                        <p className="text-xl font-bold mb-4">Reserve a service</p>
+
+                        {properties && <><label>Property</label>
+                        <select ref={propertySelectRef} className="bg-white w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            {properties.map((property) => (<option key={property.id} value={property.id}>{property.address} - {property.city}, {property.country}</option>))}
+                        </select></>}
+                        <label>Date (une intervention devrait prendre la journée</label>
+                        <input placeholder="Date" type={"date"} ref={startDateInput}
                                onChange={onStartDateChange}
                                min={minStartDate} defaultValue={defaultStartDate}
                                className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-                        <input placeholder="Date de départ" type={"date"} ref={endDateInput}
-                               onChange={onEndDateChange}
-                               min={minEndDate} value={endDateInputValue}
-                               className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"/>
                         <div className="mb-4 text-left">
-                            Prix par nuit : {price}€
+                            Service price : {price}€
                         </div>
                         {error && (
                             <p className="text-red-600 mb-4">Veuillez vérifier les informations puis réessayer</p>)}

@@ -1,9 +1,10 @@
 import ky from "ky";
 import {ApiResponse} from "@/types";
 import {PropertyOccupation} from "@/components/properties-reservations/PropertiesReservations";
+import {api} from "@/api/config";
 
 export const propertiesOccupationsService = {
     getPropertyOccupationById: async (id: number) => {
-        return await ky.get(`http://localhost:3000/property-occupations/${id}`).json<ApiResponse<PropertyOccupation>>();
+        return await api.get(`property-occupations/${id}`).json<ApiResponse<PropertyOccupation>>();
     }
 }

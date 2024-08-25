@@ -106,6 +106,7 @@ export const initServiceProviders = (app: express.Express) => {
                 select: {
                     id: true,
                     userId: true,
+                    status: true,
                     user: {
                         select: {
                             id: true,

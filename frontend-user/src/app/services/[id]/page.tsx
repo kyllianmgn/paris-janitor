@@ -1,9 +1,9 @@
-import {ServiceDetail} from "@/components/services/ServiceDetail";
+import {ServicePage} from "@/components/services/ServicePage";
 
 export default ({params}:{params: {id: string}}) => {
     return (
         <>
-            <ServiceDetail serviceId={+params.id}></ServiceDetail>
+            <ServicePage serviceId={+params.id}></ServicePage>
         </>
     )
 }

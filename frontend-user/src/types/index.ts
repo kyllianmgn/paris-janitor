@@ -23,6 +23,7 @@ export interface Traveler {
 export interface ServiceProvider {
   id: number;
   userId: number;
+  user?: User;
   status?: ServiceProviderStatus;
 }
 
@@ -38,9 +39,22 @@ export interface Service{
   providerId: number,
   name: string,
   description: string,
+  type: ServiceType,
   basePrice: number
   createdAt?: Date,
   updatedAt?: Date
+}
+
+export enum InterventionStatus {
+  PLANNED="PLANNED",
+  IN_PROGRESS="IN_PROGRESS",
+  COMPLETED="COMPLETED",
+  CANCELLED="CANCELLED",
+}
+
+enum ServiceType {
+  INTERVENTION="INTERVENTION",
+  MISSION="MISSION"
 }
 
 export type ServiceFormData = Omit<Service, "id" | "providerId" | "provider" | "createdAt" | "updatedAt">
@@ -141,7 +155,7 @@ export interface PropertyOccupation {
   startDate: string;
   endDate: string;
   reservation?: PropertyReservation;
-
+  property?: Property
 }
 
 export interface PropertyReservation {
@@ -150,6 +164,7 @@ export interface PropertyReservation {
   occupationId: number;
   status: ReservationStatus;
   totalPrice: number;
+  propertyOccupation?: PropertyOccupation
 }
 
 export interface CalendarEvent extends PropertyOccupation {

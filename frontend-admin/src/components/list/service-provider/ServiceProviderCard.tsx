@@ -10,12 +10,12 @@ export default function ServiceProviderCard({serviceProvider}: {serviceProvider:
 
     const loadCount = async () => {
         const count = await getServiceCount(serviceProvider.id)
-        console.log(count)
         setCount(count.data)
     }
 
     useEffect(() => {
         loadCount().then()
+        console.log(serviceProvider)
     }, []);
 
     return (

@@ -1,5 +1,5 @@
 import express from "express";
-import { prisma } from "../../utils/prisma";
+import {prisma} from "../../utils/prisma";
 import {isAuthenticated, isRole, isSuperAdmin, UserRole} from "../middlewares/auth-middleware";
 import {
     propertyAdminValidator,
@@ -14,6 +14,23 @@ export const initProperties = (app: express.Express) => {
     app.get("/properties", async (_req, res) => {
         try {
             const allProperties = await prisma.property.findMany({});
+            res.status(200).json({data: allProperties});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.get("/properties/me", isAuthenticated, isRole(UserRole.LANDLORD), async (req, res) => {
+        try {
+            if (!req.user?.landlordId) {
+                return res.status(401).json({ error: "Unauthorized" });
+            }
+            const allProperties = await prisma.property.findMany({
+                where: {
+                    landlordId: +req.user?.landlordId,
+                }
+            });
             res.status(200).json({data: allProperties});
         } catch (e) {
             res.status(500).send({ error: e });

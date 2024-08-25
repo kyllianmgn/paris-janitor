@@ -1,5 +1,5 @@
 
-import {ApiResponse, Property, PropertyFormData, PropertyOccupation, User} from "@/types";
+import {ApiResponse, Property, PropertyFormData, PropertyOccupation, PropertyReservation, User} from "@/types";
 import { api, getUserFromToken } from "@/api/config";
 
 export const propertiesService = {
@@ -9,6 +9,10 @@ export const propertiesService = {
 
     getProperties: async (): Promise<ApiResponse<Property[]>> => {
         return api.get('properties').json<ApiResponse<Property[]>>();
+    },
+
+    getMyProperties: async (): Promise<ApiResponse<Property[]>> => {
+        return api.get('properties/me').json<ApiResponse<Property[]>>();
     },
 
     getAvailableProperties: async (query?: string, page?: number): Promise<ApiResponse<Property[]>> => {
@@ -68,4 +72,6 @@ export const propertiesService = {
     deletePropertyOccupation: async (id: number): Promise<ApiResponse<PropertyOccupation>> => {
         return api.delete(`property-occupations/${id}`).json<ApiResponse<PropertyOccupation>>();
     },
+
+
 };
