@@ -228,6 +228,7 @@ export const initProperties = (app: express.Express) => {
                     city: propertyRequest.city,
                     country: propertyRequest.country,
                     description: propertyRequest.description,
+                    pricePerNight: propertyRequest.pricePerNight,
                     status: PropertyStatus.PENDING,
                     landlordId: req.user.landlordId
                 },
@@ -257,6 +258,7 @@ export const initProperties = (app: express.Express) => {
                     city: propertyRequest.city,
                     country: propertyRequest.country,
                     description: propertyRequest.description,
+                    pricePerNight: propertyRequest.pricePerNight,
                     status: propertyRequest.status,
                     landlordId: propertyRequest.landlordId,
                 },
