@@ -136,6 +136,7 @@ export interface Property {
   city: string,
   country: string,
   description: string,
+  pricePerNight: number,
   status?: PropertyStatus,
   createdAt?: Date,
   updatedAt?: Date

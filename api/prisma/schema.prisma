@@ -51,6 +51,7 @@ model Property {
   city           String
   country        String
   description    String
+  pricePerNight  Decimal              @default(100)
   status         PropertyStatus       @default(PENDING)
   occupations    PropertyOccupation[]
   createdAt      DateTime             @default(now())
