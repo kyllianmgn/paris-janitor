@@ -1,6 +1,6 @@
 import PropertyList from "@/components/list/property/PropertyList";
 
-export default () => {
+export default function PropertiesPendingPage(){
     return (
         <div>
 

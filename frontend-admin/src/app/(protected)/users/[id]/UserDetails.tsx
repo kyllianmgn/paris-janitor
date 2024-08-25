@@ -56,7 +56,7 @@ export const UserDetails = ({id, query, page}: { id: number, query?: string, pag
 
     useEffect(() => {
         loadUser().then()
-    }, []);
+    });
 
     return (
         <div>

@@ -35,7 +35,7 @@ export default function LoginForm() {
 
     useEffect(() => {
         if (admin) router.push('/dashboard')
-    }, [admin]);
+    }, [admin, router]);
 
     return (
         <form onSubmit={handleSubmit}>

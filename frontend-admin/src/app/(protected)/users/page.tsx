@@ -1,8 +1,8 @@
 import ServiceProviderList from "@/components/list/service-provider/ServiceProviderList";
 import UserList from "@/components/list/users/UserList";
 
-export default ({searchParams,}: { searchParams?: { query?: string; page?: string; };
-}) => {
+export default function UsersPage({searchParams,}: { searchParams?: { query?: string; page?: string; };
+}){
     const query = searchParams?.query || '';
     const currentPage = Number(searchParams?.page) || 1;
 

@@ -23,7 +23,7 @@ export const ServiceDetails = ({id, query, page}: { id: number, query?: string, 
 
     useEffect(() => {
         loadServices().then()
-    }, []);
+    });
 
     return (
         <div>

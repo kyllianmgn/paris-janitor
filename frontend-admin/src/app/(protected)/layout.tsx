@@ -5,7 +5,7 @@ import {RootState} from "@/store";
 import {useRouter} from "next/navigation";
 import Nav from "@/components/nav/Nav";
 
-export default ({children}: {children: React.ReactNode}) => {
+export default function ProtectedLayout({children}: {children: React.ReactNode}){
     const router = useRouter();
     const admin = useSelector((state: RootState) => state.auth.admin)
 
@@ -13,7 +13,7 @@ export default ({children}: {children: React.ReactNode}) => {
         if (admin === null) {
             router.push('/')
         }
-    }, [admin]);
+    }, [admin, router]);
 
 
 
