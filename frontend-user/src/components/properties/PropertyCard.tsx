@@ -20,6 +20,7 @@ const propertyFields: Field[] = [
     { name: 'postalCode', label: 'Postal Code', type: 'text', required: true },
     { name: 'city', label: 'City', type: 'text', required: true },
     { name: 'country', label: 'Country', type: 'text', required: true },
+    { name: 'pricePerNight', label: 'Price per night', type: 'number', required: true },
     { name: 'description', label: 'Description', type: 'textarea', required: true },
 ];
 

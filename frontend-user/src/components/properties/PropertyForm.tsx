@@ -32,6 +32,7 @@ export const PropertyForm = () => {
                 city: '',
                 country: '',
                 description: '',
+                pricePerNight: 0,
             };
         }
         return {
@@ -40,6 +41,7 @@ export const PropertyForm = () => {
             city: '',
             country: '',
             description: '',
+            pricePerNight: 0,
         };
     });
     const [errors, setErrors] = useState<Partial<PropertyFormData>>({});
@@ -119,46 +121,50 @@ export const PropertyForm = () => {
         switch (currentStep) {
             case 0:
                 return (
-                    <>
-                        <div className="grid gap-4">
-                            <div>
-                                <label htmlFor="address">Adresse</label>
-                                <Input id="address" name="address" value={formData.address} onChange={handleChange} />
-                                {errors.address && <span className="text-red-500">{errors.address}</span>}
-                            </div>
-                            <div>
-                                <label htmlFor="postalCode">Code postal</label>
-                                <Input id="postalCode" name="postalCode" value={formData.postalCode} onChange={handleChange} />
-                                {errors.postalCode && <span className="text-red-500">{errors.postalCode}</span>}
-                            </div>
-                            <div>
-                                <label htmlFor="city">Ville</label>
-                                <Input id="city" name="city" value={formData.city} onChange={handleChange} />
-                                {errors.city && <span className="text-red-500">{errors.city}</span>}
-                            </div>
-                            <div>
-                                <label htmlFor="country">Pays</label>
-                                <Input id="country" name="country" value={formData.country} onChange={handleChange} />
-                                {errors.country && <span className="text-red-500">{errors.country}</span>}
-                            </div>
+                    <div className="grid gap-4">
+                        <div>
+                            <label htmlFor="address">Adresse</label>
+                            <Input id="address" name="address" value={formData.address} onChange={handleChange}/>
+                            {errors.address && <span className="text-red-500">{errors.address}</span>}
                         </div>
-                    </>
+                        <div>
+                            <label htmlFor="postalCode">Code postal</label>
+                            <Input id="postalCode" name="postalCode" value={formData.postalCode}
+                                   onChange={handleChange}/>
+                            {errors.postalCode && <span className="text-red-500">{errors.postalCode}</span>}
+                        </div>
+                        <div>
+                            <label htmlFor="city">Ville</label>
+                            <Input id="city" name="city" value={formData.city} onChange={handleChange}/>
+                            {errors.city && <span className="text-red-500">{errors.city}</span>}
+                        </div>
+                        <div>
+                            <label htmlFor="country">Pays</label>
+                            <Input id="country" name="country" value={formData.country} onChange={handleChange}/>
+                            {errors.country && <span className="text-red-500">{errors.country}</span>}
+                        </div>
+                        <div>
+                            <label htmlFor="pricePerNight">Prix par nuit</label>
+                            <Input id="pricePerNight" name="pricePerNight" type="number" value={formData.pricePerNight} onChange={handleChange}/>
+                            {errors.pricePerNight && <span className="text-red-500">{errors.pricePerNight}</span>}
+                        </div>
+                    </div>
                 );
             case 1:
                 return (
-                    <>
-                        <div>
-                            <label htmlFor="description">Description</label>
-                            <Textarea id="description" name="description" value={formData.description} onChange={handleChange} />
-                            {errors.description && <span className="text-red-500">{errors.description}</span>}
-                        </div>
-                    </>
+                    <div>
+                        <label htmlFor="description">Description</label>
+                        <Textarea id="description" name="description" value={formData.description}
+                                  onChange={handleChange}/>
+                        {errors.description && <span className="text-red-500">{errors.description}</span>}
+                    </div>
                 );
             case 2:
                 return (
                     <div>
                         <h3>Résumé de votre bien</h3>
                         <p>Adresse: {formData.address}, {formData.postalCode} {formData.city}, {formData.country}</p>
+                        <p>Prix par nuit: {formData.pricePerNight}€</p>
                         <p>Description: {formData.description}</p>
                     </div>
                 );
