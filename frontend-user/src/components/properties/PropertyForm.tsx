@@ -8,16 +8,63 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
 import { propertiesService } from "@/api/services/properties";
 import { Textarea } from "@/components/ui/textarea";
-import { PropertyFormData } from "@/types";
+import {PropertyFormData, ServiceFormData} from "@/types";
 import { ArrowLeft } from "lucide-react";
 
 const steps = [
     "Informations du bien",
     "Description",
+    "Photo de votre bien",
     "Confirmation"
 ];
 
 const STORAGE_KEY = 'property_form_draft';
+
+interface PropertyFormDataError extends Omit<PropertyFormData, "files">{
+    files: string;
+}
+
+const PropertyFormImage = ({file, onDelete, index}: {file: File, onDelete: (index: number) => void, index: number}) => {
+    const [imageSrc, setImageSrc] = useState('');
+
+    useEffect(() => {
+        const loadImage = async () => {
+            if (file) {
+                const imageDataUrl = await readFileImage(file);
+                setImageSrc(imageDataUrl);
+            }
+        };
+        loadImage().then();
+    }, [file]);
+
+    const promiseReadFile = (file: File) => {
+        const fr = new FileReader();
+
+        return new Promise<string>((resolve, reject) => {
+            fr.onerror = () => {
+                fr.abort()
+                reject(new DOMException("Could not read file"));
+            }
+
+            fr.onloadend = () => {
+                if (fr.result !== null){
+                    resolve(String(fr.result))
+                }
+            }
+            fr.readAsDataURL(file);
+        })
+    }
+
+    const readFileImage = async (file: File) => {
+        return await promiseReadFile(file)
+    }
+
+    const handleFileDelete = () => {
+        onDelete(index)
+    }
+
+    return <img src={imageSrc} alt="Uploaded" onClick={handleFileDelete}/>;
+}
 
 export const PropertyForm = () => {
     const router = useRouter();
@@ -32,6 +79,7 @@ export const PropertyForm = () => {
                 city: '',
                 country: '',
                 description: '',
+                files: []
             };
         }
         return {
@@ -40,13 +88,16 @@ export const PropertyForm = () => {
             city: '',
             country: '',
             description: '',
+            files: []
         };
     });
-    const [errors, setErrors] = useState<Partial<PropertyFormData>>({});
+    const [errors, setErrors] = useState<Partial<PropertyFormDataError>>({});
 
     useEffect(() => {
         // Sauvegarde automatique des données du formulaire
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+        const savedFormData = {...formData}
+        savedFormData.files = []
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedFormData));
     }, [formData]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -58,8 +109,27 @@ export const PropertyForm = () => {
         setErrors(prevErrors => ({ ...prevErrors, [name]: '' }));
     };
 
+    const onFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+
+        if (!e.target.files) return;
+        setFormData(prevState => ({
+            ...prevState,
+            files: [...prevState.files, ...files],
+
+        }))
+        setErrors(prevState => ({...prevState, files: ''}))
+    }
+
+    const onFileDelete = (index: number) => {
+        setFormData(prevState => ({
+            ...prevState,
+            files: prevState.files.filter((f, f_index) => f_index !== index),
+        }))
+    }
+
     const validateStep = () => {
-        const newErrors: Partial<PropertyFormData> = {};
+        const newErrors: Partial<PropertyFormDataError> = {};
         switch (currentStep) {
             case 0:
                 if (!formData.address) newErrors.address = 'Adresse requise';
@@ -69,6 +139,9 @@ export const PropertyForm = () => {
                 break;
             case 1:
                 if (!formData.description) newErrors.description = 'Description requise';
+                break;
+            case 2:
+                if (!formData.files.length) newErrors.files = 'Photo requise';
                 break;
         }
         setErrors(newErrors);
@@ -155,6 +228,22 @@ export const PropertyForm = () => {
                     </>
                 );
             case 2:
+                return (
+                    <div>
+                        <h3>Photo de votre bien</h3>
+                        <input type={"file"} accept="image/*" onChange={onFileUpload} />
+                        {
+                            formData.files.map((file: File, index: number) =>
+                                (<div>
+                                    {file.name}
+                                    <PropertyFormImage onDelete={onFileDelete} index={index} key={index} file={file}/>
+                                </div>)
+                            )
+                        }
+                        {errors.files && <span className="text-red-500">{errors.files}</span>}
+                    </div>
+                );
+            case 3:
                 return (
                     <div>
                         <h3>Résumé de votre bien</h3>

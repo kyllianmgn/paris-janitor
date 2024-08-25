@@ -10,7 +10,6 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        console.log(user)
         if (user === null){
             router.push('/');
         }

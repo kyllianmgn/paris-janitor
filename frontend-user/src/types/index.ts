@@ -141,7 +141,9 @@ export interface Property {
   updatedAt?: Date
 }
 
-export type PropertyFormData = Omit<Property, 'id' | 'landlordId' | 'status' | 'createdAt' | 'updatedAt'>;
+export interface PropertyFormData extends Omit<Property, 'id' | 'landlordId' | 'status' | 'createdAt' | 'updatedAt'>{
+  files: any[]
+};
 
 export enum ReservationStatus {
   PENDING = "PENDING",

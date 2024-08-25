@@ -9,6 +9,7 @@ import {
     propertyValidator
 } from "../validators/property-validator";
 import {Filter, filterValidator} from "../validators/filter-validator";
+import * as fs from "fs"
 
 export const initProperties = (app: express.Express) => {
     app.get("/properties/public", async (req, res) => {
@@ -29,7 +30,7 @@ export const initProperties = (app: express.Express) => {
                         }, {
                             description: { contains: filter.query, mode: "insensitive" }
                         }]
-                    } : {})
+                    } : {status: PropertyStatus.APPROVED})
                 },
                 include: {landlord: {include: {user: true}}},
                 take: filter.pageSize ? +filter.pageSize : 10,
@@ -39,6 +40,7 @@ export const initProperties = (app: express.Express) => {
             const countProperties = await prisma.property.count({
                 where: filter.query ?
                     {
+                        status: PropertyStatus.APPROVED,
                         OR: [{
                             address: {
                                 contains: filter.query,
@@ -51,7 +53,7 @@ export const initProperties = (app: express.Express) => {
                             }
                         }]
                     }
-                    : {}
+                    : {status: PropertyStatus.APPROVED}
                 })
 
             res.status(200).json({data: allProperties, count: countProperties});
@@ -294,6 +296,7 @@ export const initProperties = (app: express.Express) => {
             return;
         }
 
+
         const propertyRequest = validation.value;
         try {
             const property = await prisma.property.create({
@@ -308,6 +311,19 @@ export const initProperties = (app: express.Express) => {
                 },
                 include: {landlord: {include: {user: true}}}
             });
+
+            for (const [index,file] of propertyRequest.files.entries()){
+                const base64data = file.replace(/^data:image\/(png;base64|jpeg;base64),/, "");
+                console.log(base64data)
+                fs.mkdir(`./public/image/property/${property.id}`, { recursive: true}, function (err) {
+                    if (err) console.error(err)
+
+                    fs.writeFile(`./public/image/property/${property.id}/${index+1}.jpeg`,base64data, {encoding: "base64"}, err => {
+                        console.error(err)
+                    })
+                });
+            }
+
             res.status(200).json({data: property});
         } catch (e) {
             res.status(500).json({ error: e });

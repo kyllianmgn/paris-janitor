@@ -1,4 +1,4 @@
-import {ApiResponse, Property, PropertyFormData, PropertyOccupation, PropertyReservation, User} from "@/types";
+import {ApiResponse, Filter, Property, PropertyFormData, PropertyOccupation, PropertyReservation, User} from "@/types";
 import { api, getUserFromToken } from "@/api/config";
 
 export const propertiesService = {
@@ -48,7 +48,9 @@ export const propertiesService = {
 
     createProperty: async (propertyData: PropertyFormData): Promise<ApiResponse<Property>> => {
         try {
-            return await api.post('properties', { json: propertyData }).json<ApiResponse<Property>>();
+            const base64Files = await filesToBase64(propertyData.files);
+            const fileToUpload = {...propertyData, files: base64Files};
+            return await api.post('properties', { json: fileToUpload}).json<ApiResponse<Property>>();
         } catch (e) {
             console.error('Error creating property:', e);
             throw e;
@@ -89,4 +91,22 @@ export const propertiesService = {
     deletePropertyOccupation: async (id: number): Promise<ApiResponse<PropertyOccupation>> => {
         return api.delete(`property-occupations/${id}`).json<ApiResponse<PropertyOccupation>>();
     },
+};
+
+const convertToBase64 = (file: File) => new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function () {
+        if (reader.result) resolve(String(reader.result));
+    };
+    reader.onerror = function (error) {
+        reject(error);
+    };
+});
+
+const filesToBase64 = async (files: File[]): Promise<string[]> => {
+    const result = await Promise.all(files.map(async (file) => {
+        return await convertToBase64(file);
+    }));
+    return result;
 };

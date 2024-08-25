@@ -15,6 +15,7 @@ export interface Property {
     city: string,
     country: string,
     description: string,
+    files: string[],
     status: PropertyStatus
 }
 
@@ -23,7 +24,8 @@ export const propertyValidator = Joi.object<Omit<Property, "status" | "id">>({
     postalCode: Joi.string().required(),
     city: Joi.string().required(),
     country: Joi.string().required(),
-    description: Joi.string().required()
+    description: Joi.string().required(),
+    files: Joi.array().items(Joi.string()),
 })
 
 export const propertyAdminValidator = Joi.object<Omit<Property, "id">>({
