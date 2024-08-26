@@ -1,8 +1,8 @@
 import {NextFunction, Request, Response} from "express"
 import jwt from "jsonwebtoken"
+import {RequestUser} from "../../index";
 
-export const authMiddleware = async (req: Request, res: Response, next: any) => {
-    console.log(req.headers)
+export const isAuthenticated = async (req: Request, res: Response, next: any) => {
     const authHeader = req.headers.authorization
     if (!authHeader) {
         return res.status(401).json({error: "Unauthorized"})
@@ -14,7 +14,8 @@ export const authMiddleware = async (req: Request, res: Response, next: any) => 
     }
 
     try {
-        (req as any).payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET!)
+        const jsp = jwt.verify(token, process.env.JWT_ACCESS_SECRET!)
+        req.user = jsp as RequestUser
     } catch (error) {
         return res.status(401).json({error: error})
     }
@@ -22,12 +23,73 @@ export const authMiddleware = async (req: Request, res: Response, next: any) => 
     next()
 }
 
-export const isSuperAdmin = async (req: Request, res: Response, next: NextFunction) => {
-    const payload = (req as any).payload;
+export enum UserRole{
+    LANDLORD="LANDLORD",
+    TRAVELER="TRAVELER",
+    SERVICE_PROVIDER="SERVICE_PROVIDER"
+}
 
-    if (payload?.isSuperAdmin !== true) {
-        return res.status(403).json({error: "Forbidden"});
+export const isRole = (role: UserRole) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        console.log(req.user)
+        switch (role) {
+            case UserRole.LANDLORD:
+                if (!req.user?.landlordId){
+                    res.status(401).json({error: "Unauthorized"})
+                    return;
+                }
+                break;
+            case UserRole.TRAVELER:
+                if (!req.user?.travelerId){
+                    res.status(401).json({error: "Unauthorized"})
+                    return;
+                }
+                break;
+            case UserRole.SERVICE_PROVIDER:
+                if (!req.user?.serviceProviderId){
+                    res.status(401).json({error: "Unauthorized"})
+                    return;
+                }
+                break;
+        }
+        next()
     }
+}
 
-    return next();
+export const isRoleOrAdmin = (role: UserRole) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        if (req.user?.adminId){
+            next()
+            return;
+        }
+        switch (role) {
+            case UserRole.LANDLORD:
+                if (!req.user?.landlordId){
+                    res.status(401).json({error: "Unauthorized"})
+                    return;
+                }
+                break;
+            case UserRole.TRAVELER:
+                if (!req.user?.travelerId){
+                    res.status(401).json({error: "Unauthorized"})
+                    return;
+                }
+                break;
+            case UserRole.SERVICE_PROVIDER:
+                if (!req.user?.serviceProviderId){
+                    res.status(401).json({error: "Unauthorized"})
+                    return;
+                }
+                break;
+        }
+        next()
+    }
+}
+
+export const isSuperAdmin = async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user?.adminId){
+        res.status(401).json({error: "Unauthorized"})
+        return;
+    }
+    next()
 };

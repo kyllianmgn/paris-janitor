@@ -8,32 +8,82 @@ datasource db {
 }
 
 model Admin {
-  id       Int    @id @default(autoincrement())
-  username String
-  password String
+  id                Int                 @id @default(autoincrement())
+  username          String
+  password          String
+  AdminRefreshToken AdminRefreshToken[]
 
   @@map("admins")
 }
 
 model User {
-  id                  Int                  @id @default(autoincrement())
-  firstName           String
-  lastName            String
-  email               String               @unique
-  password            String
-  refreshTokens       RefreshToken[]
-  resetPasswordTokens ResetPasswordToken[]
-  Landlord            Landlord?
-  Traveler            Traveler?
-  ServiceProvider     ServiceProvider?
+  id                    Int                  @id @default(autoincrement())
+  firstName             String
+  lastName              String
+  email                 String               @unique
+  password              String
+  bannedUntil           DateTime?
+  refreshTokens         RefreshToken[]
+  resetPasswordTokens   ResetPasswordToken[]
+  Landlord              Landlord?
+  Traveler              Traveler?
+  ServiceProvider       ServiceProvider?
+  stripeCustomerId      String?
+  subscriptions         Subscription[]
 
   @@map("users")
+}
+
+model Subscription {
+  id                   Int               @id @default(autoincrement())
+  userId               Int
+  user                 User              @relation(fields: [userId], references: [id])
+  planId               Int
+  plan                 SubscriptionPlan  @relation(fields: [planId], references: [id])
+  status               SubscriptionStatus
+  startDate            DateTime
+  endDate              DateTime?
+  stripeSubscriptionId String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  @@map("subscriptions")
+}
+
+model SubscriptionPlan {
+  id            Int            @id @default(autoincrement())
+  name          String
+  description   String
+  monthlyPrice  Decimal
+  yearlyPrice   Decimal
+  userType      UserType
+  features      Json
+  stripeProductId     String
+  stripePriceIdMonthly String
+  stripePriceIdYearly  String
+  subscriptions Subscription[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@map("subscription_plans")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+}
+
+enum UserType {
+  TRAVELER
+  LANDLORD
 }
 
 model Landlord {
   id            Int             @id @default(autoincrement())
   userId        Int             @unique
-  user          User            @relation(references: [id], fields: [userId])
+  user          User            @relation(references: [id], fields: [userId], onDelete: Cascade)
   property      Property[]
   ServiceReview ServiceReview[]
 
@@ -45,7 +95,11 @@ model Property {
   landlordId     Int
   landlord       Landlord             @relation(references: [id], fields: [landlordId])
   address        String
+  postalCode     String
+  city           String
+  country        String
   description    String
+  pricePerNight  Decimal              @default(100)
   status         PropertyStatus       @default(PENDING)
   occupations    PropertyOccupation[]
   createdAt      DateTime             @default(now())
@@ -56,15 +110,15 @@ model Property {
 }
 
 model PropertyReview {
-  id         Int            @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   travelerId Int
-  traveler   Traveler       @relation(references: [id], fields: [travelerId])
+  traveler   Traveler @relation(references: [id], fields: [travelerId])
   propertyId Int
-  property   Property       @relation(references: [id], fields: [propertyId])
+  property   Property @relation(references: [id], fields: [propertyId])
   note       Decimal
-  status     PropertyStatus
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("property_reviews")
 }
@@ -73,10 +127,11 @@ enum PropertyStatus {
   PENDING
   APPROVED
   REJECTED
+  DISABLED
 }
 
 model PropertyOccupation {
-  id           Int                  @id
+  id           Int                  @id @default(autoincrement())
   propertyId   Int
   property     Property             @relation(fields: [propertyId], references: [id])
   startDate    DateTime
@@ -90,11 +145,11 @@ model PropertyOccupation {
 }
 
 model PropertyReservation {
-  id           Int                @id
-  traverlerId  Int
-  traveler     Traveler           @relation(fields: [traverlerId], references: [id])
+  id           Int                @id @default(autoincrement())
+  travelerId   Int
+  traveler     Traveler           @relation(fields: [travelerId], references: [id])
   occupationId Int                @unique
-  occupation   PropertyOccupation @relation(fields: [occupationId], references: [id])
+  occupation   PropertyOccupation @relation(fields: [occupationId], references: [id], onDelete: Cascade)
   status       ReservationStatus
   totalPrice   Decimal
   createdAt    DateTime           @default(now())
@@ -107,12 +162,13 @@ enum ReservationStatus {
   PENDING
   CONFIRMED
   CANCELLED
+  DISABLED
 }
 
 model Traveler {
   id             Int                   @id @default(autoincrement())
   userId         Int                   @unique
-  user           User                  @relation(references: [id], fields: [userId])
+  user           User                  @relation(references: [id], fields: [userId], onDelete: Cascade)
   reservations   PropertyReservation[]
   ServiceReview  ServiceReview[]
   PropertyReview PropertyReview[]
@@ -121,13 +177,20 @@ model Traveler {
 }
 
 model ServiceProvider {
-  id         Int                  @id @default(autoincrement())
-  userId     Int                  @unique
-  user       User                 @relation(references: [id], fields: [userId])
+  id         Int                   @id @default(autoincrement())
+  userId     Int                   @unique
+  user       User                  @relation(references: [id], fields: [userId], onDelete: Cascade)
   services   Service[]
   occupation ProviderOccupation[]
+  status     ServiceProviderStatus @default(PENDING)
 
   @@map("service_providers")
+}
+
+enum ServiceProviderStatus {
+  PENDING
+  ACCEPTED
+  REFUSED
 }
 
 model ProviderOccupation {
@@ -148,6 +211,7 @@ model Service {
   providerId   Int
   provider     ServiceProvider @relation(references: [id], fields: [providerId])
   intervention Intervention[]
+  type         ServiceType     @default(MISSION)
   name         String
   description  String
   basePrice    Decimal
@@ -158,17 +222,23 @@ model Service {
   @@map("services")
 }
 
+enum ServiceType {
+  INTERVENTION
+  MISSION
+}
+
 model ServiceReview {
-  id         Int      @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   serviceId  Int
-  service    Service  @relation(references: [id], fields: [serviceId])
-  travelerId Int
-  traveler   Traveler @relation(references: [id], fields: [travelerId])
-  landlordId Int
-  landlord   Landlord @relation(references: [id], fields: [landlordId])
+  service    Service   @relation(references: [id], fields: [serviceId])
+  travelerId Int?
+  traveler   Traveler? @relation(references: [id], fields: [travelerId])
+  landlordId Int?
+  landlord   Landlord? @relation(references: [id], fields: [landlordId])
   note       Decimal
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  comment    String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@map("service_reviews")
 }
@@ -214,6 +284,8 @@ model Invoice {
   status      InvoiceStatus
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+
+  @@map("invoice")
 }
 
 enum InvoiceStatus {
@@ -233,6 +305,19 @@ model RefreshToken {
 
   @@index([userId], map: "refreshToken_userId_fkey")
   @@map("refresh_token")
+}
+
+model AdminRefreshToken {
+  id          String   @id @unique @default(uuid())
+  hashedToken String
+  adminId     Int
+  admin       Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  revoked     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([adminId], map: "refreshToken_adminId_fkey")
+  @@map("admin_refresh_token")
 }
 
 model ResetPasswordToken {
