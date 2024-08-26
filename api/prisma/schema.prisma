@@ -17,19 +17,67 @@ model Admin {
 }
 
 model User {
-  id                  Int                  @id @default(autoincrement())
-  firstName           String
-  lastName            String
-  email               String               @unique
-  password            String
-  bannedUntil         DateTime?
-  refreshTokens       RefreshToken[]
-  resetPasswordTokens ResetPasswordToken[]
-  Landlord            Landlord?
-  Traveler            Traveler?
-  ServiceProvider     ServiceProvider?
+  id                    Int                  @id @default(autoincrement())
+  firstName             String
+  lastName              String
+  email                 String               @unique
+  password              String
+  bannedUntil           DateTime?
+  refreshTokens         RefreshToken[]
+  resetPasswordTokens   ResetPasswordToken[]
+  Landlord              Landlord?
+  Traveler              Traveler?
+  ServiceProvider       ServiceProvider?
+  stripeCustomerId      String?
+  subscriptions         Subscription[]
 
   @@map("users")
+}
+
+model Subscription {
+  id                   Int               @id @default(autoincrement())
+  userId               Int
+  user                 User              @relation(fields: [userId], references: [id])
+  planId               Int
+  plan                 SubscriptionPlan  @relation(fields: [planId], references: [id])
+  status               SubscriptionStatus
+  startDate            DateTime
+  endDate              DateTime?
+  stripeSubscriptionId String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  @@map("subscriptions")
+}
+
+model SubscriptionPlan {
+  id            Int            @id @default(autoincrement())
+  name          String
+  description   String
+  monthlyPrice  Decimal
+  yearlyPrice   Decimal
+  userType      UserType
+  features      Json
+  stripeProductId     String
+  stripePriceIdMonthly String
+  stripePriceIdYearly  String
+  subscriptions Subscription[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@map("subscription_plans")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+}
+
+enum UserType {
+  TRAVELER
+  LANDLORD
 }
 
 model Landlord {

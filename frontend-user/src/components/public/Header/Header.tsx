@@ -105,6 +105,7 @@ function getNavLinks(role: string | null) {
       ];
     case "LANDLORD":
       return [
+        { path: "/dashboard", label: "Dashboard" },
         { path: "/my-properties", label: "My Properties" },
         { path: "/calendar", label: "Calendar" },
         { path: "/interventions", label: "Interventions" },
@@ -112,6 +113,7 @@ function getNavLinks(role: string | null) {
       ];
     case "SERVICE_PROVIDER":
       return [
+        { path: "/dashboard", label: "Dashboard" },
         { path: "my-services", label: "My Services" },
         {
           path: "/calendar",
