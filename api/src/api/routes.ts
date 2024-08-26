@@ -15,6 +15,7 @@ import {initPropertyOccupations} from "./routes/property-occupations";
 import {initPropertyReviews} from "./routes/property-reviews";
 import {initTravelers} from "./routes/travelers";
 import {isAuthenticated, isSuperAdmin} from "./middlewares/auth-middleware";
+import {initSubscriptionPlans} from "./routes/subscription-plan";
 
 export const initRoutes = (app: express.Express) => {
     app.get("/health", (_req, res) => {
@@ -39,6 +40,7 @@ export const initRoutes = (app: express.Express) => {
     initServiceProviders(app);
     initServiceReviews(app);
     initServices(app);
+    initSubscriptionPlans(app);
 
     app.use(invalidPath);
 };
