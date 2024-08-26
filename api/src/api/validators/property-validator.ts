@@ -27,7 +27,6 @@ export const propertyValidator = Joi.object<Omit<Property, "status" | "id">>({
     country: Joi.string().required(),
     description: Joi.string().required(),
     files: Joi.array().items(Joi.string()),
-    description: Joi.string().required(),
     pricePerNight: Joi.number().required(),
 })
 

@@ -7,8 +7,6 @@ import {Property, User} from "@/types";
 import {propertiesService} from "@/api/services/properties";
 
 export interface PropertyReservationPostReq {
-    occupationId: number; //not read by API but required
-    status: ReservationStatus; //not read by API but required
     totalPrice: number;
     propertyId: number;
     startDate: string;

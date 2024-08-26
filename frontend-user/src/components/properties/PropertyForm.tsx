@@ -79,7 +79,7 @@ export const PropertyForm = () => {
                 city: '',
                 country: '',
                 description: '',
-                files: []
+                files: [],
                 pricePerNight: 0,
             };
         }

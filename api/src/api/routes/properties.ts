@@ -285,6 +285,19 @@ export const initProperties = (app: express.Express) => {
         }
     });
 
+    app.get("/properties/admin/:id(\\d+)", async (req, res) => {
+        try {
+            const property = await prisma.property.findUnique({
+                where: { id: Number(req.params.id)},
+                include: {landlord: {include: {user: true}}}
+            });
+            res.status(200).json({data: property});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
     app.post("/properties", isAuthenticated, isRole(UserRole.LANDLORD), async (req, res) => {
         if (!req.user?.landlordId){
             return res.status(401).send({ error: "You are not a landlord." });

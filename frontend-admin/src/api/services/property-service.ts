@@ -2,7 +2,7 @@ import {api} from "@/api/config";
 import {ApiResponse, Property} from "@/types";
 
 export const getProperty = async (id: number): Promise<ApiResponse<Property>> => {
-    return await api.get(`properties/${id}`).json()
+    return await api.get(`properties/admin/${id}`).json()
 }
 
 export const getProperties = async (query?: string, page?: number): Promise<ApiResponse<Property[]>> => {
@@ -33,7 +33,7 @@ export const getPendingPropertiesCount = async (): Promise<ApiResponse<{ count: 
 }
 
 export const updateProperty = async (property: Property): Promise<ApiResponse<any>> => {
-    return await api.patch(`properties/${property.id}`, {json: {...property}}).json();
+    return await api.patch(`properties/admin/${property.id}`, {json: {...property}}).json();
 }
 
 export const updatePropertyStatus = async (property: Property): Promise<ApiResponse<any>> => {
