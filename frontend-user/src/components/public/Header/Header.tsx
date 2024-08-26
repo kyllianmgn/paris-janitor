@@ -15,7 +15,8 @@ import {useEffect, useState} from "react";
 export default function Header() {
   const router = useRouter();
   const user = useSelector((state: RootState) => state.auth.user)
-  const { role, isLoading } = useAuth();
+  const role = useSelector((state: RootState) => state.auth.role)
+  const { isLoading } = useAuth();
   const currentPath = usePathname();
   const [showNav, setShowNav] = useState(false);
 
@@ -33,11 +34,19 @@ export default function Header() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex-shrink-0">
-                <Link href={"/dashboard"}>
+              {
+                user && showNav && (role === "LANDLORD" || role === "SERVICE_PROVIDER") ? <Link href={"/dashboard"}>
                   <span className="text-2xl font-bold text-red-500">
                     Paris Janitor
                   </span>
-                </Link>
+                </Link> :
+                    <Link href={"/"}>
+                  <span className="text-2xl font-bold text-red-500">
+                    Paris Janitor
+                  </span>
+                    </Link>
+              }
+
             </div>
 
             {/* Search bar */}

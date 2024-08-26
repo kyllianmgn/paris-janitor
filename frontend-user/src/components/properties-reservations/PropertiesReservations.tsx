@@ -2,6 +2,7 @@
 import {useEffect, useState} from "react";
 import {propertiesReservationsService} from "@/api/services/properties-reservations";
 import {PropertyReservationList} from "@/components/properties-reservations/PropertyReservationList";
+import {Property} from "@/types";
 
 export interface PropertyOccupation {
     id: number
@@ -10,11 +11,13 @@ export interface PropertyOccupation {
     endDate: string
     createdAt: string
     updatedAt: string
+    property?: Property
 }
 
 export interface PropertyReservation {
     id: number
     occupationId: number
+    occupation?: PropertyOccupation
     status: ReservationStatus
     totalPrice: number
     createdAt: string

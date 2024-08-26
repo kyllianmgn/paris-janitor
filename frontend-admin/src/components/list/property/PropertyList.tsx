@@ -46,7 +46,7 @@ export default function PropertyList({pending = false, landlordId = undefined, q
                             <h1 className="text-3xl text-center font-bold">No properties found.</h1>
                 }
             </div>
-            <Pagination count={totalCount} itemsName={"Services"}></Pagination>
+            <Pagination count={totalCount} itemsName={"MyServices"}></Pagination>
         </div>
     )
 }

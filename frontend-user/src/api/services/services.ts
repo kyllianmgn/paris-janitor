@@ -6,6 +6,21 @@ export const servicesService = {
         return await api.get('services/me').json()
     },
 
+    getServices: async (query?: string, page?: number): Promise<ApiResponse<Service[]>> => {
+        let searchParams = ""
+        if (query){
+            searchParams = `?query=${query}`
+        }
+        if (page){
+            if (searchParams == ""){
+                searchParams = `?page=${page}`
+            }else{
+                searchParams += `&page=${page}`
+            }
+        }
+        return await api.get(`services${searchParams}`).json()
+    },
+
     getServiceById: async (id: number): Promise<ApiResponse<Service>> => {
         return await api.get(`services/${id}`).json();
     },

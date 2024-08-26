@@ -99,6 +99,7 @@ model Property {
   city           String
   country        String
   description    String
+  pricePerNight  Decimal              @default(100)
   status         PropertyStatus       @default(PENDING)
   occupations    PropertyOccupation[]
   createdAt      DateTime             @default(now())
@@ -210,6 +211,7 @@ model Service {
   providerId   Int
   provider     ServiceProvider @relation(references: [id], fields: [providerId])
   intervention Intervention[]
+  type         ServiceType     @default(MISSION)
   name         String
   description  String
   basePrice    Decimal
@@ -218,6 +220,11 @@ model Service {
   updatedAt    DateTime        @updatedAt
 
   @@map("services")
+}
+
+enum ServiceType {
+  INTERVENTION
+  MISSION
 }
 
 model ServiceReview {

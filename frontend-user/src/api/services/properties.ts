@@ -1,4 +1,4 @@
-import { ApiResponse, Property, PropertyFormData, PropertyOccupation, User, Filter } from "@/types";
+import {ApiResponse, Filter, Property, PropertyFormData, PropertyOccupation, PropertyReservation, User} from "@/types";
 import { api, getUserFromToken } from "@/api/config";
 
 export const propertiesService = {
@@ -14,6 +14,24 @@ export const propertiesService = {
         return api.get('properties').json<ApiResponse<Property[]>>();
     },
 
+    getMyProperties: async (): Promise<ApiResponse<Property[]>> => {
+        return api.get('properties/me').json<ApiResponse<Property[]>>();
+    },
+
+    getAvailableProperties: async (query?: string, page?: number): Promise<ApiResponse<Property[]>> => {
+        let searchParams = ""
+        if (query){
+            searchParams = `?query=${query}`
+        }
+        if (page){
+            if (searchParams == ""){
+                searchParams = `?page=${page}`
+            }else{
+                searchParams += `&page=${page}`
+            }
+        }
+        return api.get(`properties/available${searchParams}`).json<ApiResponse<Property[]>>();
+    },
 
     getPropertiesByUserId: async (): Promise<ApiResponse<Property[]>> => {
         const user = getUserFromToken();
@@ -30,7 +48,9 @@ export const propertiesService = {
 
     createProperty: async (propertyData: PropertyFormData): Promise<ApiResponse<Property>> => {
         try {
-            return await api.post('properties', { json: propertyData }).json<ApiResponse<Property>>();
+            const base64Files = await filesToBase64(propertyData.files);
+            const fileToUpload = {...propertyData, files: base64Files};
+            return await api.post('properties', { json: fileToUpload}).json<ApiResponse<Property>>();
         } catch (e) {
             console.error('Error creating property:', e);
             throw e;
@@ -71,4 +91,22 @@ export const propertiesService = {
     deletePropertyOccupation: async (id: number): Promise<ApiResponse<PropertyOccupation>> => {
         return api.delete(`property-occupations/${id}`).json<ApiResponse<PropertyOccupation>>();
     },
+};
+
+const convertToBase64 = (file: File) => new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function () {
+        if (reader.result) resolve(String(reader.result));
+    };
+    reader.onerror = function (error) {
+        reject(error);
+    };
+});
+
+const filesToBase64 = async (files: File[]): Promise<string[]> => {
+    const result = await Promise.all(files.map(async (file) => {
+        return await convertToBase64(file);
+    }));
+    return result;
 };

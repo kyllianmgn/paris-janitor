@@ -27,7 +27,7 @@ export const PropertyPage = ({propertyId}: PropertyDetailProps) => {
 
     useEffect(() => {
         loadProperty().then();
-    }, [loadProperty, propertyId]);
+    }, [propertyId]);
 
     const handleGoBack = () => {
         router.back();
@@ -66,6 +66,7 @@ export const PropertyPage = ({propertyId}: PropertyDetailProps) => {
                         <p><strong>City:</strong> {property.city}</p>
                         <p><strong>Country:</strong> {property.country}</p>
                         <p><strong>Postal Code:</strong> {property.postalCode}</p>
+                        <p><strong>Price per night:</strong> {property.pricePerNight}</p>
                         <p><strong>Status:</strong>
                             <span className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                 property.status === PropertyStatus.APPROVED ? 'bg-green-100 text-green-800' :
@@ -92,7 +93,7 @@ export const PropertyPage = ({propertyId}: PropertyDetailProps) => {
                         <CardTitle>Rent</CardTitle>
                     </CardHeader>
                     <CardContent className="flex justify-center">
-                        <PropertyReservationForm propertyId={propertyId} price={150}></PropertyReservationForm>
+                        <PropertyReservationForm propertyId={propertyId}></PropertyReservationForm>
                     </CardContent>
                 </Card>
             </div>

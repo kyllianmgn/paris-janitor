@@ -1,0 +1,2 @@
+-- CreateEnum
+CREATE TYPE "ServiceType" AS ENUM ('INTERVENTION', 'MISSION');

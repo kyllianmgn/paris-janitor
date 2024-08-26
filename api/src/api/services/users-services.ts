@@ -9,13 +9,19 @@ export interface User {
     password: string,
     Landlord?: Role|null,
     Traveler?: Role|null,
-    ServiceProvider?: Role|null,
+    ServiceProvider?: ServiceProviderRole|null,
 }
 
 interface Role{
     id: number,
     userId: number
 }
+
+interface ServiceProviderRole extends Role{
+    status?: ServiceProviderStatus
+}
+
+type ServiceProviderStatus = "ACCEPTED" | "REFUSED" | "PENDING"
 
 export type UserWithoutPassword = Omit<User, "password">
 
@@ -38,7 +44,7 @@ export const findUserByEmail = async (email: string): Promise<User|null> => {
             password: true,
             Landlord: true,
             Traveler: true,
-            ServiceProvider: true,
+            ServiceProvider: true
         }
     });
 };

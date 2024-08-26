@@ -15,6 +15,8 @@ export interface Property {
     city: string,
     country: string,
     description: string,
+    files: string[],
+    pricePerNight: number,
     status: PropertyStatus
 }
 
@@ -23,7 +25,9 @@ export const propertyValidator = Joi.object<Omit<Property, "status" | "id">>({
     postalCode: Joi.string().required(),
     city: Joi.string().required(),
     country: Joi.string().required(),
-    description: Joi.string().required()
+    description: Joi.string().required(),
+    files: Joi.array().items(Joi.string()),
+    pricePerNight: Joi.number().required(),
 })
 
 export const propertyAdminValidator = Joi.object<Omit<Property, "id">>({
@@ -33,6 +37,7 @@ export const propertyAdminValidator = Joi.object<Omit<Property, "id">>({
     city: Joi.string().required(),
     country: Joi.string().required(),
     description: Joi.string().required(),
+    pricePerNight: Joi.number().required(),
     status: Joi.string().valid("PENDING", "APPROVED", "REJECTED", "DISABLED").required()
 })
 
@@ -41,7 +46,8 @@ export const propertyPatchValidator = Joi.object<Partial<Property>>({
     postalCode: Joi.string().optional(),
     city: Joi.string().optional(),
     country: Joi.string().optional(),
-    description: Joi.string().optional()
+    description: Joi.string().optional(),
+    pricePerNight: Joi.number().optional()
 })
 
 export const propertyPatchStatusValidator = Joi.object<Pick<Property, "status">>({
@@ -97,9 +103,6 @@ export interface PropertyReservation {
 }
 
 export const propertyReservationWithOccupationValidator = Joi.object<PropertyReservation & PropertyOccupation>({
-    travelerId: Joi.number().required(),
-    occupationId: Joi.number().required(),
-    status: Joi.string().required().valid("PENDING", "CONFIRMED", "CANCELLED"),
     totalPrice: Joi.number().required(),
     propertyId: Joi.number().required(),
     startDate: Joi.date().required(),

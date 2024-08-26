@@ -1,7 +1,7 @@
-import {Services} from "@/components/services/Services";
+import {MyServices} from "@/components/services/MyServices";
 
 export default () => {
     return(
-        <Services></Services>
+        <MyServices></MyServices>
     )
 }

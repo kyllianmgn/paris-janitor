@@ -48,7 +48,7 @@ export const PropertyDetails = ({id}: { id: number }) => {
 
     useEffect(() => {
         loadProperties().then()
-    }, []);
+    });
 
     return (
         <div>

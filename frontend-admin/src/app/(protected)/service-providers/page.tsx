@@ -1,8 +1,8 @@
 import PropertyList from "@/components/list/property/PropertyList";
 import ServiceProviderList from "@/components/list/service-provider/ServiceProviderList";
 
-export default ({searchParams,}: { searchParams?: { query?: string; page?: string; };
-}) => {
+export default function ServiceProviderPage({searchParams,}: { searchParams?: { query?: string; page?: string; };
+}){
     const query = searchParams?.query || '';
     const currentPage = Number(searchParams?.page) || 1;
 

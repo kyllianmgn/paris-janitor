@@ -10,6 +10,7 @@ const initialState: AuthState = {
     isAuthenticated: false,
     idRole: null,
     role: null,
+    serviceProviderStatus: null,
 };
 
 const authSlice = createSlice({
@@ -33,9 +34,10 @@ const authSlice = createSlice({
             } else if (decodedToken.travelerId) {
                 state.idRole = decodedToken.travelerId;
                 state.role = 'TRAVELER';
-            } else if (decodedToken.serviceProviderId) {
+            } else if (decodedToken.serviceProviderId && decodedToken.serviceProviderStatus) {
                 state.idRole = decodedToken.serviceProviderId;
                 state.role = 'SERVICE_PROVIDER';
+                state.serviceProviderStatus = decodedToken.serviceProviderStatus
             }
         },
         logout: (state) => {

@@ -79,7 +79,7 @@ export default function UserCard({user}: {user: User}){
             <Modal buttonVariant={"destructive"} isOpen={modalOpen} onClose={closeModal} onSubmit={onBanSubmit} submitMessage={"Bannir"}>
                 <h1>Bannir {user.firstName} {user.lastName} ?</h1>
                 <div>
-                    <Label>Bannir jusqu'à</Label>
+                    <Label>Bannir jusqu&apos;à</Label>
                     <Input required={!permanentBannedCheckbox} disabled={permanentBannedCheckbox} name={"bannedUntil"} type={"datetime-local"}></Input>
                     <Checkbox checked={permanentBannedCheckbox} title="Bannir Indéfiniment" onClick={onBanCheckboxChange} name={"bannedPermanently"}></Checkbox><Label>Bannir Indéfiniment</Label>
                 </div>

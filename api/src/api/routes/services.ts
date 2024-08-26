@@ -18,6 +18,9 @@ export const initServices = (app: express.Express) => {
             const allservices = await prisma.service.findMany({
                     where: filterParams.query ?
                         {
+                            provider: {
+                                status: "ACCEPTED"
+                            },
                             OR: [{
                                 name: {
                                     contains: filterParams.query,
@@ -30,7 +33,11 @@ export const initServices = (app: express.Express) => {
                                 }
                             }]
                         }
-                        : {},
+                        : {
+                            provider: {
+                                status: "ACCEPTED"
+                            }
+                        },
                     take: (filterParams.pageSize) ? +filterParams.pageSize : 10,
                     skip: (filterParams.page) ? (filterParams.pageSize) ? +filterParams.page * +filterParams.pageSize : (+filterParams.page-1) * 10 : 0,
                 }

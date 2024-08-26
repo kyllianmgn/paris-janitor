@@ -16,7 +16,7 @@ export default function RentalList() {
     }
 
     useEffect(() => {
-        loadProperties().then();
+        loadProperties().then()
     }, []);
 
     return (

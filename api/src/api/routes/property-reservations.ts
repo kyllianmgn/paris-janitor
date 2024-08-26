@@ -1,8 +1,10 @@
 import express from "express";
 import {prisma} from "../../utils/prisma";
-import {isAuthenticated, isSuperAdmin} from "../middlewares/auth-middleware";
+import {isAuthenticated, isRole, isSuperAdmin, UserRole} from "../middlewares/auth-middleware";
 import {
-    propertyReservationPatchValidator, propertyReservationWithOccupationValidator, ReservationStatus
+    propertyReservationPatchValidator,
+    propertyReservationWithOccupationValidator,
+    ReservationStatus
 } from "../validators/property-validator";
 import {filterValidator} from "../validators/filter-validator";
 
@@ -19,6 +21,35 @@ export const initPropertyReservations = (app: express.Express) => {
                     occupation: {
                         include: {
                             property: true
+                        }
+                    }
+                }
+            });
+            const countReservations = await prisma.propertyReservation.count()
+            res.status(200).json({data: allPropertyReservations, count: countReservations});
+        } catch (e) {
+            res.status(500).send({error: e});
+            return;
+        }
+    });
+
+    app.get("/property-reservations/me/future",isAuthenticated, isRole(UserRole.TRAVELER), async (req, res) => {
+        try {
+            const todayWithoutHours = new Date()
+            todayWithoutHours.setHours(0,0,0,0)
+            const allPropertyReservations = await prisma.propertyReservation.findMany({
+                include: {
+                    occupation: {
+                        include: {
+                            property: true
+                        }
+                    }
+                },
+                where: {
+                    travelerId: req.user?.travelerId,
+                    occupation: {
+                        startDate: {
+                            gte: todayWithoutHours
                         }
                     }
                 }
@@ -122,11 +153,11 @@ export const initPropertyReservations = (app: express.Express) => {
         }
     });
 
-    app.post("/property-reservations/", async (req, res) => {
+    app.post("/property-reservations/",isAuthenticated, isRole(UserRole.TRAVELER), async (req, res) => {
         try {
             const validation = propertyReservationWithOccupationValidator.validate(req.body);
 
-            if (validation.error) {
+            if (validation.error || !req.user?.travelerId) {
                 res.status(400).json({error: validation.error});
                 return;
             }
@@ -140,7 +171,7 @@ export const initPropertyReservations = (app: express.Express) => {
                     propertyId: reservationRequest.propertyId,
                     reservation: {
                         create: {
-                            travelerId: reservationRequest.travelerId,
+                            travelerId: req.user?.travelerId,
                             totalPrice: reservationRequest.totalPrice,
                             status: ReservationStatus.PENDING,
                         }
