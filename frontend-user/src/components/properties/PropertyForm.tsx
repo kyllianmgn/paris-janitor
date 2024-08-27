@@ -239,9 +239,9 @@ export const PropertyForm = () => {
                         <input type={"file"} accept="image/*" onChange={onFileUpload} />
                         {
                             formData.files.map((file: File, index: number) =>
-                                (<div>
+                                (<div key={index}>
                                     {file.name}
-                                    <PropertyFormImage onDelete={onFileDelete} index={index} key={index} file={file}/>
+                                    <PropertyFormImage onDelete={onFileDelete} index={index} file={file}/>
                                 </div>)
                             )
                         }

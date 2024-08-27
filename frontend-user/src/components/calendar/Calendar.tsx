@@ -72,8 +72,9 @@ const Calendar: React.FC = () => {
         }
 
         try {
+            if (!selectedProperty?.id) return;
             await actions.createOccupation({
-                propertyId: selectedProperty!.id,
+                propertyId: selectedProperty.id,
                 startDate: slotInfo.start.toISOString(),
                 endDate: slotInfo.end.toISOString(),
             });
