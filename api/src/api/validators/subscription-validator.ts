@@ -1,48 +1,23 @@
 import Joi from "joi";
-import {SubscriptionPlan} from "@prisma/client";
+import {Subscription, SubscriptionPlan, SubscriptionStatus, UserType} from "@prisma/client";
 
-export enum SubscriptionStatus {
-    ACTIVE = "ACTIVE",
-    PAST_DUE = "PAST_DUE",
-    CANCELED = "CANCELED",
-    UNPAID = "UNPAID",
-}
 
-export enum UserType {
-    TRAVELER = "TRAVELER",
-    LANDLORD = "LANDLORD",
-}
-
-export interface Subscription {
-    id: number;
+export interface SubscriptionRequest {
     userId: number;
     planId: number;
-    status: SubscriptionStatus;
-    startDate: Date;
-    endDate?: Date;
-    stripeSubscriptionId?: string;
 }
 
-export const subscriptionValidator = Joi.object<Omit<Subscription, "id">>({
+export const subscriptionValidator = Joi.object<SubscriptionRequest>({
     userId: Joi.number().required(),
     planId: Joi.number().required(),
-    status: Joi.string()
-        .valid(...Object.values(SubscriptionStatus))
-        .required(),
-    startDate: Joi.date().required(),
-    endDate: Joi.date().optional(),
-    stripeSubscriptionId: Joi.string().optional(),
 });
 
 export const subscriptionPatchValidator = Joi.object<Partial<Subscription>>({
-    userId: Joi.number().optional(),
     planId: Joi.number().optional(),
     status: Joi.string()
         .valid(...Object.values(SubscriptionStatus))
         .optional(),
-    startDate: Joi.date().optional(),
-    endDate: Joi.date().optional(),
-    stripeSubscriptionId: Joi.string().optional(),
+    endDate: Joi.date().optional().allow(null),
 });
 
 

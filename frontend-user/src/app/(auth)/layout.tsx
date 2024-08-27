@@ -6,7 +6,6 @@ import {Providers} from "@/components/public/providers";
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
       <>
-        <Header />
           <Providers>
               <AuthGuard>
                   {children}

@@ -2,7 +2,7 @@ import {ApiResponse, Filter, Property, PropertyFormData, PropertyOccupation, Pro
 import { api, getUserFromToken } from "@/api/config";
 
 export const propertiesService = {
-    getPublicProperties: async (filter: Partial<Filter>): Promise<ApiResponse<Property[]>> => {
+    getPublicProperties: async (filter?: Partial<Filter>): Promise<ApiResponse<Property[]>> => {
         return api.get('properties/public', { searchParams: filter }).json<ApiResponse<Property[]>>();
     },
 
