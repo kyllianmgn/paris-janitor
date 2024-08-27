@@ -1,4 +1,3 @@
-import ServiceProviderList from "@/components/list/service-provider/ServiceProviderList";
 import UserList from "@/components/list/users/UserList";
 
 export default function UsersPage({searchParams,}: { searchParams?: { query?: string; page?: string; };

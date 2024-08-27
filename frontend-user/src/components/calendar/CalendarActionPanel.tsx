@@ -78,13 +78,13 @@ const CalendarActionPanel: React.FC<CalendarActionPanelProps> = ({
 
         try {
             if (selectedOccupation) {
-                await onUpdateOccupation(selectedOccupation.id, { startDate: newStart, endDate: newEnd } as PropertyOccupation);
+                await onUpdateOccupation(selectedOccupation.id, { startDate: newStart.toISOString(), endDate: newEnd.toDateString() });
                 toast({
                     title: "Success",
                     description: "Unavailability updated successfully",
                 });
             } else {
-                await onCreateOccupation({ propertyId: selectedProperty, startDate: newStart, endDate: newEnd } as Omit<PropertyOccupation, 'id'>);
+                await onCreateOccupation({ propertyId: selectedProperty, startDate: newStart.toISOString(), endDate: newEnd.toISOString() });
                 toast({
                     title: "Success",
                     description: "Unavailability created successfully",

@@ -1,6 +1,6 @@
 import {MyServices} from "@/components/services/MyServices";
 
-export default () => {
+export default function MyServicesPage(){
     return(
         <MyServices></MyServices>
     )
