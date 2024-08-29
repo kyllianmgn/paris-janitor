@@ -24,14 +24,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-
-      <body
+    <head>
+        <script async
+                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2643328897463340"
+                crossOrigin="anonymous"></script>
+    </head>
+    <body
         className={cn(
-          "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable
+            "min-h-screen bg-background font-sans antialiased",
+            fontSans.variable
         )}
-      >
-      <Providers>
+    >
+    <Providers>
           <Header/>
               {children}
       </Providers>
