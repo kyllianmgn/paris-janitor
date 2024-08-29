@@ -17,6 +17,8 @@ import {initTravelers} from "./routes/travelers";
 import {isAuthenticated, isSuperAdmin} from "./middlewares/auth-middleware";
 import {initSubscriptionPlans} from "./routes/subscription-plan";
 import {initSubscriptions} from "./routes/subscription";
+import {initStripeWebhook} from "./routes/stripe-webhook";
+import {initAdminRoutes} from "./routes/adminRoutes";
 
 export const initRoutes = (app: express.Express) => {
     app.get("/health", (_req, res) => {
@@ -43,6 +45,8 @@ export const initRoutes = (app: express.Express) => {
     initServices(app);
     initSubscriptionPlans(app);
     initSubscriptions(app);
+    initStripeWebhook(app);
+    initAdminRoutes(app);
 
     app.use(invalidPath);
 };
