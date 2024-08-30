@@ -43,15 +43,48 @@ export interface Landlord {
     user?: User
 }
 
-export interface User{
-    id: number
+
+export interface User {
+    id: number;
     firstName: string;
     lastName: string;
     email: string;
-    Landlord?: Landlord;
-    ServiceProvider?: ServiceProvider;
-    Traveler?: Traveler;
-    bannedUntil?: Date | null;
+    Landlord: Landlord | null;
+    ServiceProvider: ServiceProvider | null;
+    Traveler: Traveler | null;
+    bannedUntil: Date | null;
+    subscriptions: Subscription[];
+}
+
+export interface Landlord {
+    id: number;
+    userId: number;
+}
+
+export interface ServiceProvider {
+    id: number;
+    userId: number;
+}
+
+export interface Traveler {
+    id: number;
+    userId: number;
+}
+
+export interface Subscription {
+    id: number;
+    userId: number;
+    planId: number;
+    status: SubscriptionStatus;
+    startDate: Date;
+    endDate?: Date | null;
+}
+
+export enum SubscriptionStatus {
+    ACTIVE="ACTIVE",
+    PAST_DUE="PAST_DUE",
+    CANCELED="CANCELED",
+    UNPAID="UNPAID"
 }
 
 export interface ServiceProvider {
