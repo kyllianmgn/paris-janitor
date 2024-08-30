@@ -1,4 +1,5 @@
 import UserList from "@/components/list/users/UserList";
+import UserTable from "@/components/list/users/UserTable";
 
 export default function UsersPage({searchParams,}: { searchParams?: { query?: string; page?: string; };
 }){
@@ -8,7 +9,7 @@ export default function UsersPage({searchParams,}: { searchParams?: { query?: st
     return (
         <div>
             <h1 className="text-3xl font-bold m-2">Users</h1>
-            <UserList query={query} page={currentPage}/>
+            <UserTable />
         </div>
     )
 }
