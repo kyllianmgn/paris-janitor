@@ -3,6 +3,8 @@ import {prisma} from "../../utils/prisma";
 import {userBanValidation, userPatchValidation,} from "../validators/user-validator";
 import {isAuthenticated, isRole, isRoleOrAdmin, isSuperAdmin, UserRole} from "../middlewares/auth-middleware";
 import {Filter, filterValidator} from "../validators/filter-validator";
+import {createResetPasswordToken} from "../services/email-service";
+import {User} from "@prisma/client";
 
 export const initUsers = (app: express.Express) => {
     app.get(`/users/me`, isAuthenticated, async (req: any, res) => {
@@ -40,13 +42,40 @@ export const initUsers = (app: express.Express) => {
 
     app.get("/users", isAuthenticated, isSuperAdmin, async (req, res) => {
         try {
-            const validation = filterValidator.validate(req.query)
+            const validation = filterValidator.validate(req.query);
 
             if (validation.error) {
                 res.status(400).json({error: validation.error});
             }
 
             const filter: Filter = validation.value;
+            const where: any = {};
+
+            if (filter.query) {
+                where.OR = [
+                    { firstName: { contains: filter.query, mode: "insensitive" } },
+                    { lastName: { contains: filter.query, mode: "insensitive" } },
+                    { email: { contains: filter.query, mode: "insensitive" } }
+                ];
+            }
+
+            if (filter.role) {
+                where.OR = [
+                    ...(where.OR || []),
+                    ...(filter.role.landlord ? [{ Landlord: { isNot: null } }] : []),
+                    ...(filter.role.serviceProvider ? [{ ServiceProvider: { isNot: null } }] : []),
+                    ...(filter.role.traveler ? [{ Traveler: { isNot: null } }] : [])
+                ];
+            }
+
+            if (filter.subscription) {
+                where.subscriptions = filter.subscription.active ? { some: {} } : { none: {} };
+            }
+
+            if (filter.banned) {
+                where.bannedUntil = { not: null };
+            }
+
             const allUsers = await prisma.user.findMany({
                 select: {
                     id: true,
@@ -56,62 +85,22 @@ export const initUsers = (app: express.Express) => {
                     Landlord: true,
                     Traveler: true,
                     ServiceProvider: true,
-                    bannedUntil: true
+                    bannedUntil: true,
+                    subscriptions: true
                 },
-                where: filter.query ?
-                    {
-                        OR: [{
-                            firstName: {
-                                contains: filter.query,
-                                mode: "insensitive"
-                            }
-                        }, {
-                            lastName: {
-                                contains: filter.query,
-                                mode: "insensitive"
-                            }
-                        },
-                            {
-                                email: {
-                                    contains: filter.query,
-                                    mode: "insensitive"
-                                }
-                            }]
-                    }
-                    : {},
+                where,
                 take: (filter.pageSize) ? +filter.pageSize : 10,
                 skip: (filter.page) ? (filter.pageSize) ? +filter.page * +filter.pageSize : (+filter.page-1) * 10 : 0,
+
             });
-            const countUsers = await prisma.user.count({
-                where: filter.query ?
-                    {
-                        OR: [{
-                            firstName: {
-                                contains: filter.query,
-                                mode: "insensitive"
-                            }
-                        }, {
-                            lastName: {
-                                contains: filter.query,
-                                mode: "insensitive"
-                            }
-                        },
-                            {
-                                email: {
-                                    contains: filter.query,
-                                    mode: "insensitive"
-                                }
-                            }]
-                    }
-                    : {}
-            })
+
+            const countUsers = await prisma.user.count({ where });
             res.status(200).json({data: allUsers, count: countUsers});
         } catch (e) {
             res.status(500).send({error: e});
             return;
         }
     });
-
     app.get("/users/:id(\\d+)", isAuthenticated, isSuperAdmin, async (req, res) => {
         try {
             const user = await prisma.user.findUnique({
@@ -181,7 +170,7 @@ export const initUsers = (app: express.Express) => {
         }
     });
 
-    app.delete("/users/:id(\\d+)", async (req, res) => {
+    app.delete("/users/:id(\\d+)", isSuperAdmin , async (req, res) => {
         try {
             const deletedUser = await prisma.user.delete({
                 where: {id: Number(req.params.id)},
@@ -191,4 +180,23 @@ export const initUsers = (app: express.Express) => {
             res.status(500).send({error: e});
         }
     });
+
+    app.post("/users/reset-password/:id(\\d+)", isAuthenticated, isSuperAdmin, async (req, res) => {
+        try {
+            const user: User | null = await prisma.user.findUnique({
+                where: { id: Number(req.params.id) },
+            });
+            if (!user) {
+                return res.status(404).json({ error: "User not found" });
+            }
+
+            await createResetPasswordToken(user.email);
+
+            return res.status(200).json({ message: "Password reset email sent" });
+        } catch (e) {
+            console.error("Error in reset password:", e);
+            return res.status(500).json({ error: "Internal server error" });
+        }
+    });
+
 };
