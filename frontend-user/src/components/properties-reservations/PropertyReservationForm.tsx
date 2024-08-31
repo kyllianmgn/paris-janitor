@@ -5,6 +5,8 @@ import {ReservationStatus} from "@/components/properties-reservations/Properties
 import {authService} from "@/api/services/authService";
 import {Property, User} from "@/types";
 import {propertiesService} from "@/api/services/properties";
+import {useSelector} from "react-redux";
+import {RootState} from "@/store";
 
 export interface PropertyReservationPostReq {
     totalPrice: number;
@@ -19,7 +21,7 @@ export interface PropertiesReservationsFormProps {
 
 export const PropertyReservationForm = ({propertyId}: PropertiesReservationsFormProps) => {
     const [property, setProperty] = useState<Property | null>(null);
-    const [user, setUser] = useState<User | null>(null);
+    const user= useSelector((root: RootState) => root.auth.user);
     const [submitted, setSubmitted] = useState<boolean>(false);
     const [error, setError] = useState<boolean>(false);
     //TODO manage and use available dates with property occupation
@@ -100,14 +102,8 @@ export const PropertyReservationForm = ({propertyId}: PropertiesReservationsForm
         }
     };
 
-    const loadUser = async () => {
-        const user = await authService.getUserInfo();
-        setUser(user);
-    }
-
     useEffect(() => {
         loadProperty().then();
-        loadUser().then();
         setTotalPrice(property?.pricePerNight);
     }, []);
 

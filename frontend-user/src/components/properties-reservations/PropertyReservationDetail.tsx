@@ -1,14 +1,15 @@
 "use client"
 import {useEffect, useState} from "react";
-import {PropertyReservationFull} from "@/components/properties-reservations/PropertiesReservations";
+import {PropertyReservation} from "@/components/properties-reservations/PropertiesReservations";
 import {propertiesReservationsService} from "@/api/services/properties-reservations";
+import Link from "next/link";
 
 export interface PropertyReservationDetailProps {
     propertyReservationId: number
 }
 
 export const PropertyReservationDetail = ({propertyReservationId}: PropertyReservationDetailProps) => {
-    const [propertyReservationFull, setPropertyReservationFull] = useState<PropertyReservationFull | null>(null);
+    const [propertyReservationFull, setPropertyReservationFull] = useState<PropertyReservation | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
@@ -47,10 +48,10 @@ export const PropertyReservationDetail = ({propertyReservationId}: PropertyReser
                     </h3>
                     <h3 className="text-xl mb-2"><strong>Total Price
                         : </strong>{propertyReservationFull.totalPrice}€</h3>
-                    <a className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-700"
-                       href={`http://localhost:3001/properties/${propertyReservationFull.occupation.propertyId}`}>
+                    <Link className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-700"
+                       href={`/properties/${propertyReservationFull.occupation.propertyId}`}>
                         <strong>See property</strong>
-                    </a>
+                    </Link>
                 </div>
             ) : (
                 <h1 className="text-2xl font-semibold text-center mt-10">Property reservation not Found</h1>
