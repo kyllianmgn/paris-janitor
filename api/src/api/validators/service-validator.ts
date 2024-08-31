@@ -1,18 +1,33 @@
 import Joi from "joi";
 
-export interface Service{
-    id: number,
-    providerId: number,
-    name: string,
-    description: string,
-    basePrice: number
+export interface Service {
+    id: number;
+    providerId: number;
+    name: string;
+    description: string;
+    basePrice: number;
+    type: ServiceType;
+    isDynamicPricing: boolean;
+    pricingRules?: any; // Vous pouvez définir une structure plus précise si nécessaire
+}
+
+export enum ServiceType {
+    INTERVENTION = "INTERVENTION",
+    MISSION = "MISSION"
 }
 
 export const serviceValidator = Joi.object<Service>({
     name: Joi.string().required(),
     description: Joi.string().required(),
-    basePrice: Joi.number().required()
-})
+    basePrice: Joi.number().required(),
+    type: Joi.string().valid(...Object.values(ServiceType)).required(),
+    isDynamicPricing: Joi.boolean().required(),
+    pricingRules: Joi.when('isDynamicPricing', {
+        is: true,
+        then: Joi.object().required(),
+        otherwise: Joi.forbidden()
+    })
+});
 
 export const servicePatchValidator = Joi.object<Partial<Service>>({
     name: Joi.string().optional(),
