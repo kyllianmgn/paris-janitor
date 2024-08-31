@@ -33,44 +33,38 @@ export const Dashboard = () => {
             <h1 className="text-3xl font-bold mb-6">Dashboard Administrateur</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <DashboardCard
-                    title="Propriétés en attente"
-                    value={stats.pendingProperties}
-                    href="/properties/pending"
-                />
-                <DashboardCard
-                    title="Prestataires en attente"
+                    title="Service Providers waiting"
                     value={stats.pendingServiceProviders}
                     href="/service-providers/pending"
                 />
                 <DashboardCard
-                    title="Abonnements actifs"
+                    title="Properties waiting"
+                    value={stats.pendingProperties}
+                    href="/properties/pending"
+                />
+                <DashboardCard
+                    title="Active subscriptions"
                     value={stats.activeSubscriptions}
-                    href="/subscriptions"
                 />
                 <DashboardCard
-                    title="Revenus totaux"
-                    value={`${stats.totalRevenue.toFixed(2)} €`}
-                    href= "/"
-                />
-                <DashboardCard
-                    title="Nouveaux abonnements"
+                    title="New subscriptions"
                     value={stats.newSubscriptions}
-                    href="/"
                 />
                 <DashboardCard
-                    title="Abonnements annulés"
+                    title="Canceled subscriptions"
                     value={stats.canceledSubscriptions}
-                    href="/"
                 />
                 <DashboardCard
-                    title="Abonnements voyageurs"
+                    title="Traveler subscriptions"
                     value={stats.travelerSubscriptions}
-                    href="/"
                 />
                 <DashboardCard
-                    title="Abonnements propriétaires"
+                    title="Landlord subscriptions"
                     value={stats.landlordSubscriptions}
-                    href="/"
+                />
+                <DashboardCard
+                    title="Total revenue"
+                    value={`${stats.totalRevenue.toFixed(2)} €`}
                 />
             </div>
         </div>
@@ -80,18 +74,23 @@ export const Dashboard = () => {
 interface DashboardCardProps {
     title: string;
     value: number | string;
-    href: string | null;
+    href?: string;
 }
 
-const DashboardCard = ({ title, value, href }: DashboardCardProps) => (
-    <Link href={href}>
-        <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-                <CardTitle className="text-lg">{title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <p className="text-3xl font-bold">{value}</p>
-            </CardContent>
-        </Card>
-    </Link>
-);
+const DashboardCard = ({ title, value, href }: DashboardCardProps) => {
+    const CardComponent = href ? Link : Card;
+    const cardProps = href ? { href } : {};
+
+    return (
+        <CardComponent {...cardProps}>
+            <Card className={`h-full ${href ? 'hover:shadow-lg transition-shadow cursor-pointer' : ''}`}>
+                <CardHeader>
+                    <CardTitle className="text-lg">{title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-3xl font-bold">{value}</p>
+                </CardContent>
+            </Card>
+        </CardComponent>
+    );
+};

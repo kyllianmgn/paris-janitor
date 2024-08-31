@@ -15,7 +15,7 @@ const stripe: Stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export const initSubscriptions = (app: express.Express) => {
     // Create a new subscription
-    app.post("/api/subscriptions", isAuthenticated, async (req, res) => {
+    app.post("/subscriptions", isAuthenticated, async (req, res) => {
         const validation = subscriptionValidator.validate(req.body);
 
         if (validation.error) {
@@ -74,7 +74,7 @@ export const initSubscriptions = (app: express.Express) => {
     });
 
     // Get all subscriptions (admin only)
-    app.get("/api/subscriptions", isAuthenticated, isSuperAdmin, async (req, res) => {
+    app.get("/subscriptions", isAuthenticated, isSuperAdmin, async (req, res) => {
         try {
             const subscriptions = await prisma.subscription.findMany();
             res.status(200).json({ data: subscriptions });

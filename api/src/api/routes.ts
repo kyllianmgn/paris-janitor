@@ -19,6 +19,7 @@ import {initSubscriptionPlans} from "./routes/subscription-plan";
 import {initSubscriptions} from "./routes/subscription";
 import {initStripeWebhook} from "./routes/stripe-webhook";
 import {initAdminRoutes} from "./routes/adminRoutes";
+import {initProviderOccupations} from "./routes/provider-occupations";
 
 export const initRoutes = (app: express.Express) => {
     app.get("/health", (_req, res) => {
@@ -36,6 +37,7 @@ export const initRoutes = (app: express.Express) => {
     initProperties(app);
     initPropertyOccupations(app);
     initPropertyReservations(app);
+    initProviderOccupations(app);
     initPropertyReviews(app);
     initInterventions(app);
     initInterventionForms(app);

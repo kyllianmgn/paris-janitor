@@ -27,12 +27,14 @@
   },
   "dependencies": {
     "@prisma/client": "^5.17.0",
+    "@types/nodemailer": "^6.4.15",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.14",
     "stripe": "^16.8.0",
     "uuid": "^10.0.0"
   }

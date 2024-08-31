@@ -114,7 +114,7 @@ function getNavLinks(role: string | null) {
     case "SERVICE_PROVIDER":
       return [
         { path: "/dashboard", label: "Dashboard" },
-        { path: "my-services", label: "My Services" },
+        { path: "/my-services", label: "My Services" },
         {
           path: "/calendar",
           label: "Calendar",

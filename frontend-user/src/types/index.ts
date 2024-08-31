@@ -161,6 +161,35 @@ export interface PropertyOccupation {
   property?: Property
 }
 
+export interface ProviderOccupation{
+  id: number
+  providerId: number
+  provider: ServiceProvider;
+  intervention?: Intervention;
+  startDate: Date
+  endDate: Date
+}
+
+export interface Intervention {
+  id: number,
+  serviceId: number,
+  propertyOccupationId?: number
+  propertyOccupation?: PropertyOccupation
+  propertyId?: number
+  property?: Property
+  providerOccupationId: number
+  providerOccupation: ProviderOccupation
+  additionalPrice: number
+  status: InterventionStatus
+}
+
+export interface ProviderCalendarEvent extends ProviderOccupation {
+  title: string;
+  resourceId?: number;
+  start: Date; // ajouté pour react-big-calendar
+  end: Date; // ajouté pour react-big-calendar
+}
+
 export interface PropertyReservation {
   id: number;
   travelerId: number;
