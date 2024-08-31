@@ -124,3 +124,13 @@ export const propertyReservationPatchValidator = Joi.object<PropertyReservation>
     status: Joi.string().optional().valid("PENDING", "CONFIRMED", "CANCELLED"),
     totalPrice: Joi.number().optional()
 })
+
+export interface ServicePayment {
+    serviceId: number;
+    amount: number;
+}
+
+export const servicePaymentValidator = Joi.object<ServicePayment>({
+    serviceId: Joi.number().positive().required(),
+    amount: Joi.number().positive().required()
+});
