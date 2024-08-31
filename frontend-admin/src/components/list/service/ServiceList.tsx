@@ -8,7 +8,13 @@ import Pagination from "@/components/list/pagination";
 import ServiceCard from "@/components/list/service/ServiceCard";
 import {getServices, getServicesFromProvider} from "@/api/services/service-service";
 
-export default function ServiceList({providerId,query, page}: {providerId?: number, query?: string, page?: number}) {
+interface ServiceListProps {
+    providerId?: number;
+    query?: string;
+    page?: number;
+}
+
+export default function ServiceList({providerId, query, page}: ServiceListProps) {
     const [serviceList, setServiceList] = useState<Service[]>();
     const [totalCount, setTotalCount] = useState(0);
     const [loading, setLoading] = useState(false);
