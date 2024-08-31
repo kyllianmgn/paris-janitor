@@ -16,6 +16,7 @@ interface DataTableProps<T> {
     onBan?: (id: number) => void;
     onSearchChange?: (query: string) => void;
     onPageChange?: (page: number) => void;
+    onApprove?: (id: number) => void;
     totalCount: number;
     itemsPerPage?: number;
     searchPlaceholder?: string;
@@ -33,6 +34,7 @@ export default function DataTable<T extends { id: number }>({
                                                                 onBan,
                                                                 onSearchChange,
                                                                 onPageChange,
+                                                                onApprove,
                                                                 totalCount,
                                                                 itemsPerPage = 10,
                                                                 searchPlaceholder = "Search...",
@@ -117,6 +119,11 @@ export default function DataTable<T extends { id: number }>({
                                         {onBan && (
                                             <DropdownMenuItem onClick={() => onBan(item.id)}>
                                                 Ban
+                                            </DropdownMenuItem>
+                                        )}
+                                        {onApprove && (
+                                            <DropdownMenuItem onClick={() => onApprove(item.id)}>
+                                                Approve
                                             </DropdownMenuItem>
                                         )}
                                         <DropdownMenuItem onClick={() => onDetails(item.id)}>

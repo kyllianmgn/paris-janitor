@@ -36,6 +36,7 @@ interface CrudModalProps<T> {
     title: string;
     initialData?: Partial<T>;
     mode: 'create' | 'edit' | 'delete';
+    additionalActions?: React.ReactNode;
 }
 
 function RenderField<T>({
@@ -116,6 +117,7 @@ export default function CrudModal<T>({
                                  onSubmit,
                                  fields,
                                  title,
+                                    additionalActions,
                                  initialData = {},
                                  mode,
                              }: CrudModalProps<T>) {
@@ -175,6 +177,7 @@ export default function CrudModal<T>({
                             </div>
                         ))}
                         <DialogFooter>
+                            {additionalActions}
                             <Button type="submit">
                                 {mode === 'create' ? 'Create' : mode === 'edit' ? 'Update' : 'Submit'}
                             </Button>
