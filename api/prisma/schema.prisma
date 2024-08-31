@@ -145,18 +145,20 @@ model PropertyOccupation {
 }
 
 model PropertyReservation {
-  id           Int                @id @default(autoincrement())
+  id           Int                  @id @default(autoincrement())
   travelerId   Int
-  traveler     Traveler           @relation(fields: [travelerId], references: [id])
-  occupationId Int                @unique
-  occupation   PropertyOccupation @relation(fields: [occupationId], references: [id], onDelete: Cascade)
+  traveler     Traveler             @relation(fields: [travelerId], references: [id])
+  occupationId Int                  @unique
+  occupation   PropertyOccupation   @relation(fields: [occupationId], references: [id], onDelete: Cascade)
   status       ReservationStatus
   totalPrice   Decimal
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  payment      Payment?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
 
   @@map("property_reservations")
 }
+
 
 enum ReservationStatus {
   PENDING
@@ -218,6 +220,9 @@ model Service {
   reviews      ServiceReview[]
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
+  payments    ServicePayment[]
+  isDynamicPricing Boolean   @default(false)
+  pricingRules     Json?
 
   @@map("services")
 }
@@ -282,16 +287,58 @@ model Invoice {
   amount      Decimal
   description String
   status      InvoiceStatus
+  paymentId   Int?          @unique
+  payment     Payment?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
   @@map("invoice")
 }
 
+
 enum InvoiceStatus {
   PENDING
   PAID
   CANCELLED
+}
+
+model Payment {
+  id                    Int                      @id @default(autoincrement())
+  amount                Decimal
+  currency              String
+  status                PaymentStatus
+  paymentMethod         String
+  stripePaymentIntentId String?
+  propertyReservationId Int?                     @unique
+  propertyReservation   PropertyReservation?     @relation(fields: [propertyReservationId], references: [id])
+  invoiceId             Int?                     @unique
+  invoice               Invoice?                 @relation(fields: [invoiceId], references: [id])
+  services              ServicePayment[]
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+
+  @@map("payments")
+}
+
+
+
+model ServicePayment {
+  id        Int     @id @default(autoincrement())
+  paymentId Int
+  payment   Payment @relation(fields: [paymentId], references: [id])
+  serviceId Int
+  service   Service @relation(fields: [serviceId], references: [id])
+  amount    Decimal
+
+  @@map("service_payments")
+}
+
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
 }
 
 model RefreshToken {
