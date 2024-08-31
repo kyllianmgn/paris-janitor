@@ -10,9 +10,14 @@ export const propertiesService = {
         return api.get(`properties/${id}`).json<ApiResponse<Property>>();
     },
 
+    getPropertyImageById: async (id: number): Promise<ApiResponse<string[]>> => {
+        return api.get(`properties/${id}/image`).json<ApiResponse<string[]>>();
+    },
+
     getProperties: async (): Promise<ApiResponse<Property[]>> => {
         return api.get('properties').json<ApiResponse<Property[]>>();
     },
+
 
     getMyProperties: async (): Promise<ApiResponse<Property[]>> => {
         return api.get('properties/me').json<ApiResponse<Property[]>>();

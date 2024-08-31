@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,11 @@ import { propertiesService } from "@/api/services/properties";
 import { Textarea } from "@/components/ui/textarea";
 import {PropertyFormData, ServiceFormData} from "@/types";
 import { ArrowLeft } from "lucide-react";
+import {
+    EmptyLittlePropertyFormImage,
+    EmptyPropertyFormImage,
+    PropertyFormImage
+} from "@/components/properties/PropertyFormImage";
 
 const steps = [
     "Informations du bien",
@@ -22,48 +27,6 @@ const STORAGE_KEY = 'property_form_draft';
 
 interface PropertyFormDataError extends Omit<PropertyFormData, "files">{
     files: string;
-}
-
-const PropertyFormImage = ({file, onDelete, index}: {file: File, onDelete: (index: number) => void, index: number}) => {
-    const [imageSrc, setImageSrc] = useState('');
-
-    useEffect(() => {
-        const loadImage = async () => {
-            if (file) {
-                const imageDataUrl = await readFileImage(file);
-                setImageSrc(imageDataUrl);
-            }
-        };
-        loadImage().then();
-    }, [file]);
-
-    const promiseReadFile = (file: File) => {
-        const fr = new FileReader();
-
-        return new Promise<string>((resolve, reject) => {
-            fr.onerror = () => {
-                fr.abort()
-                reject(new DOMException("Could not read file"));
-            }
-
-            fr.onloadend = () => {
-                if (fr.result !== null){
-                    resolve(String(fr.result))
-                }
-            }
-            fr.readAsDataURL(file);
-        })
-    }
-
-    const readFileImage = async (file: File) => {
-        return await promiseReadFile(file)
-    }
-
-    const handleFileDelete = () => {
-        onDelete(index)
-    }
-
-    return <img src={imageSrc} alt="Uploaded" onClick={handleFileDelete}/>;
 }
 
 export const PropertyForm = () => {
@@ -94,6 +57,7 @@ export const PropertyForm = () => {
         };
     });
     const [errors, setErrors] = useState<Partial<PropertyFormDataError>>({});
+    const fileUploadInputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
         // Sauvegarde automatique des données du formulaire
@@ -110,6 +74,11 @@ export const PropertyForm = () => {
         }));
         setErrors(prevErrors => ({ ...prevErrors, [name]: '' }));
     };
+
+    const onFileUploadButtonClick = () => {
+        if (!fileUploadInputRef.current) return;
+        fileUploadInputRef.current.click()
+    }
 
     const onFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
@@ -159,6 +128,7 @@ export const PropertyForm = () => {
     const handlePrevious = () => {
         setCurrentStep(prev => Math.max(prev - 1, 0));
     };
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -236,15 +206,36 @@ export const PropertyForm = () => {
                 return (
                     <div>
                         <h3>Photo de votre bien</h3>
-                        <input type={"file"} accept="image/*" onChange={onFileUpload} />
-                        {
-                            formData.files.map((file: File, index: number) =>
-                                (<div key={index}>
-                                    {file.name}
-                                    <PropertyFormImage onDelete={onFileDelete} index={index} file={file}/>
-                                </div>)
-                            )
-                        }
+                        <input className={"hidden"} ref={fileUploadInputRef} type={"file"} accept="image/*" onChange={onFileUpload} />
+                        <div className={"w-full cursor-pointer bg-gray-100 hover:bg-gray-300 border-2 border-gray-300 text-center h-7 rounded-lg mb-2"} onClick={onFileUploadButtonClick}>Uploadez une photo</div>
+                        <div className={"flex flex-col gap-2"}>
+                            <div>
+                                {
+                                    formData.files && formData.files.length > 0 &&
+                                    <PropertyFormImage onDelete={onFileDelete} index={0} file={formData.files[0]}/>
+                                }
+                                {
+                                    formData.files && formData.files.length <= 0 && <EmptyPropertyFormImage onUpload={onFileUploadButtonClick}></EmptyPropertyFormImage>
+                                }
+                            </div>
+                            <div className={"flex flex-row gap-2"}>
+                                {
+                                    formData.files.map((file: File, index: number) =>
+                                        {
+                                            if (index < 1) return null;
+                                            return (
+                                                <PropertyFormImage onDelete={onFileDelete} index={index} file={file}/>
+                                            )
+                                        }
+                                    )
+                                }
+                                {
+                                    Array.from(Array(5 - formData.files.slice(1,formData.files.length).length).keys()).map((_, index) => (
+                                        <EmptyLittlePropertyFormImage onUpload={onFileUploadButtonClick}></EmptyLittlePropertyFormImage>
+                                    ))
+                                }
+                            </div>
+                        </div>
                         {errors.files && <span className="text-red-500">{errors.files}</span>}
                     </div>
                 );

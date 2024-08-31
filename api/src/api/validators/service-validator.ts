@@ -120,8 +120,6 @@ export interface ProviderOccupation{
 }
 
 export const providerOccupationValidator = Joi.object<ProviderOccupation>({
-    id: Joi.number().required(),
-    providerId: Joi.number().required(),
     startDate: Joi.date().required(),
     endDate: Joi.date().required(),
 })

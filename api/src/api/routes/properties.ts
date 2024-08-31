@@ -285,6 +285,24 @@ export const initProperties = (app: express.Express) => {
         }
     });
 
+    app.get("/properties/:id(\\d+)/image", async (req, res) => {
+        try {
+            const property = await prisma.property.findUnique({
+                where: { id: Number(req.params.id),status: PropertyStatus.APPROVED },
+                include: {landlord: {include: {user: true}}}
+            });
+            if (!property) return res.sendStatus(404);
+            const files = fs.readdirSync(`./public/image/property/${+req.params.id}`)
+            res.status(200).json({data: files});
+        } catch (e: any) {
+            if (e.errno == -4058){
+                return res.status(404).send({ error: e });
+            }
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
     app.get("/properties/admin/:id(\\d+)", async (req, res) => {
         try {
             const property = await prisma.property.findUnique({

@@ -9,6 +9,7 @@ import {useRouter} from "next/navigation";
 export default function RentalList() {
     const router = useRouter();
     const [propertyList, setPropertyList] = useState<Property[]>([]);
+    const apiLink = process.env.NEXT_PUBLIC_API_URL || "https://api.parisjanitor.fr/";
 
     const loadProperties = async () => {
         const res = await propertiesService.getPublicProperties();
@@ -31,6 +32,7 @@ export default function RentalList() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-4">
+                            <img src={apiLink + `public/image/property/${property.id}/1.jpeg`}/>
                             <p className="text-sm text-gray-600">{property.address}</p>
                             <p className="mt-2 mb-2 text-sm line-clamp-3">{property.description}</p>
                             <Button onClick={() => router.push(`/properties/${property.id}`)} className="w-full ">

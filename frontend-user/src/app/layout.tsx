@@ -13,8 +13,8 @@ const fontSans = FontSans({
 });
 
 export const metadata: Metadata = {
-  title: "Paris Janitors Traveler App",
-  description: "A travel app for Paris Janitors",
+  title: "Paris Janitor",
+  description: "A travel app for Paris Janitor",
 };
 
 export default function RootLayout({
@@ -25,9 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en">
     <head>
-        <script async
-                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2643328897463340"
-                crossOrigin="anonymous"></script>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2643328897463340" crossOrigin="anonymous"></script>
     </head>
     <body
         className={cn(

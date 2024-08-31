@@ -1,5 +1,13 @@
 import {api} from "@/api/config";
-import {ApiResponse, Property, PropertyFormData, Service, ServiceFormData} from "@/types";
+import {
+    ApiResponse,
+    Property,
+    PropertyFormData,
+    PropertyOccupation,
+    ProviderOccupation,
+    Service,
+    ServiceFormData
+} from "@/types";
 
 export const servicesService = {
     getMyServices: async (): Promise<ApiResponse<Service[]>> => {
@@ -32,5 +40,21 @@ export const servicesService = {
             console.error('Error creating service:', e);
             throw e;
         }
-    }
+    },
+
+    getMyOccupations: async (): Promise<ApiResponse<ProviderOccupation[]>> => {
+        return await api.get('provider-occupations/me').json()
+    },
+
+    createOccupation: async (occupation: Omit<ProviderOccupation, "id">): Promise<ApiResponse<ProviderOccupation>> => {
+        return await api.post('provider-occupations/', {json: occupation}).json()
+    },
+
+    updateOccupation: async (id: number, occupationData: Partial<ProviderOccupation>): Promise<ApiResponse<ProviderOccupation>> => {
+        return api.patch(`provider-occupations/${id}`, { json: occupationData }).json<ApiResponse<ProviderOccupation>>();
+    },
+
+    deleteOccupation: async (id: number): Promise<ApiResponse<ProviderOccupation>> => {
+        return api.delete(`provider-occupations/${id}`).json<ApiResponse<ProviderOccupation>>();
+    },
 }
