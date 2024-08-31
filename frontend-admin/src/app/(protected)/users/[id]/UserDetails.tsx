@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useState } from "react";
-import { User } from "@/types";
+import {ServiceProviderStatus, User} from "@/types";
 import { getUserById, editUser, banUser, resetPassword } from "@/api/services/user-service";
 import { EntityDetails } from "@/components/public/EntityDetails";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import ReservationList from "@/components/list/reservation/ReservationList";
 import PropertyList from "@/components/list/property/PropertyList";
 import ServiceList from "@/components/list/service/ServiceList";
 import { useRouter } from "next/navigation";
+import {updateServiceProviderStatus} from "@/api/services/service-provider-service";
 
 export const UserDetails: React.FC<{ id: number }> = ({ id }) => {
     const [user, setUser] = useState<User | null>(null);
@@ -56,6 +57,45 @@ export const UserDetails: React.FC<{ id: number }> = ({ id }) => {
             });
         }
         setEditing(false);
+    };
+
+
+    const handleApproveServiceProvider = async () => {
+        if (!user?.ServiceProvider) return;
+        try {
+            const response = await updateServiceProviderStatus({...user.ServiceProvider, status: ServiceProviderStatus.ACCEPTED});
+            setUser({...user, ServiceProvider: response.data});
+            toast({
+                title: "Success",
+                description: "Service Provider approved successfully",
+            });
+        } catch (error) {
+            console.error("Error approving service provider:", error);
+            toast({
+                title: "Error",
+                description: "Failed to approve Service Provider",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const handleRejectServiceProvider = async () => {
+        if (!user?.ServiceProvider) return;
+        try {
+            const response = await updateServiceProviderStatus({...user.ServiceProvider, status: ServiceProviderStatus.REFUSED});
+            setUser({...user, ServiceProvider: response.data});
+            toast({
+                title: "Success",
+                description: "Service Provider rejected successfully",
+            });
+        } catch (error) {
+            console.error("Error rejecting service provider:", error);
+            toast({
+                title: "Error",
+                description: "Failed to reject Service Provider",
+                variant: "destructive",
+            });
+        }
     };
 
     const handleBan = async () => {
@@ -131,6 +171,17 @@ export const UserDetails: React.FC<{ id: number }> = ({ id }) => {
                     <div><strong>Role:</strong> {user.Landlord ? "Landlord" : user.ServiceProvider ? "Service Provider" : user.Traveler ? "Traveler" : "Unknown"}</div>
                     <div><strong>Status:</strong> {user.bannedUntil ? `Banned until ${new Date(user.bannedUntil).toLocaleDateString()}` : "Active"}</div>
                     <div><strong>Subscription:</strong> {user.subscriptions && user.subscriptions.length > 0 ? "Active" : "Inactive"}</div>
+                    {user.ServiceProvider && (
+                        <div>
+                            <strong>Service Provider Status:</strong> {user.ServiceProvider.status}
+                            {user.ServiceProvider.status === ServiceProviderStatus.PENDING && (
+                                <div className="mt-2">
+                                    <Button onClick={handleApproveServiceProvider} className="mr-2">Approve</Button>
+                                    <Button onClick={handleRejectServiceProvider} variant="destructive">Reject</Button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             ),
         },

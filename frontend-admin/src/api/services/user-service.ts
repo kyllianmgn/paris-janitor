@@ -1,6 +1,8 @@
 import {api} from "@/api/config";
 import {ApiResponse, Landlord, ServiceProvider, Traveler, User} from "@/types";
 
+
+
 export const getUsers = async (query?: string, page?: number, filters?: any): Promise<ApiResponse<User[]>> => {
     let searchParams = new URLSearchParams();
     if (query) {

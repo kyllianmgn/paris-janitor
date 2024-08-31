@@ -80,6 +80,22 @@ export interface Subscription {
     endDate?: Date | null;
 }
 
+export interface SubscriptionRequest {
+    userId: number;
+    planId: number;
+}
+
+export interface SubscriptionPlan {
+    id: number;
+    name: string;
+    description: string;
+    monthlyPrice: number;
+    yearlyPrice: number;
+    stripeProductId: string;
+    stripePriceIdMonthly: string;
+    stripePriceIdYearly: string;
+}
+
 export enum SubscriptionStatus {
     ACTIVE="ACTIVE",
     PAST_DUE="PAST_DUE",

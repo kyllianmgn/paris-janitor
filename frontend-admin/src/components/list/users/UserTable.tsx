@@ -1,9 +1,14 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { User, ApiResponse } from '@/types';
+import { User, ApiResponse, ServiceProviderStatus } from '@/types';
 import DataTable from '@/components/public/DataTable';
 import CrudModal from '@/components/public/CrudModal';
 import { getUsers, editUser, banUser, deleteUser } from '@/api/services/user-service';
+import {
+    approveServiceProvider,
+    rejectServiceProvider,
+    updateServiceProviderStatus
+} from '@/api/services/service-provider-service';
 import { Button } from "@/components/ui/button";
 import { Filter } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -14,6 +19,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
+import { useToast } from "@/components/ui/use-toast";
 
 const UserTable: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
@@ -22,7 +28,7 @@ const UserTable: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
     const [modalOpen, setModalOpen] = useState(false);
-    const [modalMode, setModalMode] = useState<'edit' | 'ban'>('edit');
+    const [modalMode, setModalMode] = useState<'edit' | 'ban' | 'approveReject'>('edit');
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [filters, setFilters] = useState({
         role: {
@@ -34,10 +40,16 @@ const UserTable: React.FC = () => {
             active: false,
             inactive: false
         },
-        banned: false
+        banned: false,
+        serviceProviderStatus: {
+            pending: false,
+            accepted: false,
+            refused: false
+        }
     });
 
     const router = useRouter();
+    const { toast } = useToast();
     const itemsPerPage = 10;
 
     useEffect(() => {
@@ -47,11 +59,21 @@ const UserTable: React.FC = () => {
     const fetchUsers = async () => {
         setIsLoading(true);
         try {
-            const response: ApiResponse<User[]> = await getUsers(searchQuery, currentPage, filters);
+            const response: ApiResponse<User[]> = await getUsers(searchQuery, currentPage, {
+                ...filters,
+                serviceProviderStatus: Object.entries(filters.serviceProviderStatus)
+                    .filter(([_, value]) => value)
+                    .map(([key]) => key.toUpperCase())
+            });
             setUsers(response.data);
             setTotalCount(response.count || 0);
         } catch (error) {
             console.error('Error fetching users:', error);
+            toast({
+                title: "Error",
+                description: "Failed to fetch users",
+                variant: "destructive",
+            });
         }
         setIsLoading(false);
     };
@@ -72,27 +94,116 @@ const UserTable: React.FC = () => {
     const handleBan = (id: number) => {
         const user = users.find(u => u.id === id);
         if (user) {
-            setSelectedUser(user);
-            setModalMode('ban');
-            setModalOpen(true);
+            if (user.ServiceProvider && user.ServiceProvider.status === ServiceProviderStatus.PENDING) {
+                setSelectedUser(user);
+                setModalMode('approveReject');
+                setModalOpen(true);
+            } else {
+                setSelectedUser(user);
+                setModalMode('ban');
+                setModalOpen(true);
+            }
         }
     };
 
     const handleDelete = async (id: number) => {
         if (confirm('Are you sure you want to delete this user?')) {
-            await deleteUser(id);
-            fetchUsers();
+            try {
+                await deleteUser(id);
+                fetchUsers();
+                toast({
+                    title: "Success",
+                    description: "User deleted successfully",
+                });
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                toast({
+                    title: "Error",
+                    description: "Failed to delete user",
+                    variant: "destructive",
+                });
+            }
         }
     };
 
     const handleSubmit = async (data: Partial<User>) => {
         if (modalMode === 'edit' && selectedUser) {
-            await editUser(selectedUser.id, data);
+            try {
+                await editUser(selectedUser.id, data);
+                fetchUsers();
+                setModalOpen(false);
+                toast({
+                    title: "Success",
+                    description: "User updated successfully",
+                });
+            } catch (error) {
+                console.error('Error updating user:', error);
+                toast({
+                    title: "Error",
+                    description: "Failed to update user",
+                    variant: "destructive",
+                });
+            }
         } else if (modalMode === 'ban' && selectedUser && data.bannedUntil) {
-            await banUser(selectedUser.id, new Date(data.bannedUntil));
+            try {
+                await banUser(selectedUser.id, new Date(data.bannedUntil));
+                fetchUsers();
+                setModalOpen(false);
+                toast({
+                    title: "Success",
+                    description: "User banned successfully",
+                });
+            } catch (error) {
+                console.error('Error banning user:', error);
+                toast({
+                    title: "Error",
+                    description: "Failed to ban user",
+                    variant: "destructive",
+                });
+            }
         }
-        setModalOpen(false);
-        fetchUsers().then();
+    };
+
+    const handleApproveServiceProvider = async () => {
+        if (selectedUser?.ServiceProvider) {
+            try {
+                const response = await updateServiceProviderStatus({...selectedUser.ServiceProvider, status: ServiceProviderStatus.ACCEPTED})
+                fetchUsers().then();
+                setModalOpen(false);
+                toast({
+                    title: "Success",
+                    description: "Service Provider approved successfully",
+                });
+            } catch (error) {
+                console.error('Error approving service provider:', error);
+                toast({
+                    title: "Error",
+                    description: "Failed to approve Service Provider",
+                    variant: "destructive",
+                });
+            }
+        }
+    };
+
+    const handleRejectServiceProvider = async () => {
+        if (selectedUser?.ServiceProvider) {
+            try {
+                await updateServiceProviderStatus({...selectedUser.ServiceProvider, status: ServiceProviderStatus.REFUSED})
+                fetchUsers().then();
+                setModalOpen(false);
+                toast({
+                    title: "Success",
+                    description: "Service Provider rejected successfully",
+                });
+            } catch (error) {
+                console.error('Error rejecting service provider:', error);
+                toast({
+                    title: "Error",
+                    description: "Failed to reject Service Provider",
+                    variant: "destructive",
+                });
+            }
+        }
     };
 
     const columns: { key: keyof User; header: string }[] = [
@@ -113,6 +224,11 @@ const UserTable: React.FC = () => {
             key: 'bannedUntil',
             header: 'Banned Until',
             render: (user: User) => user.bannedUntil ? new Date(user.bannedUntil).toLocaleDateString() : 'Not banned'
+        },
+        {
+            key: 'serviceProviderStatus',
+            header: 'Service Provider Status',
+            render: (user: User) => user.ServiceProvider ? user.ServiceProvider.status : 'N/A'
         },
     ];
 
@@ -195,6 +311,21 @@ const UserTable: React.FC = () => {
                         />
                         <Label htmlFor="banned">Show Banned Users</Label>
                     </div>
+                    <div className="space-y-2">
+                        <h4 className="font-medium leading-none">Service Provider Status</h4>
+                        <div className="flex flex-col space-y-1">
+                            {['PENDING', 'ACCEPTED', 'REFUSED'].map((status) => (
+                                <div key={status} className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id={`sp-${status}`}
+                                        checked={filters.serviceProviderStatus[status.toLowerCase() as keyof typeof filters.serviceProviderStatus]}
+                                        onCheckedChange={() => handleFilterChange('serviceProviderStatus', status.toLowerCase())}
+                                    />
+                                    <Label htmlFor={`sp-${status}`}>{status}</Label>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </PopoverContent>
         </Popover>
@@ -214,6 +345,7 @@ const UserTable: React.FC = () => {
                 onDetails={handleDetails}
                 onSearchChange={setSearchQuery}
                 onPageChange={setCurrentPage}
+
                 totalCount={totalCount}
                 itemsPerPage={itemsPerPage}
                 searchPlaceholder="Search users..."
@@ -229,9 +361,19 @@ const UserTable: React.FC = () => {
                 onClose={() => setModalOpen(false)}
                 onSubmit={handleSubmit}
                 fields={modalFields}
-                title={modalMode === 'edit' ? 'Edit User' : 'Ban User'}
+                title={modalMode === 'edit' ? 'Edit User' : modalMode === 'ban' ? 'Ban User' : 'Approve/Reject Service Provider'}
                 initialData={selectedUser || {}}
                 mode={modalMode === 'edit' ? 'edit' : 'create'}
+                additionalActions={
+                    modalMode === 'approveReject' && selectedUser?.ServiceProvider
+                        ? (
+                            <>
+                                <Button onClick={handleApproveServiceProvider}>Approve</Button>
+                                <Button onClick={handleRejectServiceProvider} variant="destructive">Reject</Button>
+                            </>
+                        )
+                        : undefined
+                }
             />
         </div>
     );
