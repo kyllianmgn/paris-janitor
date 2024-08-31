@@ -8,6 +8,7 @@ import {Button} from "@/components/ui/button";
 import {ArrowLeft} from "lucide-react";
 import {PersonalInfoTab} from "@/components/profile/PersonalInfoTab";
 import {SecurityTab} from "@/components/profile/SecurityTab";
+import {SubscriptionTab} from "@/components/profile/SubscriptionTab";
 
 export const ProfilePage = () => {
     const [user, setUser] = useState<User | null>(null);
@@ -59,6 +60,10 @@ export const ProfilePage = () => {
                                 className={`py-2 px-4 text-left ${activeTab === "security" ? "bg-primary text-white" : "bg-gray-100 text-gray-700"} rounded-lg`}>
                             Security
                         </button>
+                        <button onClick={() => setActiveTab("subscription")}
+                                className={`py-2 px-4 text-left ${activeTab === "subscription" ? "bg-primary text-white" : "bg-gray-100 text-gray-700"} rounded-lg`}>
+                            Subscription
+                        </button>
                     </div>
                 </div>
 
@@ -69,6 +74,10 @@ export const ProfilePage = () => {
 
                     {activeTab === "security" && (
                         <SecurityTab/>
+                    )}
+
+                    {activeTab === "subscription" && (
+                        <SubscriptionTab/>
                     )}
                 </div>
             </div>
