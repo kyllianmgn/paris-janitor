@@ -2,5 +2,5 @@ node_modules/
 .idea/*
 .vscode/
 .env
-public/
+api/public/
 dist/
