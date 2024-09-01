@@ -211,14 +211,14 @@ export const initUsers = (app: express.Express) => {
 
         const userRequest = validation.value;
         try {
-            const user = await prisma.user.update({
+            await prisma.user.update({
                 where: {
                     id: +req.user.userId,
                 },
                 data: userRequest,
             });
 
-            return res.status(200).json({data: user});
+            return res.status(200).json({message: "Success"});
         } catch (e) {
             return res.status(500).send({error: e});
         }
