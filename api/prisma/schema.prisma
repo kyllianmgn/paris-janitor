@@ -86,8 +86,16 @@ model Landlord {
   user          User            @relation(references: [id], fields: [userId], onDelete: Cascade)
   property      Property[]
   ServiceReview ServiceReview[]
+  status        LandlordStatus  @default(PENDING)
 
   @@map("landlords")
+}
+
+enum LandlordStatus {
+  PENDING
+  ACTIVE
+  PAST_DUE
+  CANCELED
 }
 
 model Property {
