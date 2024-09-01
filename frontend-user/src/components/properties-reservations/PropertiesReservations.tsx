@@ -2,7 +2,7 @@
 import {useEffect, useState} from "react";
 import {propertiesReservationsService} from "@/api/services/properties-reservations";
 import {PropertyReservationList} from "@/components/properties-reservations/PropertyReservationList";
-import {Property} from "@/types";
+import {Property, PropertyReservation} from "@/types";
 
 export interface PropertyOccupation {
     id: number
@@ -14,28 +14,6 @@ export interface PropertyOccupation {
     property?: Property
 }
 
-export interface PropertyReservation {
-    id: number
-    occupationId: number
-    occupation?: PropertyOccupation
-    status: ReservationStatus
-    totalPrice: number
-    createdAt: string
-    updatedAt: string
-    travelerId: number
-}
-
-export interface PropertyReservationFull {
-    id: number
-    occupationId: number
-    status: ReservationStatus
-    totalPrice: number
-    createdAt: string
-    updatedAt: string
-    travelerId: number
-    occupation: PropertyOccupation
-}
-
 export enum ReservationStatus {
     PENDING = "PENDING",
     CONFIRMED = "CONFIRMED",
@@ -43,7 +21,7 @@ export enum ReservationStatus {
 }
 
 export const PropertiesReservations = () => {
-    const [propertiesReservationsFullList, setPropertiesReservationsFullList] = useState<PropertyReservationFull[]>([]);
+    const [propertiesReservationsFullList, setPropertiesReservationsFullList] = useState<PropertyReservation[]>([]);
 
     const loadPropertiesReservationsFull = async () => {
         const res = await propertiesReservationsService.getPropertiesReservationsFullByUserId();

@@ -63,8 +63,6 @@ export interface PropertyReview {
 }
 
 export const propertyReviewValidator = Joi.object<PropertyReview>({
-    travelerId: Joi.number().required(),
-    propertyId: Joi.number().required(),
     note: Joi.number().required(),
     comment: Joi.string().required()
 })

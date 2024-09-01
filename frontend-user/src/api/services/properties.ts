@@ -1,4 +1,13 @@
-import {ApiResponse, Filter, Property, PropertyFormData, PropertyOccupation, PropertyReservation, User} from "@/types";
+import {
+    ApiResponse,
+    Filter,
+    Property,
+    PropertyFormData,
+    PropertyOccupation,
+    PropertyReservation,
+    PropertyReview,
+    User
+} from "@/types";
 import { api, getUserFromToken } from "@/api/config";
 
 export const propertiesService = {
@@ -95,6 +104,19 @@ export const propertiesService = {
 
     deletePropertyOccupation: async (id: number): Promise<ApiResponse<PropertyOccupation>> => {
         return api.delete(`property-occupations/${id}`).json<ApiResponse<PropertyOccupation>>();
+    },
+
+    getPropertyAvailability: async (id: number, date: string): Promise<ApiResponse<boolean>> => {
+        return api.get(`properties/availability/${id}?date=${date}`).json<ApiResponse<boolean>>();
+    },
+
+    createPropertyReview: async (propertyId: number, note: number, comment: string): Promise<ApiResponse<PropertyReview>> => {
+        console.log({note: note, comment: comment})
+        return api.post(`property-reviews/${propertyId}`, {json: {note: note, comment: comment}}).json<ApiResponse<PropertyReview>>();
+    },
+
+    getMyReviewOnProperty: async (propertyId: number): Promise<ApiResponse<PropertyReview>> => {
+        return api.get(`property-reviews/me/${propertyId}`).json<ApiResponse<PropertyReview>>();
     },
 };
 

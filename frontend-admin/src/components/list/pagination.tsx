@@ -5,14 +5,12 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 interface PaginationProps {
     count: number;
     itemsName: string;
-    totalCount: number;
     onPageChange?: (page: number) => void;
 }
 
 export default function Pagination({
                                        count,
                                        itemsName,
-                                        totalCount,
                                        onPageChange,
                                    }: PaginationProps) {
     const searchParams = useSearchParams();

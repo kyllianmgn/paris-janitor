@@ -1,10 +1,10 @@
 "use client"
 
-import {PropertyReservationFull} from "@/components/properties-reservations/PropertiesReservations";
+import {PropertyReservation} from "@/components/properties-reservations/PropertiesReservations";
 import {useRouter} from "next/navigation";
 
 export interface PropertyReservationCardProps {
-    propertyReservationFull: PropertyReservationFull
+    propertyReservationFull: PropertyReservation
 }
 
 export const PropertyReservationCard = ({propertyReservationFull}: PropertyReservationCardProps) => {
