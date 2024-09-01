@@ -56,6 +56,14 @@ export const isRole = (role: UserRole) => {
     }
 }
 
+export const isTravelerOrLandlord = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user?.landlordId || !req.user?.serviceProviderId){
+        res.status(401).json({error: "Unauthorized"})
+        return;
+    }
+    next()
+}
+
 export const isRoleOrAdmin = (role: UserRole) => {
     return (req: Request, res: Response, next: NextFunction) => {
         if (req.user?.adminId){

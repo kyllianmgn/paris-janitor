@@ -45,9 +45,6 @@ export interface ServiceReview {
 }
 
 export const serviceReviewValidator = Joi.object<ServiceReview>({
-    travelerId: Joi.number().optional(),
-    landlordId: Joi.number().optional(),
-    serviceId: Joi.number().required(),
     note: Joi.number().required().max(5).min(0),
     comment: Joi.string().required()
 }).xor("travelerId","landlordId")
