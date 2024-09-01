@@ -7,73 +7,50 @@ import { servicesService } from "@/api/services/services";
 import {Service, ServicePayment} from "@/types";
 import {redirect, useRouter} from 'next/navigation';
 import {paymentService} from "@/api/services/paymentService";
+import DatePicker from "react-datepicker";
+import {Input} from "@/components/ui/input";
 
 interface ReservationDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    propertyId: number;
-    propertyPrice: number;
-    startDate: Date;
-    endDate: Date;
+    propertyId: number
 }
 
-const ReservationDialog: React.FC<ReservationDialogProps> = ({
+const OrderServicesDialog: React.FC<ReservationDialogProps> = ({
                                                                  isOpen,
                                                                  onClose,
-                                                                 propertyId,
-                                                                 propertyPrice,
-                                                                 startDate,
-                                                                 endDate
+                                                                 propertyId
                                                              }) => {
     const [services, setServices] = useState<Service[]>([]);
     const [selectedServices, setSelectedServices] = useState<number[]>([]);
     const [totalPrice, setTotalPrice] = useState(0);
+    const [date, setDate] = useState<Date | null>(null);
     const router = useRouter();
 
     useEffect(() => {
         const fetchServices = async () => {
-            const res = await servicesService.getServices();
+            const res = await servicesService.getServicesForPropeties(undefined, undefined, date?date:undefined);
             setServices(res.data);
         };
         fetchServices().then();
-    }, []);
+    }, [date]);
 
-    useEffect(() => {
-        if (endDate && startDate) {
-            const numberOfNights: number = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-            const accommodationPrice: number = propertyPrice * numberOfNights;
-
-            const servicesPrices: number = selectedServices.reduce((total, serviceId) => {
-                const service: Service | undefined = services.find(s => s.id === serviceId);
-                return total + (service?.basePrice || 0);
-            }, 0);
-
-            // Calculer le total et le convertir en nombre avec deux décimales
-            const totalPrice = (Number(accommodationPrice) + Number(servicesPrices)).toFixed(2);
-            setTotalPrice(+totalPrice);
-        }
-    }, [selectedServices, services, propertyPrice, startDate, endDate]);
-
-    const handleServiceToggle = (serviceId: number) => {
-        setSelectedServices(prev =>
-            prev.includes(serviceId)
-                ? prev.filter(id => id !== serviceId)
-                : [...prev, serviceId]
-        );
+    const handleServiceToggle = (serviceId: number, servicePrice: number) => {
+        setSelectedServices([serviceId]);
+        setTotalPrice(servicePrice)
     };
 
     const handleSubmit = async () => {
         try {
-            const response = await paymentService.createPayment({
+            if (!date) return;
+            console.log(date)
+            const response = await paymentService.createServicePayment({
                 amount: Number(totalPrice), // Assurez-vous que c'est un nombre
                 currency: 'EUR', // ou la devise appropriée
                 paymentMethod: 'stripe',
-                propertyReservationId: propertyId,
-                services: selectedServices.map(serviceId => ({
-                    serviceId,
-                    name: services.find(s => s.id === serviceId)?.name,
-                    amount: Number(services.find(s => s.id === serviceId)?.basePrice || 0)
-                } as ServicePayment))
+                serviceId: selectedServices[0],
+                date: date,
+                propertyId: String(propertyId)
             });
             if (response.sessionUrl){
                 router.push(response.sessionUrl)
@@ -84,8 +61,7 @@ const ReservationDialog: React.FC<ReservationDialogProps> = ({
         }
     };
 
-    // Déterminer le texte du bouton en fonction des services sélectionnés
-    const buttonText = selectedServices.length > 0 ? 'Book with selected services' : 'No services, proceed to payment';
+    const buttonText = selectedServices.length > 0 ? 'Réservé le service sélectionné' : 'Pas de services ou de date, impossible de réservé';
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -93,6 +69,7 @@ const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 <DialogHeader>
                     <DialogTitle>Book your stay</DialogTitle>
                 </DialogHeader>
+                <Input type={"datetime-local"} onChange={(e) => {setDate(new Date(e.target.value))}}/>
                 <div className="py-4">
                     <h3 className="mb-4 font-semibold">Available services:</h3>
                     {services.map(service => (
@@ -100,7 +77,7 @@ const ReservationDialog: React.FC<ReservationDialogProps> = ({
                             <Checkbox
                                 id={`service-${service.id}`}
                                 checked={selectedServices.includes(service.id)}
-                                onCheckedChange={() => handleServiceToggle(service.id)}
+                                onCheckedChange={() => handleServiceToggle(service.id, service.basePrice)}
                             />
                             <label htmlFor={`service-${service.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                 {service.name} - ${service.basePrice}
@@ -110,11 +87,11 @@ const ReservationDialog: React.FC<ReservationDialogProps> = ({
                     <p className="mt-4 font-semibold">Total price: ${totalPrice}</p>
                 </div>
                 <DialogFooter>
-                    <Button onClick={handleSubmit}>{buttonText}</Button>
+                    <Button onClick={handleSubmit} disabled={selectedServices.length <= 0 || !date}>{buttonText}</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
     );
 };
 
-export default ReservationDialog;
+export default OrderServicesDialog;
