@@ -19,6 +19,16 @@ import {RootState} from "@/store";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import OrderServicesDialog from "@/components/properties/OrderServicesDialog";
+import { CrudModal, Field } from "@/components/public/CrudModal";
+
+const propertyFields: Field[] = [
+    { name: 'address', label: 'Address', type: 'text', required: true },
+    { name: 'postalCode', label: 'Postal Code', type: 'text', required: true },
+    { name: 'city', label: 'City', type: 'text', required: true },
+    { name: 'country', label: 'Country', type: 'text', required: true },
+    { name: 'pricePerNight', label: 'Price per night', type: 'number', required: true },
+    { name: 'description', label: 'Description', type: 'textarea', required: true },
+];
 
 export interface PropertyDetailsProps {
     propertyId: number;
@@ -44,6 +54,12 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
     const idRole = useSelector((root: RootState) => root.auth.idRole);
     let date = new Date();
     date.setDate(date.getDate() + 1);
+
+    const [modalState, setModalState] = useState<{isOpen: boolean, mode: 'edit' | 'delete', property: Property | null}>({
+        isOpen: false,
+        mode: 'edit',
+        property: null
+    });
 
     const loadProperty = async () => {
         if (propertyId) {
@@ -135,14 +151,53 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
         setIsReservationDialogOpen(true);
     };
 
+    const handleModalClose = () => {
+        setModalState({ isOpen: false, mode: 'edit', property: null });
+    };
 
+    const handleModalSubmit = async (data: Partial<Property>) => {
+        try {
+            if (modalState.mode === 'edit') {
+                if (data.id) {
+                    const propertyId = data.id;
+                    delete data.id;
+                    delete data.landlordId;
+                    delete data.instruction;
+                    delete data.roomCount;
+                    delete data.propertyType;
+                    delete data.status;
+                    delete data.createdAt;
+                    delete data.updatedAt;
+                    await propertiesService.updateProperty(propertyId ,data as Property);
+                    toast({ title: "Success", description: "Property updated successfully" });
+                } else {
+                    toast({
+                        title: "Error",
+                        description: `Failed to ${modalState.mode === 'edit' ? 'update' : 'delete'} property`,
+                        variant: "destructive",
+                    });
+                }
+            } else if (modalState.mode === 'delete') {
+                await propertiesService.disableProperty(modalState.property!.id!);
+                toast({ title: "Success", description: "Property deleted successfully" });
+            }
+        } catch (error) {
+            console.error(`Error ${modalState.mode === 'edit' ? 'updating' : 'deleting'} property:`, error);
+            toast({
+                title: "Error",
+                description: `Failed to ${modalState.mode === 'edit' ? 'update' : 'delete'} property`,
+                variant: "destructive",
+            });
+        }
+        handleModalClose();
+    };
 
     const handleManageOccupations = () => {
         router.push(`/properties/${propertyId}/occupations`);
     };
 
     const handleEditProperty = () => {
-        router.push(`/properties/${propertyId}/edit`);
+        setModalState({ isOpen: true, mode: 'edit', property });
     };
 
     const handleDeleteProperty = async () => {
@@ -252,6 +307,16 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
                         </div>
                     )}
                     {!availability.state && <h1>{availability.reason}</h1>}
+
+                    <CrudModal<Property>
+                        isOpen={modalState.isOpen}
+                        onClose={handleModalClose}
+                        onSubmit={handleModalSubmit}
+                        fields={propertyFields}
+                        title={modalState.mode === 'edit' ? 'Edit Property' : 'Delete Property'}
+                        initialData={modalState.property || {}}
+                        mode={modalState.mode}
+                    />
                 </div>
             }
         </div>
