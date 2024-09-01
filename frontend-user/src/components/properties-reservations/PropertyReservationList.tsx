@@ -1,8 +1,8 @@
-import {PropertyReservationFull} from "@/components/properties-reservations/PropertiesReservations";
+import {PropertyReservation} from "@/components/properties-reservations/PropertiesReservations";
 import {PropertyReservationCard} from "@/components/properties-reservations/PropertyReservationCard";
 
 export interface PropertyReservationListProps {
-    propertiesReservations: PropertyReservationFull[];
+    propertiesReservations: PropertyReservation[];
 }
 
 export const  PropertyReservationList = ({propertiesReservations}: PropertyReservationListProps) => {

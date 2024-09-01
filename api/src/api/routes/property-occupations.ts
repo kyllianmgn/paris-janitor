@@ -180,7 +180,7 @@ export const initPropertyOccupations = (app: express.Express) => {
             const deletedProperty = await prisma.propertyOccupation.delete({
                 where: { id: Number(req.params.id) },
             });
-            res.status(200);
+            res.status(200).send({data: deletedProperty});
         } catch (e) {
             res.status(500).send({ error: e });
         }

@@ -1,10 +1,11 @@
+"use client";
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { servicesService } from "@/api/services/services";
 import { Service } from "@/types";
-import { useRouter } from 'next/navigation';
+import {redirect, useRouter} from 'next/navigation';
 import {paymentService} from "@/api/services/paymentService";
 
 interface ReservationDialogProps {
@@ -49,7 +50,7 @@ const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
             // Calculer le total et le convertir en nombre avec deux décimales
             const totalPrice = (Number(accommodationPrice) + Number(servicesPrices)).toFixed(2);
-            setTotalPrice(totalPrice);
+            setTotalPrice(+totalPrice);
         }
     }, [selectedServices, services, propertyPrice, startDate, endDate]);
 
@@ -74,12 +75,8 @@ const ReservationDialog: React.FC<ReservationDialogProps> = ({
                     amount: Number(services.find(s => s.id === serviceId)?.basePrice || 0)
                 }))
             });
-            console.log(response.data);
-            if (response.data.sessionUrl) {
-                window.location.href = response.data.sessionUrl;
-            } else {
-                console.error('No session URL returned from the server');
-                // Gérer l'erreur ici
+            if (response.sessionUrl){
+                router.push(response.sessionUrl)
             }
         } catch (error) {
             console.error('Error creating payment:', error);

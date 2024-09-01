@@ -1,5 +1,5 @@
-import {MyPropertyReservations} from "@/components/properties-reservations/MyPropertyReservations";
+import ReservationList from "@/components/reservation-list/ReservationList";
 
 export default function PropertiesRoute({params}: Readonly<{ params: { id: number } }>) {
-    return <MyPropertyReservations propertyId={params.id}></MyPropertyReservations>
+    return <ReservationList propertyId={params.id} mode={"property"}></ReservationList>
 }

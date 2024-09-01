@@ -1,40 +1,86 @@
-
 "use client";
 import React, { useEffect, useState } from "react";
-import { Property, PropertyStatus, User } from "@/types";
+import {Property, PropertyStatus, Service, User} from "@/types";
 import { propertiesService } from "@/api/services/properties";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Edit, Trash2, Calendar } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Calendar , Settings} from "lucide-react";
 import { useRouter } from "next/navigation";
 import PropertyImageCarousel from "./PropertyImageCarousel";
 import PropertyCalendar from "./PropertyCalendar";
 import ReservationDialog from "./ReservationDialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import {servicesService} from "@/api/services/services";
+import {Input} from "@/components/ui/input";
+import {Simulate} from "react-dom/test-utils";
 
 export interface PropertyDetailsProps {
     propertyId: number;
 }
 
-export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ propertyId }) => {
+interface ServiceAvailability { state: boolean, reason: string }
+
+export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
     const [property, setProperty] = useState<Property | null>(null);
+    const [propertyServicesTab, setPropertyServicesTab] = useState<boolean>(false);
+    const [availableServices, setAvailableServices] = useState<Service[]>([]);
+    const [selectedService, setSelectedService] = useState<Service|null>(null);
+    const [serviceInterventionDate, setServiceInterventionDate] = useState<string>("");
+    const [availability, setAvailability] = useState<ServiceAvailability>({state: false, reason: ""});
     const [loading, setLoading] = useState<boolean>(true);
     const [isReservationDialogOpen, setIsReservationDialogOpen] = useState(false);
     const [selectedDates, setSelectedDates] = useState<{ start: Date | null; end: Date | null }>({ start: null, end: null });
     const router = useRouter();
     const { toast } = useToast();
     const { user, isAuthenticated, role } = useAuth();
+    let date = new Date();
+    date.setDate(date.getDate() + 1);
+
+    const loadProperty = async () => {
+        if (propertyId) {
+            const res = await propertiesService.getPropertyById(propertyId);
+            setProperty(res.data);
+            setLoading(false);
+        }
+    };
+
+    const toggleServices = async () => {
+        setPropertyServicesTab(prevState => !prevState);
+    }
+
+    const loadAvailability = async () => {
+        if (!serviceInterventionDate || !selectedService) return;
+        const SPResponse = await servicesService.getProviderAvailabilityFromService(selectedService?.id, serviceInterventionDate)
+        const propertyResponse = await propertiesService.getPropertyAvailability(propertyId, serviceInterventionDate)
+        if (SPResponse.data && propertyResponse.data){
+            setAvailability({state: true, reason: "All Good"});
+        }else if (!SPResponse.data){
+            setAvailability({state: false, reason: "Service Provider Not Available at selected date."});
+        } else if (!propertyResponse.data){
+            setAvailability({state: false, reason: "Property Unavailable at selected date."});
+        }
+        console.log(SPResponse, propertyResponse)
+    }
 
     useEffect(() => {
-        const loadProperty = async () => {
-            if (propertyId) {
-                const res = await propertiesService.getPropertyById(propertyId);
-                setProperty(res.data);
-                setLoading(false);
-            }
-        };
-        loadProperty();
+        loadAvailability().then()
+    }, [serviceInterventionDate]);
+
+    const loadServices = async () => {
+        const res = await servicesService.getAvailableInterventionServices();
+        console.log(res)
+        setAvailableServices(res.data)
+    }
+
+    useEffect(() => {
+        if (propertyServicesTab){
+            loadServices().then()
+        }
+    }, [propertyServicesTab]);
+
+    useEffect(() => {
+        loadProperty().then();
     }, [propertyId]);
 
     const setStartDate = (date: string) => {
@@ -92,7 +138,7 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ propertyId }) 
                 toast({
                     title: "Property deleted",
                     description: "The property has been successfully deleted.",
-                    variant: "success",
+                    variant: "default",
                 });
                 router.push('/my-properties');
             } catch (error) {
@@ -154,6 +200,34 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ propertyId }) 
                 />
 
             )}
+
+            {
+                propertyServicesTab &&
+                <div>
+                    <h1>Available Services for your property</h1>
+
+                    {availableServices.map((service: Service, index: number) => (
+                        <div key={index} onClick={() => {setSelectedService(service)}}>
+                            <h1>{service.name}</h1>
+                        </div>
+                    ))}
+                    {selectedService && (
+                        <div className={"shadow-card"}>
+                            <h1 className={"font-bold"}>{selectedService.name}</h1>
+                            <Input
+                                type="datetime-local"
+                                id="startDate"
+                                min={date.toISOString().split('T')[0] + "T00:00:00"}
+                                value={serviceInterventionDate}
+                                onChange={(e) => setServiceInterventionDate(e.target.value)}
+                                required
+                                className="mt-1"
+                            />
+                        </div>
+                    )}
+                    {!availability.state && <h1>{availability.reason}</h1>}
+                </div>
+            }
         </div>
     );
 };

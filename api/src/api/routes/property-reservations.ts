@@ -79,7 +79,7 @@ export const initPropertyReservations = (app: express.Express) => {
         try {
             const PropertyReservationFull = await prisma.propertyReservation.findUnique({
                 where: {id: Number(req.params.id)},
-                include: {occupation: true}
+                include: {occupation: {include: {property: true}}}
             });
             res.status(200).json({data: PropertyReservationFull});
         } catch (e) {
