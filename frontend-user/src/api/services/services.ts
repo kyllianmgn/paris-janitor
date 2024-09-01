@@ -57,4 +57,12 @@ export const servicesService = {
     deleteOccupation: async (id: number): Promise<ApiResponse<ProviderOccupation>> => {
         return api.delete(`provider-occupations/${id}`).json<ApiResponse<ProviderOccupation>>();
     },
+
+    getAvailableInterventionServices: async (): Promise<ApiResponse<Service[]>> => {
+        return api.get(`services/available/intervention`).json<ApiResponse<Service[]>>();
+    },
+
+    getProviderAvailabilityFromService: async (id: number, date: string): Promise<ApiResponse<boolean>> => {
+        return api.get(`services/availability/${id}?date=${date}`).json<ApiResponse<boolean>>();
+    },
 }

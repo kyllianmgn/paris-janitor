@@ -13,11 +13,13 @@ export interface User {
 export interface Landlord {
   id: number;
   userId: number;
+  user?: User
 }
 
 export interface Traveler {
   id: number;
   userId: number;
+  user?: User
 }
 
 export interface ServiceProvider {
@@ -139,7 +141,8 @@ export interface RevokeRefreshTokenRequest {
 }
 
 export interface ApiResponse<T> {
-  data: T
+  data: T,
+  count: number
 }
 
 export interface DateRange {
@@ -157,6 +160,7 @@ export enum PropertyStatus {
 export interface Property {
   id?: number,
   landlordId?: number,
+  landlord?: Landlord
   address: string,
   postalCode: string,
   city: string,
@@ -166,6 +170,28 @@ export interface Property {
   status?: PropertyStatus,
   createdAt?: Date,
   updatedAt?: Date
+}
+
+export interface PropertyReview {
+  id: number
+  travelerId: number
+  traveler?: Traveler
+  propertyId: number
+  property?: Property
+  note: number
+  comment: string
+}
+
+export interface ServiceReview {
+  id: number
+  travelerId: number
+  traveler?: Traveler
+  landlordId: number
+  landlord?: Landlord
+  serviceId: number
+  service?: Service
+  note: number
+  comment: string
 }
 
 export interface PropertyFormData extends Omit<Property, 'id' | 'landlordId' | 'status' | 'createdAt' | 'updatedAt'>{
@@ -220,10 +246,11 @@ export interface ProviderCalendarEvent extends ProviderOccupation {
 export interface PropertyReservation {
   id: number;
   travelerId: number;
+  traveler: Traveler;
   occupationId: number;
   status: ReservationStatus;
   totalPrice: number;
-  propertyOccupation?: PropertyOccupation
+  occupation?: PropertyOccupation
 }
 
 export interface CalendarEvent extends PropertyOccupation {
