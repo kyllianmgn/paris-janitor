@@ -38,4 +38,8 @@ export const propertiesReservationsService = {
     getMyReservationsAsUser: async (): Promise<ApiResponse<PropertyReservation[]>> => {
         return api.get('property-reservations/me').json<ApiResponse<PropertyReservation[]>>();
     },
+
+    getNextReservationsByLandlordId: async (): Promise<ApiResponse<PropertyReservation[]>> => {
+        return api.get('property-reservations/landlord/future').json<ApiResponse<PropertyReservation[]>>();
+    }
 }
