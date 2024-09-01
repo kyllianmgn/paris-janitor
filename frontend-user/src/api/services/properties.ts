@@ -96,6 +96,10 @@ export const propertiesService = {
     deletePropertyOccupation: async (id: number): Promise<ApiResponse<PropertyOccupation>> => {
         return api.delete(`property-occupations/${id}`).json<ApiResponse<PropertyOccupation>>();
     },
+
+    getPropertyAvailability: async (id: number, date: string): Promise<ApiResponse<boolean>> => {
+        return api.get(`properties/availability/${id}?date=${date}`).json<ApiResponse<boolean>>();
+    },
 };
 
 const convertToBase64 = (file: File) => new Promise<string>((resolve, reject) => {

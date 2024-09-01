@@ -8,7 +8,7 @@ import {
     PropertyStatus,
     propertyValidator
 } from "../validators/property-validator";
-import {Filter, filterValidator} from "../validators/filter-validator";
+import {dateValidator, Filter, filterValidator} from "../validators/filter-validator";
 import * as fs from "fs"
 
 export const initProperties = (app: express.Express) => {
@@ -66,6 +66,41 @@ export const initProperties = (app: express.Express) => {
         try {
             const allProperties = await prisma.property.findMany({});
             res.status(200).json({data: allProperties});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.get("/properties/availability/:id(\\d+)", async (req, res) => {
+        try {
+            const validation = dateValidator.validate(req.query)
+
+            if (validation.error) {
+                res.status(400).json({ error: validation.error });
+                return;
+            }
+
+            const filterParams = validation.value;
+            const property = await prisma.property.findFirst({
+                    where: {
+                        id: +req.params.id,
+                        occupations: {
+                            none: {
+                                AND: [
+                                    {startDate:
+                                            {lte: validation.value.date}
+                                    },
+                                    {endDate:
+                                            {gte: validation.value.date}
+                                    },
+                                ]
+                            }
+                        }
+                    }
+                }
+            );
+            res.status(200).json({data: property});
         } catch (e) {
             res.status(500).send({ error: e });
             return;

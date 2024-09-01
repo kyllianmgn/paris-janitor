@@ -6,21 +6,17 @@ import { ServiceTable } from "@/components/services/ServiceTable";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, List, Grid } from "lucide-react";
-import { Service } from "@/types";
+import {Service, ServiceProviderStatus} from "@/types";
 import {useSelector} from "react-redux";
 import {RootState} from "@/store";
+import {authService} from "@/api/services/authService";
 
 export const MyServices = () => {
     const router = useRouter();
     const [serviceList, setServiceList] = useState<Service[]>([]);
     const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
     const [isClient, setIsClient] = useState(false);
-    const SPStatus = useSelector((state: RootState) => state.auth.serviceProviderStatus)
-
-    useEffect(() => {
-        setIsClient(true)
-    }, []);
-
+    const [SPStatus, setSPStatus] = useState<ServiceProviderStatus|null>(null);
 
     const loadServices = async () => {
         try {
@@ -32,8 +28,19 @@ export const MyServices = () => {
         }
     };
 
+    const loadStatus = async () => {
+        try{
+            const res = await authService.getUserInfo();
+            setSPStatus(res.ServiceProvider?.status)
+        }catch (error) {
+
+        }
+    }
+
     useEffect(() => {
+        setIsClient(true)
         loadServices().then();
+        loadStatus().then();
     }, []);
 
     const handleAddService = () => {

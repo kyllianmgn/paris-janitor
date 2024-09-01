@@ -29,3 +29,7 @@ export const filterValidator = Joi.object<Filter>({
     }),
     banned: Joi.boolean()
 })
+
+export const dateValidator = Joi.object({
+    date: Joi.string().isoDate().required(),
+})
