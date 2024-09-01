@@ -1,8 +1,4 @@
-import {ApiResponse, User} from "@/types";
-import {
-    PropertyReservation,
-    PropertyReservation
-} from "@/components/properties-reservations/PropertiesReservations";
+import {ApiResponse, User, PropertyReservation} from "@/types";
 import {PropertyReservationPostReq} from "@/components/properties-reservations/PropertyReservationForm";
 import {api} from "@/api/config";
 import {authService} from "@/api/services/authService";

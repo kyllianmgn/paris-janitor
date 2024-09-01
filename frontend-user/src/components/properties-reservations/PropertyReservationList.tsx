@@ -1,4 +1,4 @@
-import {PropertyReservation} from "@/components/properties-reservations/PropertiesReservations";
+import {PropertyReservation} from "@/types";
 import {PropertyReservationCard} from "@/components/properties-reservations/PropertyReservationCard";
 
 export interface PropertyReservationListProps {
