@@ -8,6 +8,12 @@ import {
 import { isAuthenticated, isRoleOrAdmin, isSuperAdmin } from "../middlewares/auth-middleware";
 import Stripe from "stripe";
 import { Subscription, SubscriptionPlan, SubscriptionStatus, User } from "@prisma/client";
+import {findUserByEmail} from "../services/users-services";
+import {v4 as uuidv4} from "uuid";
+import {generateTokens} from "../../utils/token";
+import {addRefreshTokenToWhitelist} from "../services/auth-services";
+import {LandlordStatus} from "../validators/landlord-validator";
+
 
 const stripe: Stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: "2024-06-20",
@@ -15,19 +21,27 @@ const stripe: Stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export const initSubscriptions = (app: express.Express) => {
     // Create a new subscription
-    app.post("/subscriptions", isAuthenticated, async (req, res) => {
-        const validation = subscriptionValidator.validate(req.body);
-
-        if (validation.error) {
-            return res.status(400).json({ error: validation.error.details });
-        }
-
-        const subscriptionData: SubscriptionRequest = validation.value;
-
+    app.post("/subscriptions/landlord", isAuthenticated, async (req, res) => {
         try {
-            const user: User | null = await prisma.user.findUnique({ where: { id: subscriptionData.userId } });
+            const validation = subscriptionValidator.validate(req.body);
+
+            if (validation.error) {
+                return res.status(400).json({ error: "Invalid input data", details: validation.error.details });
+            }
+
+            const subscriptionData: SubscriptionRequest = validation.value;
+
+            const user:User | null = await prisma.user.findUnique({
+                where: { id: subscriptionData.userId },
+                include: { Landlord: true }
+            });
+
             if (!user) {
                 return res.status(404).json({ error: "User not found." });
+            }
+
+            if (!user.Landlord) {
+                return res.status(400).json({ error: "User is not a landlord." });
             }
 
             const plan: SubscriptionPlan | null = await prisma.subscriptionPlan.findUnique({ where: { id: subscriptionData.planId } });
@@ -35,7 +49,6 @@ export const initSubscriptions = (app: express.Express) => {
                 return res.status(404).json({ error: "Subscription plan not found." });
             }
 
-            // Create or retrieve Stripe customer
             let stripeCustomerId = user.stripeCustomerId;
             if (!stripeCustomerId) {
                 const customer = await stripe.customers.create({
@@ -49,29 +62,100 @@ export const initSubscriptions = (app: express.Express) => {
                 });
             }
 
-            // Create Stripe subscription
-            const stripeSubscription = await stripe.subscriptions.create({
+            const session = await stripe.checkout.sessions.create({
+                payment_method_types: ['card'],
+                line_items: [
+                    {
+                        price_data: {
+                            currency: "eur",
+                            product_data: {
+                                name: plan.name,
+                            },
+                            unit_amount: Math.round(Number(plan.yearlyPrice) * 100),
+                        },
+                        quantity: 1,
+                    },
+                ],
+                mode: 'subscription',
+                success_url: `${process.env.FRONTEND_URL}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url: `${process.env.FRONTEND_URL}/subscription/cancel`,
                 customer: stripeCustomerId,
-                items: [{ price: plan.stripePriceIdMonthly }],
+                metadata: {
+                    userId: user.id.toString(),
+                    planId: plan.id.toString()
+                }
             });
 
-            // Create subscription in database
-            const subscription = await prisma.subscription.create({
-                data: {
-                    userId: subscriptionData.userId,
-                    planId: subscriptionData.planId,
-                    status: SubscriptionStatus.ACTIVE,
-                    startDate: new Date(),
-                    stripeSubscriptionId: stripeSubscription.id,
-                },
-            });
-
-            res.status(201).json({ data: subscription });
+            res.status(200).json({ url: session.url });
         } catch (error) {
-            console.error(error);
+            console.error("Error in /subscriptions/landlord:", error);
             res.status(500).json({ error: "An error occurred while creating the subscription." });
         }
     });
+
+    app.get("/subscriptions/success", isAuthenticated, async (req, res) => {
+        try {
+            const sessionId = req.query.session_id as string;
+            if (!sessionId) {
+                return res.status(400).json({ error: "Missing session_id parameter" });
+            }
+
+            const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+            if (session.payment_status !== 'paid') {
+                return res.status(400).json({ error: "Payment not completed" });
+            }
+
+            const userId = session.metadata?.userId;
+            const planId = session.metadata?.planId;
+
+            if (!userId || !planId) {
+                return res.status(400).json({ error: "Invalid session metadata" });
+            }
+
+            const subscription = await prisma.subscription.create({
+                data: {
+                    userId: parseInt(userId),
+                    planId: parseInt(planId),
+                    stripeSubscriptionId: session.subscription as string,
+                    status: 'ACTIVE',
+                    startDate: new Date(),
+                    endDate: new Date(session.expires_at! * 1000),
+                },
+            });
+
+            await prisma.landlord.update({
+                where: { userId: parseInt(userId) },
+                data: { status: LandlordStatus.ACTIVE },
+            });
+
+            const user:User | null = await prisma.user.findUnique({
+                where: { id: parseInt(userId) },
+            });
+
+            if (!user) {
+                return res.status(400).json({ error: "User not found" });
+            }
+
+            const jti = uuidv4();
+            const { accessToken, refreshToken } = generateTokens(user, jti);
+            await addRefreshTokenToWhitelist({
+                jti,
+                refreshToken,
+                userId: user.id,
+            });
+
+            res.json({
+                message: "Subscription activated successfully",
+                accessToken,
+                refreshToken
+            });
+        } catch (error) {
+            console.error("Error in /subscriptions/success:", error);
+            res.status(500).json({ error: "An error occurred while processing the subscription" });
+        }
+    });
+
 
     // Get all subscriptions (admin only)
     app.get("/subscriptions", isAuthenticated, isSuperAdmin, async (req, res) => {
@@ -85,7 +169,7 @@ export const initSubscriptions = (app: express.Express) => {
     });
 
     // Get a specific subscription
-    app.get("/api/subscriptions/:id", isAuthenticated, async (req: any, res) => {
+    app.get("/subscriptions/:id", isAuthenticated, async (req: any, res) => {
         try {
             const subscription: Subscription | null = await prisma.subscription.findUnique({
                 where: { id: parseInt(req.params.id) },
