@@ -61,6 +61,7 @@ export interface Payment {
 export interface ServicePayment {
   serviceId: number;
   amount: number;
+  name: string;
 }
 
 export enum PaymentStatus {

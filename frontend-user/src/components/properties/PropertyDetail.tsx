@@ -92,7 +92,7 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ propertyId }) 
                 toast({
                     title: "Property deleted",
                     description: "The property has been successfully deleted.",
-                    variant: "success",
+                    variant: "default",
                 });
                 router.push('/my-properties');
             } catch (error) {

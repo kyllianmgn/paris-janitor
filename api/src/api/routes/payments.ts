@@ -79,6 +79,91 @@ export const initPayments = (app: express.Express) => {
                 return res.status(400).json({ error: 'Invalid or already processed reservation' });
             }
 
+            const serviceTotalAmount = paymentRequest.services.reduce((previousValue, currentValue) => {return previousValue + currentValue.amount},0)
+
+            // Créer une session de paiement Stripe
+            const session = await stripe.checkout.sessions.create({
+                payment_method_types: ['card'],
+                line_items: [
+                    {
+                        price_data: {
+                            currency: paymentRequest.currency,
+                            product_data: {
+                                name: 'Property Reservation',
+                            },
+                            unit_amount: Math.round((paymentRequest.amount - serviceTotalAmount) * 100 ),
+                        },
+                        quantity: 1,
+                    },
+                    ...paymentRequest.services.map((service) => {
+                        return {
+                            price_data: {
+                                currency: paymentRequest.currency,
+                                product_data: {
+                                    name: `Service: ${service.name}`,
+                                },
+                                unit_amount: Math.round(service.amount * 100),
+                            },
+                            quantity: 1,
+                        }
+                    })
+                ],
+
+                mode: 'payment',
+                success_url: `${process.env.FRONTEND_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url: `${process.env.FRONTEND_URL}/payment/cancel`,
+            });
+
+            const payment = await prisma.payment.create({
+                data: {
+                    amount: paymentRequest.amount,
+                    currency: paymentRequest.currency,
+                    status: 'PENDING',
+                    paymentMethod: 'stripe',
+                    stripeSessionId: session.id,
+                    propertyReservationId: paymentRequest.propertyReservationId,
+                    services: {
+                        create: paymentRequest.services.map(servicePayment => ({
+                            serviceId: servicePayment.serviceId,
+                            amount: servicePayment.amount
+                        }))
+                    }
+                },
+                include: {
+                    services: true
+                }
+            });
+
+            res.status(200).json({
+                data: payment,
+                sessionId: session.id,
+                sessionUrl: session.url
+            });
+        } catch (e) {
+            console.error('Error creating payment:', e);
+            res.status(500).send({ error: 'An error occurred while processing the payment' });
+        }
+    });
+
+    app.post("/paymentstest", isAuthenticated, async (req, res) => {
+        try {
+            const validation = paymentValidator.validate(req.body);
+
+            if (validation.error) {
+                return res.status(400).json({ error: validation.error });
+            }
+
+            const paymentRequest = validation.value;
+
+            // Vérifiez que la réservation existe et est en statut PENDING
+            const reservation: PropertyReservation | null = await prisma.propertyReservation.findFirst({
+                where: { id: paymentRequest.propertyReservationId }
+            });
+
+            if (!reservation || reservation.status !== ReservationStatus.PENDING) {
+                return res.status(400).json({ error: 'Invalid or already processed reservation' });
+            }
+
             // Créer une session de paiement Stripe
             const session = await stripe.checkout.sessions.create({
                 payment_method_types: ['card'],
@@ -93,16 +178,16 @@ export const initPayments = (app: express.Express) => {
                         },
                         quantity: 1,
                     },
-                    ...paymentRequest.services.map((servicePayment: ServicePayment) => ({
+                    {
                         price_data: {
                             currency: paymentRequest.currency,
                             product_data: {
-                                name: `Service: ${servicePayment.service.name}`,
+                                name: 'Property Reservation',
                             },
-                            unit_amount: Math.round(servicePayment.amount * 100),
+                            unit_amount: Math.round(paymentRequest.amount * 100),
                         },
                         quantity: 1,
-                    })),
+                    }
                 ],
                 mode: 'payment',
                 success_url: `${process.env.FRONTEND_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
