@@ -8,7 +8,7 @@ export interface Service {
     basePrice: number;
     type: ServiceType;
     isDynamicPricing: boolean;
-    pricingRules?: any; // Vous pouvez définir une structure plus précise si nécessaire
+    pricingRules?: any;
 }
 
 export enum ServiceType {

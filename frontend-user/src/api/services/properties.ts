@@ -118,6 +118,10 @@ export const propertiesService = {
     getMyReviewOnProperty: async (propertyId: number): Promise<ApiResponse<PropertyReview>> => {
         return api.get(`property-reviews/me/${propertyId}`).json<ApiResponse<PropertyReview>>();
     },
+
+    getLandlordPropertyOccupations: async (): Promise<ApiResponse<PropertyOccupation[]>> => {
+        return api.get('property-occupations/landlord').json<ApiResponse<PropertyOccupation[]>>();
+    },
 };
 
 const convertToBase64 = (file: File) => new Promise<string>((resolve, reject) => {

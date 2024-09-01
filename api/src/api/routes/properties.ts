@@ -14,7 +14,7 @@ import * as fs from "fs"
 export const initProperties = (app: express.Express) => {
     app.get("/properties/public", async (req, res) => {
         try {
-            console.log("public");
+
             const validation = filterValidator.validate(req.query);
             if (validation.error) {
                 return res.status(400).json({error: validation.error});

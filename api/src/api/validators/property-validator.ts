@@ -93,12 +93,14 @@ export enum ReservationStatus {
 }
 
 export interface PropertyReservation {
-    id: number
-    travelerId: number
-    occupationId: number
-    status: ReservationStatus
-    totalPrice: number
+    id: number;
+    travelerId: number;
+    occupationId: number;
+    status: ReservationStatus;
+    totalPrice: number;
+    propertyOccupation?: PropertyOccupation
 }
+
 
 export const propertyReservationWithOccupationValidator = Joi.object<PropertyReservation & PropertyOccupation>({
     totalPrice: Joi.number().required(),
