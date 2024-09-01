@@ -7,6 +7,7 @@ import {
 } from "../validators/subscription-validator";
 import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
 import Stripe from "stripe";
+import {SubscriptionPlan} from "@prisma/client";
 
 
 
@@ -17,13 +18,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export const initSubscriptionPlans = (app: express.Express) => {
     // Create a new subscription plan
     app.post("/subscription-plans", isAuthenticated, isSuperAdmin, async (req, res) => {
+
         const validation = subscriptionPlanValidation.validate(req.body);
 
         if (validation.error) {
             return res.status(400).json({ error: validation.error.details });
         }
 
-        const planData: SubscriptionPlanRequest = validation.value;
+        const planData: Omit<SubscriptionPlanRequest, 'id'> = validation.value;
 
         try {
             // Create the plan in Stripe
@@ -91,8 +93,11 @@ export const initSubscriptionPlans = (app: express.Express) => {
     });
 
     // Update a subscription plan
-    app.put("/subscription-plans/:id", isAuthenticated, isSuperAdmin, async (req, res) => {
+    app.patch("/subscription-plans/:id", isAuthenticated, isSuperAdmin, async (req, res) => {
         const validation = subscriptionPlanPatchValidation.validate(req.body);
+        console.log("je suis dans le patch");
+        console.log("VALIDATION", validation);
+        console.log("REQ BODY", req.body);
 
         if (validation.error) {
             return res.status(400).json({ error: validation.error.details });
@@ -101,7 +106,7 @@ export const initSubscriptionPlans = (app: express.Express) => {
         const planData: SubscriptionPlanUpdateData = validation.value;
 
         try {
-            const existingPlan = await prisma.subscriptionPlan.findUnique({
+            const existingPlan: SubscriptionPlan | null = await prisma.subscriptionPlan.findUnique({
                 where: { id: parseInt(req.params.id) },
             });
 
@@ -157,7 +162,7 @@ export const initSubscriptionPlans = (app: express.Express) => {
     // Delete a subscription plan
     app.delete("/subscription-plans/:id", isAuthenticated, isSuperAdmin, async (req, res) => {
         try {
-            const plan = await prisma.subscriptionPlan.findUnique({
+            const plan: SubscriptionPlan | null = await prisma.subscriptionPlan.findUnique({
                 where: { id: parseInt(req.params.id) },
             });
 
