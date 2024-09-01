@@ -103,7 +103,6 @@ export const initServiceReviews = (app: express.Express) => {
         }
     });
 
-
     app.post("/service-reviews/:id(\\d+)", isAuthenticated, isTravelerOrLandlord, async (req, res) => {
         try {
             const validation = serviceReviewValidator.validate(req.body);
@@ -157,6 +156,17 @@ export const initServiceReviews = (app: express.Express) => {
         } catch (e) {
             res.status(500).send({ error: e });
             return;
+        }
+    });
+
+    app.get("/service-reviews/service/:serviceId", isAuthenticated, async (req, res) => {
+        try {
+            const serviceReviews = await prisma.serviceReview.findMany({
+                where: { serviceId: +req.params.serviceId },
+            });
+            res.status(200).json({data: serviceReviews});
+        } catch (e) {
+            return res.status(500).send({ error: e });
         }
     });
 };
