@@ -9,7 +9,6 @@ import {useRouter} from "next/navigation";
 
 export default function Nav({children, admin}: {children: React.ReactNode, admin: Admin}) {
     const dispatch = useDispatch();
-    const router  = useRouter();
 
     const logout = () => {
         authService.logoutAdmin(dispatch)
@@ -30,6 +29,7 @@ export default function Nav({children, admin}: {children: React.ReactNode, admin
                         <NavItem menuName="Properties" iconName="house" route="/properties"/>
                         <NavItem menuName="Service Providers" iconName="handshake" route="/service-providers"/>
                         <NavItem menuName="Services" iconName="hand-coins" route="/services"/>
+                        <NavItem menuName="Subscriptions" iconName="credit-card" route="/subscriptions"/>
                     </div>
                 </div>
             </nav>
