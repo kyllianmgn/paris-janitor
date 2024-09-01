@@ -1,7 +1,7 @@
 import express from 'express';
 import Stripe from 'stripe';
 import { prisma } from '../../utils/prisma';
-import {Subscription, SubscriptionStatus} from '@prisma/client';
+import { Subscription, SubscriptionStatus, LandlordStatus } from '@prisma/client';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-06-20',
@@ -20,29 +20,60 @@ export const initStripeWebhook = (app: express.Express) => {
             return res.status(400).send(`Webhook Error: ${err.message}`);
         }
 
-        // Handle the event
-        switch (event.type) {
-            case 'customer.subscription.created':
-            case 'customer.subscription.updated':
-            case 'customer.subscription.deleted':
-                const subscription = event.data.object as Stripe.Subscription;
-                await handleSubscriptionChange(subscription);
-                break;
-            case 'invoice.payment_succeeded':
-            case 'invoice.payment_failed':
-                const invoice = event.data.object as Stripe.Invoice;
-                await handleInvoicePayment(invoice);
-                break;
-            default:
-                console.log(`Unhandled event type ${event.type}`);
+        try {
+            switch (event.type) {
+                case 'checkout.session.completed':
+                    await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session);
+                    break;
+                case 'customer.subscription.created':
+                case 'customer.subscription.updated':
+                case 'customer.subscription.deleted':
+                    await handleSubscriptionChange(event.data.object as Stripe.Subscription);
+                    break;
+                case 'invoice.payment_succeeded':
+                case 'invoice.payment_failed':
+                    await handleInvoicePayment(event.data.object as Stripe.Invoice);
+                    break;
+                default:
+                    console.log(`Unhandled event type ${event.type}`);
+            }
+        } catch (error) {
+            console.error(`Error processing event ${event.type}:`, error);
+            return res.status(500).send(`Error processing event ${event.type}`);
         }
 
         res.json({received: true});
     });
 };
 
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+    const userId = session.metadata?.userId;
+    const planId = session.metadata?.planId;
+
+    if (!userId || !planId) {
+        console.error('Missing userId or planId in session metadata');
+        return;
+    }
+
+    await prisma.subscription.create({
+        data: {
+            userId: parseInt(userId),
+            planId: parseInt(planId),
+            stripeSubscriptionId: session.subscription as string,
+            status: SubscriptionStatus.ACTIVE,
+            startDate: new Date(),
+            endDate: new Date((session.expires_at || Date.now() / 1000 + 365 * 24 * 60 * 60) * 1000), // Default to 1 year if expires_at is not set
+        },
+    });
+
+    await prisma.landlord.update({
+        where: { userId: parseInt(userId) },
+        data: { status: LandlordStatus.ACTIVE },
+    });
+}
+
 async function handleSubscriptionChange(subscription: Stripe.Subscription) {
-    const dbSubscription:Subscription | null = await prisma.subscription.findFirst({
+    const dbSubscription = await prisma.subscription.findFirst({
         where: { stripeSubscriptionId: subscription.id }
     });
 
@@ -82,7 +113,7 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
 async function handleInvoicePayment(invoice: Stripe.Invoice) {
     if (!invoice.subscription) return;
 
-    const dbSubscription: Subscription | null = await prisma.subscription.findFirst({
+    const dbSubscription = await prisma.subscription.findFirst({
         where: { stripeSubscriptionId: invoice.subscription as string }
     });
 
