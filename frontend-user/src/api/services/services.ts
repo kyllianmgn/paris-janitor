@@ -35,7 +35,7 @@ export const servicesService = {
 
     createService: async (serviceData: ServiceFormData): Promise<ApiResponse<Service>> => {
         try {
-            return await api.post('services', { json: serviceData }).json<ApiResponse<Service>>();
+            return await api.post('services', { json: {...serviceData, isDynamicPricing: true, pricingRules: {}} }).json<ApiResponse<Service>>();
         } catch (e) {
             console.error('Error creating service:', e);
             throw e;

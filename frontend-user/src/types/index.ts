@@ -167,9 +167,17 @@ export interface Property {
   country: string,
   description: string,
   pricePerNight: number,
+  roomCount: number,
+  instruction: string,
+  propertyType: PropertyType,
   status?: PropertyStatus,
   createdAt?: Date,
   updatedAt?: Date
+}
+
+export enum PropertyType{
+  HOUSE="HOUSE",
+  APPARTEMENT="APPARTEMENT"
 }
 
 export interface PropertyReview {

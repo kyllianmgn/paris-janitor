@@ -14,6 +14,10 @@ import { useAuth } from "@/hooks/useAuth";
 import {servicesService} from "@/api/services/services";
 import {Input} from "@/components/ui/input";
 import {Simulate} from "react-dom/test-utils";
+import {useSelector} from "react-redux";
+import {RootState} from "@/store";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export interface PropertyDetailsProps {
     propertyId: number;
@@ -30,15 +34,23 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
     const [availability, setAvailability] = useState<ServiceAvailability>({state: false, reason: ""});
     const [loading, setLoading] = useState<boolean>(true);
     const [isReservationDialogOpen, setIsReservationDialogOpen] = useState(false);
-    const [selectedDates, setSelectedDates] = useState<{ start: Date | null; end: Date | null }>({ start: null, end: null });
+    const [selectedDates, setSelectedDates] = useState<{ start: Date | null; end: Date | null }>({ start: new Date(), end: null });
     const router = useRouter();
     const { toast } = useToast();
-    const { user, isAuthenticated, role } = useAuth();
+    const user = useSelector((root: RootState) => root.auth.user);
+    const role = useSelector((root: RootState) => root.auth.role);
+    const idRole = useSelector((root: RootState) => root.auth.idRole);
     let date = new Date();
     date.setDate(date.getDate() + 1);
 
     const loadProperty = async () => {
         if (propertyId) {
+            if (window.location.href.includes("/my-properties")){
+                const res = await propertiesService.getMyPropertyById(propertyId);
+                setProperty(res.data);
+                setLoading(false);
+                return;
+            }
             const res = await propertiesService.getPropertyById(propertyId);
             setProperty(res.data);
             setLoading(false);
@@ -84,17 +96,17 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
     }, [propertyId]);
 
     const setStartDate = (date: string) => {
-        setSelectedDates((prevDates) => ({ ...prevDates, start: new Date(date) }));
+        setSelectedDates((prevDates) => ({ ...prevDates, start: date }));
     };
 
     const setEndDate = (date: string) => {
-        setSelectedDates((prevDates) => ({ ...prevDates, end: new Date(date) }));
+        setSelectedDates((prevDates) => ({ ...prevDates, end: date }));
     };
 
     const handleGoBack = () => router.back();
 
     const handleReserveClick = () => {
-        if (!isAuthenticated) {
+        if (!user) {
             router.push('/login');
             return;
         }
@@ -154,7 +166,7 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
     if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
     if (!property) return <div className="text-center mt-10">Property not found</div>;
 
-    const isOwner = role === 'LANDLORD' && user?.id === property.landlordId;
+    const isOwner = role === 'LANDLORD' && idRole === property.landlordId;
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -174,8 +186,8 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
                     <ReservationCard
                         price={property.pricePerNight}
                         onReserveClick={handleReserveClick}
-                        startDate={selectedDates.start?.toISOString().split('T')[0] || ''}
-                        endDate={selectedDates.end?.toISOString().split('T')[0] || ''}
+                        startDate={selectedDates.start}
+                        endDate={selectedDates.end}
                         setStartDate={setStartDate}
                         setEndDate={setEndDate}
                     />
@@ -202,7 +214,7 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
             )}
 
             {
-                propertyServicesTab &&
+                isOwner &&
                 <div>
                     <h1>Available Services for your property</h1>
 
@@ -294,32 +306,21 @@ const OwnerActions: React.FC<{
 const ReservationCard: React.FC<{
     price: number;
     onReserveClick: () => void;
-    startDate: string;
-    endDate: string;
+    startDate: Date | null;
+    endDate: Date | null;
     setStartDate: (date: string) => void;
     setEndDate: (date: string) => void;
 }> = ({ price, onReserveClick, startDate, endDate, setStartDate, setEndDate }) => {
+
+    const handleDateChange = (dates: any) => {
+        const [start, end] = dates
+        setStartDate(start)
+        setEndDate(end)
+    }
+
     return (
         <div>
-            <div>
-                <label>Check-in</label>
-                <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full p-2 border rounded"
-                />
-            </div>
-            <div>
-                <label>Check-out</label>
-                <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    min={startDate}
-                    className="w-full p-2 border rounded"
-                />
-            </div>
+            <DatePicker showIcon onChange={handleDateChange} startDate={startDate} selected={startDate} endDate={endDate} selectsRange/>
             <button onClick={onReserveClick}>Reserve</button>
         </div>
     );

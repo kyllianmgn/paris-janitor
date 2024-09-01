@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {ServiceFormData} from "@/types";
 import { ArrowLeft } from "lucide-react";
 import {servicesService} from "@/api/services/services";
+import {Select} from "react-day-picker";
 
 const steps = [
     "Informations du service",
@@ -131,6 +132,13 @@ export const ServiceForm = () => {
                                 <label htmlFor="basePrice">Prix de base</label>
                                 <Input id="basePrice" type="number" name="basePrice" value={formData.basePrice} onChange={handleChange} />
                                 {errors.basePrice && <span className="text-red-500">{errors.basePrice}</span>}
+                            </div>
+                            <div className="flex flex-col">
+                                <label htmlFor="type">Type de service</label>
+                                <Select style={{borderWidth: "1px"}} className="p-2 bg-white border-gray-200 rounded-lg" id="type" name="type" value={formData.type} onChange={handleChange}>
+                                    <option value={"INTERVENTION"}>Intervention (Nécéssite une intervention dans le logement)</option>
+                                    <option value={"MISSION"}>Mission (S'éffectue en dehors du logement)</option>
+                                </Select>
                             </div>
                         </div>
                     </>

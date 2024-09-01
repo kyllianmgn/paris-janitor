@@ -320,6 +320,19 @@ export const initProperties = (app: express.Express) => {
         }
     });
 
+    app.get("/properties/me/:id(\\d+)",isAuthenticated, isRole(UserRole.LANDLORD), async (req, res) => {
+        try {
+            if (!req.user?.landlordId) return res.sendStatus(401);
+            const property = await prisma.property.findUnique({
+                where: { id: Number(req.params.id),landlordId: +req.user?.landlordId }
+            });
+            res.status(200).json({data: property});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
     app.get("/properties/:id(\\d+)/image", async (req, res) => {
         try {
             const property = await prisma.property.findUnique({
@@ -367,6 +380,9 @@ export const initProperties = (app: express.Express) => {
         try {
             const property = await prisma.property.create({
                 data: {
+                    roomCount: propertyRequest.roomCount,
+                    propertyType: propertyRequest.propertyType,
+                    instruction: propertyRequest.instruction,
                     address: propertyRequest.address,
                     postalCode: propertyRequest.postalCode,
                     city: propertyRequest.city,
@@ -410,6 +426,9 @@ export const initProperties = (app: express.Express) => {
         try {
             const property = await prisma.property.create({
                 data: {
+                    roomCount: propertyRequest.roomCount,
+                    propertyType: propertyRequest.propertyType,
+                    instruction: propertyRequest.instruction,
                     address: propertyRequest.address,
                     postalCode: propertyRequest.postalCode,
                     city: propertyRequest.city,
