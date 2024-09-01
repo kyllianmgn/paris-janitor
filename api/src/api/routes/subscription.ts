@@ -40,9 +40,6 @@ export const initSubscriptions = (app: express.Express) => {
                 return res.status(404).json({ error: "User not found." });
             }
 
-            if (!user.Landlord) {
-                return res.status(400).json({ error: "User is not a landlord." });
-            }
 
             const plan: SubscriptionPlan | null = await prisma.subscriptionPlan.findUnique({ where: { id: subscriptionData.planId } });
             if (!plan) {
