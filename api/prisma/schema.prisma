@@ -315,10 +315,11 @@ model Payment {
   status                PaymentStatus
   paymentMethod         String
   stripePaymentIntentId String?
-  propertyReservationId Int?                 @unique
-  propertyReservation   PropertyReservation? @relation(fields: [propertyReservationId], references: [id])
-  invoiceId             Int?                 @unique
-  invoice               Invoice?             @relation(fields: [invoiceId], references: [id])
+  stripeSessionId   String?
+  propertyReservationId Int?                      @unique
+  propertyReservation   PropertyReservation?     @relation(fields: [propertyReservationId], references: [id])
+  invoiceId             Int?                     @unique
+  invoice               Invoice?                 @relation(fields: [invoiceId], references: [id])
   services              ServicePayment[]
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt

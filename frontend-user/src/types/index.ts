@@ -47,6 +47,32 @@ export interface Service{
   updatedAt?: Date
 }
 
+export interface Payment {
+  id: number;
+  amount: number;
+  currency: string;
+  status: PaymentStatus;
+  paymentMethod: string;
+  stripePaymentIntentId?: string;
+  stripeSessionId?: string;
+  propertyReservationId?: number;
+  invoiceId?: number;
+  services: ServicePayment[];
+}
+
+export interface ServicePayment {
+  serviceId: number;
+  amount: number;
+  name: string;
+}
+
+export enum PaymentStatus {
+  PENDING = "PENDING",
+  SUCCEEDED = "SUCCEEDED",
+  FAILED = "FAILED",
+  REFUNDED = "REFUNDED"
+}
+
 export enum InterventionStatus {
   PLANNED="PLANNED",
   IN_PROGRESS="IN_PROGRESS",
@@ -185,6 +211,7 @@ export interface PropertyOccupation {
   endDate: string;
   reservation?: PropertyReservation;
   property?: Property
+  intervention?: Intervention
 }
 
 export interface ProviderOccupation{

@@ -41,7 +41,7 @@ const Calendar: React.FC = () => {
 
     useEffect(() => {
         if (selectedProperty) {
-            actions.refreshCalendar();
+            actions.refreshCalendar().then();
         }
     }, [selectedProperty, date, view]);
 

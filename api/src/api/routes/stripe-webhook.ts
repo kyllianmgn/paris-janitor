@@ -1,14 +1,14 @@
 import express from 'express';
 import Stripe from 'stripe';
 import { prisma } from '../../utils/prisma';
-import { SubscriptionStatus } from '@prisma/client';
+import {Subscription, SubscriptionStatus} from '@prisma/client';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-06-20',
 });
 
 export const initStripeWebhook = (app: express.Express) => {
-    app.post('/api/stripe-webhook', express.raw({type: 'application/json'}), async (req, res) => {
+    app.post('/stripe-webhook', express.raw({type: 'application/json'}), async (req, res) => {
         const sig = req.headers['stripe-signature'];
 
         let event: Stripe.Event;
@@ -42,7 +42,7 @@ export const initStripeWebhook = (app: express.Express) => {
 };
 
 async function handleSubscriptionChange(subscription: Stripe.Subscription) {
-    const dbSubscription = await prisma.subscription.findFirst({
+    const dbSubscription:Subscription | null = await prisma.subscription.findFirst({
         where: { stripeSubscriptionId: subscription.id }
     });
 
@@ -82,7 +82,7 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
 async function handleInvoicePayment(invoice: Stripe.Invoice) {
     if (!invoice.subscription) return;
 
-    const dbSubscription = await prisma.subscription.findFirst({
+    const dbSubscription: Subscription | null = await prisma.subscription.findFirst({
         where: { stripeSubscriptionId: invoice.subscription as string }
     });
 

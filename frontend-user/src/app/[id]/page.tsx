@@ -1,5 +1,6 @@
 import {PropertyPage} from "@/components/properties/PropertyPage";
+import PropertyDetail from "@/components/properties/PropertyDetail";
 
 export default function PropertiesRoute({params}: Readonly<{ params: { id: number } }>) {
-    return <PropertyPage propertyId={params.id}></PropertyPage>
+    return <PropertyDetail propertyId={params.id}></PropertyDetail>
 }
