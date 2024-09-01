@@ -20,6 +20,7 @@ import {initSubscriptions} from "./routes/subscription";
 import {initStripeWebhook} from "./routes/stripe-webhook";
 import {initAdminRoutes} from "./routes/adminRoutes";
 import {initProviderOccupations} from "./routes/provider-occupations";
+import {initPayments} from "./routes/payments";
 
 export const initRoutes = (app: express.Express) => {
     app.get("/health", (_req, res) => {
@@ -49,6 +50,8 @@ export const initRoutes = (app: express.Express) => {
     initSubscriptions(app);
     initStripeWebhook(app);
     initAdminRoutes(app);
+    initPayments(app);
+
 
     app.use(invalidPath);
 };

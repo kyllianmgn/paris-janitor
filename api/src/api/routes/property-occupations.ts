@@ -45,7 +45,9 @@ export const initPropertyOccupations = (app: express.Express) => {
                 },
                 include: {
                     property: true,
-                    reservation: true
+                    reservation: true,
+                    intervention: true
+
                 }
             });
             res.status(200).json({data: occupations});
