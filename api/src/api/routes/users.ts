@@ -1,7 +1,7 @@
 import express from "express";
 import {prisma} from "../../utils/prisma";
 import {userBanValidation, userPatchValidation,} from "../validators/user-validator";
-import {isAuthenticated, isRole, isRoleOrAdmin, isSuperAdmin, UserRole} from "../middlewares/auth-middleware";
+import {isAuthenticated, isSuperAdmin} from "../middlewares/auth-middleware";
 import {Filter, filterValidator} from "../validators/filter-validator";
 import {createResetPasswordToken} from "../services/email-service";
 import {User} from "@prisma/client";
@@ -53,27 +53,27 @@ export const initUsers = (app: express.Express) => {
 
             if (filter.query) {
                 where.OR = [
-                    { firstName: { contains: filter.query, mode: "insensitive" } },
-                    { lastName: { contains: filter.query, mode: "insensitive" } },
-                    { email: { contains: filter.query, mode: "insensitive" } }
+                    {firstName: {contains: filter.query, mode: "insensitive"}},
+                    {lastName: {contains: filter.query, mode: "insensitive"}},
+                    {email: {contains: filter.query, mode: "insensitive"}}
                 ];
             }
 
             if (filter.role) {
                 where.OR = [
                     ...(where.OR || []),
-                    ...(filter.role.landlord ? [{ Landlord: { isNot: null } }] : []),
-                    ...(filter.role.serviceProvider ? [{ ServiceProvider: { isNot: null } }] : []),
-                    ...(filter.role.traveler ? [{ Traveler: { isNot: null } }] : [])
+                    ...(filter.role.landlord ? [{Landlord: {isNot: null}}] : []),
+                    ...(filter.role.serviceProvider ? [{ServiceProvider: {isNot: null}}] : []),
+                    ...(filter.role.traveler ? [{Traveler: {isNot: null}}] : [])
                 ];
             }
 
             if (filter.subscription) {
-                where.subscriptions = filter.subscription.active ? { some: {} } : { none: {} };
+                where.subscriptions = filter.subscription.active ? {some: {}} : {none: {}};
             }
 
             if (filter.banned) {
-                where.bannedUntil = { not: null };
+                where.bannedUntil = {not: null};
             }
 
             const allUsers = await prisma.user.findMany({
@@ -90,17 +90,18 @@ export const initUsers = (app: express.Express) => {
                 },
                 where,
                 take: (filter.pageSize) ? +filter.pageSize : 10,
-                skip: (filter.page) ? (filter.pageSize) ? +filter.page * +filter.pageSize : (+filter.page-1) * 10 : 0,
+                skip: (filter.page) ? (filter.pageSize) ? +filter.page * +filter.pageSize : (+filter.page - 1) * 10 : 0,
 
             });
 
-            const countUsers = await prisma.user.count({ where });
+            const countUsers = await prisma.user.count({where});
             res.status(200).json({data: allUsers, count: countUsers});
         } catch (e) {
             res.status(500).send({error: e});
             return;
         }
     });
+
     app.get("/users/:id(\\d+)", isAuthenticated, isSuperAdmin, async (req, res) => {
         try {
             const user = await prisma.user.findUnique({
@@ -170,7 +171,7 @@ export const initUsers = (app: express.Express) => {
         }
     });
 
-    app.delete("/users/:id(\\d+)", isSuperAdmin , async (req, res) => {
+    app.delete("/users/:id(\\d+)", isSuperAdmin, async (req, res) => {
         try {
             const deletedUser = await prisma.user.delete({
                 where: {id: Number(req.params.id)},
@@ -184,19 +185,40 @@ export const initUsers = (app: express.Express) => {
     app.post("/users/reset-password/:id(\\d+)", isAuthenticated, isSuperAdmin, async (req, res) => {
         try {
             const user: User | null = await prisma.user.findUnique({
-                where: { id: Number(req.params.id) },
+                where: {id: Number(req.params.id)},
             });
             if (!user) {
-                return res.status(404).json({ error: "User not found" });
+                return res.status(404).json({error: "User not found"});
             }
 
             await createResetPasswordToken(user.email);
 
-            return res.status(200).json({ message: "Password reset email sent" });
+            return res.status(200).json({message: "Password reset email sent"});
         } catch (e) {
             console.error("Error in reset password:", e);
-            return res.status(500).json({ error: "Internal server error" });
+            return res.status(500).json({error: "Internal server error"});
         }
     });
 
+    app.patch("/users/self-update", isAuthenticated, async (req: any, res) => {
+        const validation = userPatchValidation.validate(req.body);
+
+        if (validation.error) {
+            return res.status(400).json({error: validation.error});
+        }
+
+        const userRequest = validation.value;
+        try {
+            const user = await prisma.user.update({
+                where: {
+                    id: +req.user.userId,
+                },
+                data: userRequest,
+            });
+
+            return res.status(200).json({data: user});
+        } catch (e) {
+            return res.status(500).send({error: e});
+        }
+    });
 };
