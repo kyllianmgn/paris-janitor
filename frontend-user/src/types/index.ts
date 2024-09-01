@@ -14,6 +14,13 @@ export interface Landlord {
   id: number;
   userId: number;
   user?: User
+  status?: LandlordStatus;
+}
+
+export enum LandlordStatus {
+  PENDING="PENDING",
+  ACCEPTED="ACCEPTED",
+  REFUSED="REFUSED"
 }
 
 export interface Traveler {
