@@ -68,16 +68,29 @@ function RenderField<T>({
                 />
             );
         case "textarea":
-            return (
-                <Textarea
-                    id={field.name}
-                    name={field.name}
-                    value={value || ""}
-                    onChange={(e) => onChange(field.name, e.target.value)}
-                    required={field.required}
-                    disabled={disabled}
-                />
-            );
+            if (field.name === 'features') {
+                return (
+                    <Textarea
+                        id={field.name}
+                        name={field.name}
+                        value={typeof value === 'object' ? JSON.stringify(value, null, 2) : value || ""}
+                        onChange={(e) => onChange(field.name, e.target.value)}
+                        required={field.required}
+                        disabled={disabled}
+                    />
+                );
+            } else {
+                return (
+                    <Textarea
+                        id={field.name}
+                        name={field.name}
+                        value={value || ""}
+                        onChange={(e) => onChange(field.name, e.target.value)}
+                        required={field.required}
+                        disabled={disabled}
+                    />
+                );
+            }
         case "select":
             return (
                 <Select

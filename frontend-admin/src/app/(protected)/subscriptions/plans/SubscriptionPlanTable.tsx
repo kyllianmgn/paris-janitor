@@ -1,12 +1,27 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { SubscriptionPlan, ApiResponse } from '@/types';
+import {SubscriptionPlan, ApiResponse, UserType} from '@/types';
 import DataTable from '@/components/public/DataTable';
 import CrudModal from '@/components/public/CrudModal';
 import { getSubscriptionPlans, createSubscriptionPlan, updateSubscriptionPlan, deleteSubscriptionPlan } from '@/api/services/subscription-service';
 import { Button } from "@/components/ui/button";
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/components/ui/use-toast";
+
+const STORAGE_KEY = 'subscription_plan_draft';
+
+const saveDraftToLocalStorage = (data: Partial<SubscriptionPlan>) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+};
+
+const loadDraftFromLocalStorage = (): Partial<SubscriptionPlan> | null => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : null;
+};
+
+const clearDraftFromLocalStorage = () => {
+    localStorage.removeItem(STORAGE_KEY);
+};
 
 const SubscriptionPlanTable: React.FC = () => {
     const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
@@ -17,10 +32,6 @@ const SubscriptionPlanTable: React.FC = () => {
 
     const router = useRouter();
     const { toast } = useToast();
-
-    useEffect(() => {
-        fetchPlans();
-    }, []);
 
     const fetchPlans = async () => {
         setIsLoading(true);
@@ -38,8 +49,18 @@ const SubscriptionPlanTable: React.FC = () => {
         setIsLoading(false);
     };
 
+    const [draftPlan, setDraftPlan] = useState<Partial<SubscriptionPlan> | null>(null);
+
+    useEffect(() => {
+        fetchPlans().then();
+        const savedDraft = loadDraftFromLocalStorage();
+        if (savedDraft) {
+            setDraftPlan(savedDraft);
+        }
+    }, []);
+
     const handleCreate = () => {
-        setSelectedPlan(null);
+        setSelectedPlan(draftPlan || null);
         setModalMode('create');
         setModalOpen(true);
     };
@@ -50,31 +71,34 @@ const SubscriptionPlanTable: React.FC = () => {
             setSelectedPlan(plan);
             setModalMode('edit');
             setModalOpen(true);
+            clearDraftFromLocalStorage();
         }
-    };
-
-    const handleDelete = (id: number) => {
-        const plan = plans.find(p => p.id === id);
-        if (plan) {
-            setSelectedPlan(plan);
-            setModalMode('delete');
-            setModalOpen(true);
-        }
-    };
-
-    const handleDetails = (id: number) => {
-        router.push(`/subscriptions/plans/${id}`);
     };
 
     const handleSubmit = async (data: Partial<SubscriptionPlan>) => {
         try {
+            // Traiter le champ features
+            if (typeof data.features === 'string') {
+                try {
+                    data.features = JSON.parse(data.features);
+                } catch {
+                    // Si ce n'est pas un JSON valide, on le traite comme un texte simple
+                    data.features = { description: data.features };
+                }
+            }
+
             if (modalMode === 'create') {
                 await createSubscriptionPlan(data);
                 toast({
                     title: "Success",
                     description: "Subscription plan created successfully",
                 });
+                clearDraftFromLocalStorage();
             } else if (modalMode === 'edit' && selectedPlan) {
+                console.log("je suis dans le handleSubmit");
+                console.log("DATA", data);
+                console.log("SELECTEDPLAN", selectedPlan);
+
                 await updateSubscriptionPlan(selectedPlan.id, data);
                 toast({
                     title: "Success",
@@ -89,6 +113,7 @@ const SubscriptionPlanTable: React.FC = () => {
             }
             fetchPlans();
             setModalOpen(false);
+            setDraftPlan(null);
         } catch (error) {
             console.error('Error submitting subscription plan:', error);
             toast({
@@ -99,11 +124,33 @@ const SubscriptionPlanTable: React.FC = () => {
         }
     };
 
+    const handleModalClose = () => {
+        if (modalMode === 'create') {
+            saveDraftToLocalStorage(selectedPlan || {});
+            setDraftPlan(selectedPlan || null);
+        }
+        setModalOpen(false);
+    };
+    const handleDelete = (id: number) => {
+        const plan = plans.find(p => p.id === id);
+        if (plan) {
+            setSelectedPlan(plan);
+            setModalMode('delete');
+            setModalOpen(true);
+        }
+    };
+
+    const handleDetails = (id: number) => {
+        router.push(`/subscriptions/plans/${id}`);
+    };
+
+
     const columns = [
         { key: 'name', header: 'Name' },
         { key: 'description', header: 'Description' },
         { key: 'monthlyPrice', header: 'Monthly Price' },
         { key: 'yearlyPrice', header: 'Yearly Price' },
+        { key: 'userType', header: 'User Type' },
     ];
 
     const modalFields = [
@@ -111,11 +158,15 @@ const SubscriptionPlanTable: React.FC = () => {
         { name: 'description', label: 'Description', type: 'textarea', required: true },
         { name: 'monthlyPrice', label: 'Monthly Price', type: 'number', required: true },
         { name: 'yearlyPrice', label: 'Yearly Price', type: 'number', required: true },
+        { name: 'userType', label: 'User Type', type: 'select', options: Object.values(UserType), required: true },
+        { name: 'features', label: 'Features', type: 'textarea', required: true },
     ];
 
     return (
         <div className="space-y-4">
-            <Button onClick={handleCreate}>Create New Plan</Button>
+            <Button onClick={handleCreate}>
+                {draftPlan ? "Continue Draft" : "Create New Plan"}
+            </Button>
             <DataTable
                 data={plans}
                 columns={columns}
@@ -127,12 +178,26 @@ const SubscriptionPlanTable: React.FC = () => {
             />
             <CrudModal
                 isOpen={modalOpen}
-                onClose={() => setModalOpen(false)}
+                onClose={handleModalClose}
                 onSubmit={handleSubmit}
                 fields={modalFields}
                 title={`${modalMode.charAt(0).toUpperCase() + modalMode.slice(1)} Subscription Plan`}
                 initialData={selectedPlan || {}}
                 mode={modalMode}
+                additionalActions={
+                    modalMode === 'create' && (
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                clearDraftFromLocalStorage();
+                                setDraftPlan(null);
+                                setSelectedPlan(null);
+                            }}
+                        >
+                            Clear Draft
+                        </Button>
+                    )
+                }
             />
         </div>
     );
