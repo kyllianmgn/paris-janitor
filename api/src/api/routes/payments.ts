@@ -59,7 +59,7 @@ export const initPayments = (app: express.Express) => {
         }
     });
 
-    app.post("/payments", isAuthenticated, async (req, res) => {
+    /*app.post("/payments", isAuthenticated, async (req, res) => {
         try {
             const validation = paymentValidator.validate(req.body);
             console.log(validation.value);
@@ -138,7 +138,7 @@ export const initPayments = (app: express.Express) => {
             console.error('Error creating payment:', e);
             res.status(500).send({ error: 'An error occurred while processing the payment' });
         }
-    });
+    });*/
 
     app.patch("/payments/:id(\\d+)/status", isAuthenticated, isSuperAdmin, async (req, res) => {
         const validation = paymentPatchValidator.validate(req.body);
