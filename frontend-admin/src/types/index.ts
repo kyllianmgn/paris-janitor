@@ -91,9 +91,17 @@ export interface SubscriptionPlan {
     description: string;
     monthlyPrice: number;
     yearlyPrice: number;
+    userType: UserType;
+    features: Record<string, any>;
     stripeProductId: string;
     stripePriceIdMonthly: string;
     stripePriceIdYearly: string;
+}
+
+export enum UserType {
+    LANDLORD = "LANDLORD",
+    TRAVELER = "TRAVELER",
+
 }
 
 export enum SubscriptionStatus {
