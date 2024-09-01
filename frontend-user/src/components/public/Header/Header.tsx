@@ -6,27 +6,42 @@ import UserMenu from "./UserMenu";
 import AuthButton from "../auth/AuthButton";
 import SearchBar from "@/components/public/Header/SearchBar";
 import { useAuth } from "@/hooks/useAuth";
-import {BadgeProps} from "@/components/ui/badge";
-import {useSelector} from "react-redux";
-import {RootState} from "@/store";
-import {useEffect, useState} from "react";
-
+import { BadgeProps } from "@/components/ui/badge";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { useEffect, useState } from "react";
+import SubscriptionDialog from "@/components/subscriptions/SubscriptionDialog";
+import { authService } from "@/api/services/authService";
+import { LandlordStatus, User } from "@/types";
 
 export default function Header() {
   const router = useRouter();
-  const user = useSelector((state: RootState) => state.auth.user)
-  const role = useSelector((state: RootState) => state.auth.role)
+  const { role } = useSelector((state: RootState) => state.auth);
   const { isLoading } = useAuth();
   const currentPath = usePathname();
   const [showNav, setShowNav] = useState(false);
+  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
+  const [userInfo, setUserInfo] = useState<User | null>(null);
 
-    const isLinkActive = (path: string) => {
-        return currentPath.startsWith(path);
-    };
+  const isLinkActive = (path: string) => {
+    return currentPath.startsWith(path);
+  };
 
   useEffect(() => {
     setShowNav(true);
+    fetchUserInfo();
   }, []);
+
+  const fetchUserInfo = async () => {
+    try {
+      const info = await authService.getUserInfo();
+      setUserInfo(info);
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+    }
+  };
+
+  const isLandlordPending = userInfo?.Landlord?.status === LandlordStatus.PENDING;
 
   return (
       <header className="border-b">
@@ -34,26 +49,22 @@ export default function Header() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex-shrink-0">
-              {
-                user && showNav && (role === "LANDLORD" || role === "SERVICE_PROVIDER") ? <Link href={"/dashboard"}>
-                  <span className="text-2xl font-bold text-red-500">
-                    Paris Janitor
-                  </span>
-                </Link> :
-                    <Link href={"/"}>
-                  <span className="text-2xl font-bold text-red-500">
-                    Paris Janitor
-                  </span>
-                    </Link>
-              }
-
+              {userInfo && showNav && (role === "LANDLORD" || role === "SERVICE_PROVIDER") ? (
+                  <Link href="/dashboard">
+                    <span className="text-2xl font-bold text-red-500">Paris Janitor</span>
+                  </Link>
+              ) : (
+                  <Link href="/">
+                    <span className="text-2xl font-bold text-red-500">Paris Janitor</span>
+                  </Link>
+              )}
             </div>
 
             {/* Search bar */}
             {currentPath === "/" && <SearchBar />}
 
             {/* Navigation */}
-            {user && showNav && (
+            {userInfo && showNav && (
                 <nav className="hidden md:flex space-x-4">
                   {(role === "LANDLORD" || role === "SERVICE_PROVIDER") && currentPath === "/" ? (
                       <Button
@@ -76,13 +87,27 @@ export default function Header() {
                 </nav>
             )}
 
+            {isLandlordPending && (
+                <Button onClick={() => setIsSubscriptionDialogOpen(true)}>
+                  Subscribe Now
+                </Button>
+            )}
+
+            <SubscriptionDialog
+                isOpen={isSubscriptionDialogOpen}
+                onClose={() => setIsSubscriptionDialogOpen(false)}
+            />
+
             {/* Auth Button or User Menu */}
-            <div>{user && showNav ? <UserMenu /> : <AuthButton />}</div>
+            <div>{userInfo && showNav ? <UserMenu /> : <AuthButton />}</div>
           </div>
         </div>
       </header>
   );
 }
+
+// Helper functions remain the same
+// Helper functions remain the same
 // Helper functions
 function getDashboardPath(role: string | null) {
   switch (role) {
