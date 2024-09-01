@@ -34,12 +34,15 @@ export const useAuth = () => {
         }
     };
 
+    const isLandlordPending = auth.user?.Landlord?.status === "PENDING";
+
 
     return {
         ...auth,
         isLoading,
         login,
         logout: logoutUser,
-        signup
+        signup,
+        isLandlordPending
     };
 };
