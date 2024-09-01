@@ -18,6 +18,7 @@ import {useSelector} from "react-redux";
 import {RootState} from "@/store";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import OrderServicesDialog from "@/components/properties/OrderServicesDialog";
 
 export interface PropertyDetailsProps {
     propertyId: number;
@@ -35,6 +36,7 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
     const [loading, setLoading] = useState<boolean>(true);
     const [isReservationDialogOpen, setIsReservationDialogOpen] = useState(false);
     const [selectedDates, setSelectedDates] = useState<{ start: Date | null; end: Date | null }>({ start: new Date(), end: null });
+    const [servicesModal, setServicesModal] = useState<boolean>(false);
     const router = useRouter();
     const { toast } = useToast();
     const user = useSelector((root: RootState) => root.auth.user);
@@ -163,6 +165,10 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
         }
     };
 
+    const handleToggleServices = () => {
+        setServicesModal(true)
+    }
+
     if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
     if (!property) return <div className="text-center mt-10">Property not found</div>;
 
@@ -196,6 +202,7 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
                             onManageOccupations={handleManageOccupations}
                             onEditProperty={handleEditProperty}
                             onDeleteProperty={handleDeleteProperty}
+                            onToggleServices={handleToggleServices}
                         />
                     )}
                 </div>
@@ -210,7 +217,14 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
                     startDate={selectedDates.start ?? new Date()}
                     endDate={selectedDates.end ?? new Date()}
                 />
+            )}
 
+            {isOwner && (
+                <OrderServicesDialog
+                    isOpen={servicesModal}
+                    onClose={() => setServicesModal(false)}
+                    propertyId={propertyId}
+                />
             )}
 
             {
@@ -282,7 +296,8 @@ const OwnerActions: React.FC<{
     onManageOccupations: () => void;
     onEditProperty: () => void;
     onDeleteProperty: () => void;
-}> = ({ onManageOccupations, onEditProperty, onDeleteProperty }) => (
+    onToggleServices: () => void;
+}> = ({ onManageOccupations, onEditProperty, onDeleteProperty, onToggleServices }) => (
     <Card>
         <CardHeader>
             <CardTitle>Owner Actions</CardTitle>
@@ -295,6 +310,10 @@ const OwnerActions: React.FC<{
             <Button onClick={onEditProperty} className="w-full">
                 <Edit className="mr-2 h-4 w-4" />
                 Edit Property
+            </Button>
+            <Button onClick={onToggleServices} className="w-full">
+                <Edit className="mr-2 h-4 w-4" />
+                Access Services Tab
             </Button>
             <Button onClick={onDeleteProperty} className="w-full" variant="destructive">
                 <Trash2 className="mr-2 h-4 w-4" />

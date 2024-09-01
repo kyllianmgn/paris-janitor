@@ -60,6 +60,20 @@ export interface Payment {
   services: ServicePayment[];
 }
 
+export interface PaymentIntervention {
+  id: number;
+  amount: number;
+  currency: string;
+  status: PaymentStatus;
+  paymentMethod: string;
+  stripePaymentIntentId?: string;
+  stripeSessionId?: string;
+  date: Date;
+  serviceId?: number;
+  propertyId?: string;
+  invoiceId?: number;
+}
+
 export interface ServicePayment {
   serviceId: number;
   amount: number;
@@ -141,6 +155,7 @@ export interface RevokeRefreshTokenRequest {
 }
 
 export interface ApiResponse<T> {
+  sessionUrl?: string;
   data: T,
   count: number
 }

@@ -29,6 +29,28 @@ export const servicesService = {
         return await api.get(`services${searchParams}`).json()
     },
 
+    getServicesForPropeties: async (query?: string, page?: number, date?: Date): Promise<ApiResponse<Service[]>> => {
+        let searchParams = ""
+        if (query){
+            searchParams = `?query=${query}`
+        }
+        if (page){
+            if (searchParams == ""){
+                searchParams = `?page=${page}`
+            }else{
+                searchParams += `&page=${page}`
+            }
+        }
+        if (date){
+            if (searchParams == ""){
+                searchParams = `?date=${date.toISOString()}`
+            }else{
+                searchParams += `&date=${date.toISOString()}`
+            }
+        }
+        return await api.get(`services/available/intervention${searchParams}`).json()
+    },
+
     getServiceById: async (id: number): Promise<ApiResponse<Service>> => {
         return await api.get(`services/${id}`).json();
     },
