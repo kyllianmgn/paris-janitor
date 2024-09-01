@@ -27,7 +27,6 @@ export const initPropertyReviews = (app: express.Express) => {
         }
     });
 
-
     app.post("/property-reviews/:id(\\d+)", isAuthenticated, isRole(UserRole.TRAVELER), async (req, res) => {
         try {
             const validation = propertyReviewValidator.validate(req.body);
@@ -114,6 +113,17 @@ export const initPropertyReviews = (app: express.Express) => {
             res.status(200).json({data: deletedProperty});
         } catch (e) {
             res.status(500).send({ error: e });
+        }
+    });
+
+    app.get("/property-reviews/property/:propertyId", isAuthenticated, async (req, res) => {
+        try {
+            const propertyReviews = await prisma.propertyReview.findMany({
+                where: { propertyId: +req.params.propertyId },
+            });
+            res.status(200).json({data: propertyReviews});
+        } catch (e) {
+            return res.status(500).send({ error: e });
         }
     });
 };
