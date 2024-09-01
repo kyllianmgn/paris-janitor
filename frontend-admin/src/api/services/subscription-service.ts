@@ -34,11 +34,12 @@ export const getSubscriptionPlan = async (id: number): Promise<ApiResponse<Subsc
 };
 
 export const createSubscriptionPlan = async (plan: Partial<SubscriptionPlan>): Promise<ApiResponse<SubscriptionPlan>> => {
+    console.log("PLAN", plan);
     return await api.post('subscription-plans', { json: plan }).json();
 };
 
 export const updateSubscriptionPlan = async (id: number, plan: Partial<SubscriptionPlan>): Promise<ApiResponse<SubscriptionPlan>> => {
-    return await api.put(`subscription-plans/${id}`, { json: plan }).json();
+    return await api.patch(`subscription-plans/${id}`, { json: plan }).json();
 };
 
 export const deleteSubscriptionPlan = async (id: number): Promise<void> => {

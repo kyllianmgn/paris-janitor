@@ -117,6 +117,10 @@ const SubscriptionTable: React.FC = () => {
 
     return (
         <div className="space-y-4">
+            <Button onClick={() => router.push('/subscriptions/plans')}
+                variant="outline"
+                className="mr-2"
+            >Manage Subscription Plans</Button>
             <Button onClick={handleCreate}>Create New Subscription</Button>
             <DataTable
                 data={subscriptions}

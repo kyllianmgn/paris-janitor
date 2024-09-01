@@ -60,7 +60,7 @@ export const SubscriptionPlanDetails: React.FC<{ id: number }> = ({ id }) => {
                 title: "Success",
                 description: "Subscription plan deleted successfully",
             });
-            router.push('/subscription-plans');
+            router.push('/subscriptions/plans');
         } catch (error) {
             console.error("Error deleting subscription plan:", error);
             toast({
