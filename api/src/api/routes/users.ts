@@ -233,8 +233,6 @@ export const initUsers = (app: express.Express) => {
             }
 
             const userRequest = validation.value;
-            userRequest.newPassword = await bcrypt.hash(userRequest.newPassword, 10);
-
             let user = await prisma.user.findUnique({where: {id: +req.user.userId}});
 
             const oldPasswordMatch: boolean = await bcrypt.compare(userRequest.oldPassword, user!.password);
