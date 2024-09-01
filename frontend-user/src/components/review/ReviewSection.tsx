@@ -1,7 +1,9 @@
+"use client"
 import React, {useEffect, useState} from "react";
 import {PropertyReview, ServiceReview} from "@/types";
 import {ReviewElement} from "@/components/review/ReviewElement";
 import {reviewService} from "@/api/services/reviewService";
+import {Button} from "@/components/ui/button";
 
 export interface ReviewSectionProps {
     propertyId: number;
@@ -10,6 +12,7 @@ export interface ReviewSectionProps {
 
 export const ReviewSection = ({propertyId, serviceId}: Partial<ReviewSectionProps>) => {
     const [reviewList, setReviewList] = useState<PropertyReview[] | ServiceReview[]>([]);
+    const [isSorted, setIsSorted] = useState(false);
 
     const loadPropertyReviews = async () => {
         if (propertyId) {
@@ -33,10 +36,28 @@ export const ReviewSection = ({propertyId, serviceId}: Partial<ReviewSectionProp
         } else {
             console.log("Error while loading reviews : no id provided");
         }
-    }, [loadPropertyReviews, loadServiceReviews, propertyId, serviceId]);
+    }, []);
+
+    const sortReviews = () => {
+        setReviewList(reviewList.sort((a, b) => b.note - a.note));
+        setIsSorted(true);
+    };
+
+    const resetSort = () => {
+        if (propertyId) {
+            loadPropertyReviews().then();
+        } else if (serviceId) {
+            loadServiceReviews().then();
+        }
+        setIsSorted(false);
+    };
 
     return (
         <div>
+            <Button onClick={isSorted ? resetSort : sortReviews}>
+                {isSorted ? "Reset Sort" : "Sort by Note"}
+            </Button>
+
             {reviewList.map((review: PropertyReview | ServiceReview) => (
                 <ReviewElement baseReview={review} key={review.id}/>
             ))}
