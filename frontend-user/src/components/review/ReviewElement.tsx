@@ -18,18 +18,20 @@ export const ReviewElement = ({baseReview}: { baseReview: PropertyReview | Servi
     })
 
     return (
-        <div className="my-2">
+        <div className="mb-2 rounded-lg border bg-accent text-card-foreground shadow-sm p-2">
             <div className="font-bold">
-                Auteur: {author}
+                Author: {author}
             </div>
-            <h1 className="font-bold">Note</h1>
             <div className="flex gap-1">
-                {
-                    Array.from({length: 5}).map((_, i) => (
-                        <Star className="cursor-pointer" fill={i >= baseReview.note ? "grey" : "yellow"}
-                              stroke={"#8c8c8c"} strokeWidth={1.5} key={i}/>
-                    ))
-                }
+                <h1 className="font-bold w-fit">Note:</h1>
+                <div className="flex gap-1 w-fit">
+                    {
+                        Array.from({length: 5}).map((_, i) => (
+                            <Star className="cursor-pointer" fill={i >= baseReview.note ? "grey" : "yellow"}
+                                  stroke={"#8c8c8c"} strokeWidth={1.5} key={i}/>
+                        ))
+                    }
+                </div>
             </div>
             <div className="font-bold">
                 {baseReview.comment}
