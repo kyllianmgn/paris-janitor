@@ -1,8 +1,4 @@
-import {ApiResponse, User} from "@/types";
-import {
-    PropertyReservation,
-    PropertyReservation
-} from "@/components/properties-reservations/PropertiesReservations";
+import {ApiResponse, User, PropertyReservation} from "@/types";
 import {PropertyReservationPostReq} from "@/components/properties-reservations/PropertyReservationForm";
 import {api} from "@/api/config";
 import {authService} from "@/api/services/authService";
@@ -42,4 +38,8 @@ export const propertiesReservationsService = {
     getMyReservationsAsUser: async (): Promise<ApiResponse<PropertyReservation[]>> => {
         return api.get('property-reservations/me').json<ApiResponse<PropertyReservation[]>>();
     },
+
+    getNextReservationsByLandlordId: async (): Promise<ApiResponse<PropertyReservation[]>> => {
+        return api.get('property-reservations/landlord/future').json<ApiResponse<PropertyReservation[]>>();
+    }
 }
