@@ -20,6 +20,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import OrderServicesDialog from "@/components/properties/OrderServicesDialog";
 import { CrudModal, Field } from "@/components/public/CrudModal";
+import {ReviewSection} from "@/components/review/ReviewSection";
 
 const propertyFields: Field[] = [
     { name: 'address', label: 'Address', type: 'text', required: true },
@@ -260,6 +261,9 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
                             onToggleServices={handleToggleServices}
                         />
                     )}
+                </div>
+                <div>
+                    <ReviewSection propertyId={propertyId}/>
                 </div>
             </div>
 

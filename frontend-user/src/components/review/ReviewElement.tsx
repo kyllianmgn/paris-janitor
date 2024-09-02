@@ -5,6 +5,9 @@ export const ReviewElement = ({baseReview}: { baseReview: PropertyReview | Servi
 
     return (
         <div className="my-2">
+            <div className="font-bold">
+                Auteur: {baseReview.traveler?.user?.firstName} {baseReview.traveler?.user?.lastName}
+            </div>
             <h1 className="font-bold">Note</h1>
             <div className="flex gap-1">
                 {
