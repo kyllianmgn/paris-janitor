@@ -120,6 +120,19 @@ export const initPropertyReviews = (app: express.Express) => {
         try {
             const propertyReviews = await prisma.propertyReview.findMany({
                 where: { propertyId: +req.params.propertyId },
+                include: {
+                    traveler: {
+                        include: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    firstName: true,
+                                    lastName: true
+                                }
+                            }
+                        }
+                    }
+                }
             });
             res.status(200).json({data: propertyReviews});
         } catch (e) {
