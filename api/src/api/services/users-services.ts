@@ -8,7 +8,7 @@ export interface User {
     email: string,
     password: string,
     Landlord?: Role|null,
-    Traveler?: Role|null,
+    Traveler?: TravelerRole|null,
     ServiceProvider?: ServiceProviderRole|null,
 }
 
@@ -16,6 +16,12 @@ interface Role{
     id: number,
     userId: number
 }
+
+interface TravelerRole extends Role{
+    subscriptionType?: TravelerPlan
+}
+
+type TravelerPlan = "FREE" | "BAG_PACKER" | "EXPLORATOR"
 
 interface ServiceProviderRole extends Role{
     status?: ServiceProviderStatus

@@ -183,14 +183,21 @@ enum ReservationStatus {
 }
 
 model Traveler {
-  id             Int                   @id @default(autoincrement())
-  userId         Int                   @unique
-  user           User                  @relation(references: [id], fields: [userId], onDelete: Cascade)
-  reservations   PropertyReservation[]
-  ServiceReview  ServiceReview[]
-  PropertyReview PropertyReview[]
+  id               Int                   @id @default(autoincrement())
+  userId           Int                   @unique
+  user             User                  @relation(references: [id], fields: [userId], onDelete: Cascade)
+  subscriptionType TravelerSubscription  @default(FREE)
+  reservations     PropertyReservation[]
+  ServiceReview    ServiceReview[]
+  PropertyReview   PropertyReview[]
 
   @@map("travelers")
+}
+
+enum TravelerSubscription {
+  FREE
+  BAG_PACKER
+  EXPLORATOR
 }
 
 model ServiceProvider {

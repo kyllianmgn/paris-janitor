@@ -113,6 +113,7 @@ export interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
+  travelerPlan: 'FREE' | 'BAG_PACKER' | 'EXPLORATOR' | null ;
   role: 'LANDLORD' | 'TRAVELER' | 'SERVICE_PROVIDER' | null;
   serviceProviderStatus: 'PENDING' | 'ACCEPTED' | 'REJECTED' | null
   idRole: number | null;
@@ -125,6 +126,7 @@ export interface DecodedToken {
   lastName: string;
   landlordId?: number;
   travelerId?: number;
+  travelerPlan?: 'FREE' | 'BAG_PACKER' | 'EXPLORATOR' ;
   serviceProviderId?: number;
   serviceProviderStatus?: 'PENDING' | 'ACCEPTED' | 'REJECTED' ;
   role:string;

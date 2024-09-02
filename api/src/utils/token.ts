@@ -12,6 +12,7 @@ export const generateAccessToken = (user: UserWithoutPassword) => {
             email: user.email,
             landlordId: user.Landlord?.id,
             travelerId: user.Traveler?.id,
+            travelerPlan: user.Traveler?.subscriptionType,
             serviceProviderId: user.ServiceProvider?.id,
             serviceProviderStatus: user.ServiceProvider?.status,
         },

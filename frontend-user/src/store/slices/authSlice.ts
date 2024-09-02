@@ -10,6 +10,7 @@ const initialState: AuthState = {
     isAuthenticated: false,
     idRole: null,
     role: null,
+    travelerPlan: null,
     serviceProviderStatus: null,
 };
 
@@ -22,6 +23,7 @@ const authSlice = createSlice({
             state.refreshToken = action.payload.refreshToken;
             state.isAuthenticated = true;
             const decodedToken = jwtDecode<DecodedToken>(action.payload.accessToken);
+            console.log(decodedToken)
             state.user = {
                 id: decodedToken.userId,
                 email: decodedToken.email,

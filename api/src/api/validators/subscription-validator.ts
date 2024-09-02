@@ -12,6 +12,16 @@ export const subscriptionValidator = Joi.object<SubscriptionRequest>({
     planId: Joi.number().required(),
 });
 
+export interface TravelerSubscriptionRequest {
+    plan: string;
+    type: string
+}
+
+export const travelerSubscriptionValidator = Joi.object<TravelerSubscriptionRequest>({
+    plan: Joi.string().required().valid("explorator","bag-packer"),
+    type: Joi.string().required().valid("monthly","annually"),
+});
+
 export const subscriptionPatchValidator = Joi.object<Partial<Subscription>>({
     planId: Joi.number().optional(),
     status: Joi.string()

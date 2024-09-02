@@ -10,7 +10,7 @@ import {AppDispatch} from "@/store";
 import {useDispatch} from "react-redux";
 
 
-export default function SubscriptionSuccess() {
+export default function TravelerSubscriptionSuccess() {
     const router = useRouter();
     const confettiRef = useRef<ConfettiRef>(null);
     const { toast } = useToast();
@@ -26,9 +26,9 @@ export default function SubscriptionSuccess() {
 
     const completeSubscription = async (sessionId: string) => {
         try {
-            const response = await api.get(`subscriptions/success?session_id=${sessionId}`);
+            const response = await api.get(`subscriptions/traveler/success?session_id=${sessionId}`);
             if (response.ok) {
-                const data = await response.json();
+                const data: any = await response.json();
                 console.log(data);
                 // Mettez à jour le state global avec les nouveaux tokens si nécessaire
                 tokenUtils.setTokens(data);
@@ -51,7 +51,7 @@ export default function SubscriptionSuccess() {
     };
 
     const handleGoToDashboard = () => {
-        router.push("/dashboard");
+        router.push("/");
     };
 
     return (

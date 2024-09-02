@@ -40,6 +40,7 @@ export const initAuth = (app: express.Express) => {
                 }
 
                 const jti = uuidv4();
+                console.log(user)
                 const {accessToken, refreshToken} = generateTokens(
                     user,
                     jti
