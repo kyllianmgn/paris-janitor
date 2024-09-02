@@ -2,7 +2,7 @@
 import {PropertyReservationList} from "@/components/properties-reservations/PropertyReservationList";
 import {useEffect, useState} from "react";
 import {propertiesReservationsService} from "@/api/services/properties-reservations";
-import {PropertyReservation} from "@/components/properties-reservations/PropertiesReservations";
+import {PropertyReservation} from "@/types";
 
 interface MyPropertyReservationsProps {
     propertyId: number
