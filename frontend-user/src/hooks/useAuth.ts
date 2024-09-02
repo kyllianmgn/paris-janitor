@@ -34,8 +34,6 @@ export const useAuth = () => {
         }
     };
 
-    const isLandlordPending = auth.user?.Landlord?.status === "PENDING";
-
 
     return {
         ...auth,
@@ -43,6 +41,5 @@ export const useAuth = () => {
         login,
         logout: logoutUser,
         signup,
-        isLandlordPending
     };
 };

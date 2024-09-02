@@ -28,7 +28,8 @@ export const initSubscriptions = (app: express.Express) => {
             if (validation.error) {
                 return res.status(400).json({ error: "Invalid input data", details: validation.error.details });
             }
-
+            console.log("nous sommes dans le post subscriptions");
+            console.log(validation.value);
             const subscriptionData: SubscriptionRequest = validation.value;
 
             const user:User | null = await prisma.user.findUnique({
@@ -59,17 +60,13 @@ export const initSubscriptions = (app: express.Express) => {
                 });
             }
 
+            console.log(stripeCustomerId);
+
             const session = await stripe.checkout.sessions.create({
                 payment_method_types: ['card'],
                 line_items: [
                     {
-                        price_data: {
-                            currency: "eur",
-                            product_data: {
-                                name: plan.name,
-                            },
-                            unit_amount: Math.round(Number(plan.yearlyPrice) * 100),
-                        },
+                        price: plan.stripePriceIdYearly,
                         quantity: 1,
                     },
                 ],
@@ -92,6 +89,8 @@ export const initSubscriptions = (app: express.Express) => {
 
     app.get("/subscriptions/success", isAuthenticated, async (req, res) => {
         try {
+            console.log("je suis dans la route success");
+            console.log(req.query.session_id);
             const sessionId = req.query.session_id as string;
             if (!sessionId) {
                 return res.status(400).json({ error: "Missing session_id parameter" });
@@ -143,7 +142,6 @@ export const initSubscriptions = (app: express.Express) => {
             });
 
             res.json({
-                message: "Subscription activated successfully",
                 accessToken,
                 refreshToken
             });

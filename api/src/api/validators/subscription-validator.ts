@@ -4,7 +4,7 @@ import {Subscription, SubscriptionPlan, SubscriptionStatus, UserType} from "@pri
 
 export interface SubscriptionRequest {
     userId: number;
-    planId: number;
+    planId: number
 }
 
 export const subscriptionValidator = Joi.object<SubscriptionRequest>({
