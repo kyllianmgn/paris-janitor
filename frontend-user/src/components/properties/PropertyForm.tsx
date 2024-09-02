@@ -15,6 +15,7 @@ import {
     EmptyPropertyFormImage,
     PropertyFormImage
 } from "@/components/properties/PropertyFormImage";
+import {Select} from "react-day-picker";
 
 const steps = [
     "Informations du bien",
@@ -25,8 +26,9 @@ const steps = [
 
 const STORAGE_KEY = 'property_form_draft';
 
-interface PropertyFormDataError extends Omit<PropertyFormData, "files">{
+interface PropertyFormDataError extends Omit<PropertyFormData, "files" | "roomCount">{
     files: string;
+    roomCount: string;
 }
 
 export const PropertyForm = () => {
@@ -44,6 +46,9 @@ export const PropertyForm = () => {
                 description: '',
                 files: [],
                 pricePerNight: 0,
+                roomCount: 0,
+                instruction: '',
+                propertyType: "HOUSE"
             };
         }
         return {
@@ -53,7 +58,8 @@ export const PropertyForm = () => {
             country: '',
             description: '',
             pricePerNight: 0,
-            files: []
+            files: [],
+            propertyType: "HOUSE"
         };
     });
     const [errors, setErrors] = useState<Partial<PropertyFormDataError>>({});
@@ -66,7 +72,7 @@ export const PropertyForm = () => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(savedFormData));
     }, [formData]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prevState => ({
             ...prevState,
@@ -110,6 +116,8 @@ export const PropertyForm = () => {
                 break;
             case 1:
                 if (!formData.description) newErrors.description = 'Description requise';
+                if (!formData.roomCount) newErrors.roomCount = 'Description requise';
+                if (!formData.instruction) newErrors.instruction = 'Description requise';
                 break;
             case 2:
                 if (!formData.files.length) newErrors.files = 'Photo requise';
@@ -141,7 +149,7 @@ export const PropertyForm = () => {
                     variant: "default",
                 });
                 localStorage.removeItem(STORAGE_KEY); // Supprime le brouillon après soumission réussie
-                router.push('/properties');
+                router.push('/my-properties');
             } catch (error) {
                 console.error('Error creating property:', error);
                 toast({
@@ -200,6 +208,17 @@ export const PropertyForm = () => {
                         <Textarea id="description" name="description" value={formData.description}
                                   onChange={handleChange}/>
                         {errors.description && <span className="text-red-500">{errors.description}</span>}
+                        <label htmlFor="roomCount">Nombre de chambre</label>
+                        <Input type={"number"} id="roomCount" name="roomCount" value={formData.roomCount} onChange={handleChange}/>
+                        {errors.roomCount && <span className="text-red-500">{errors.roomCount}</span>}
+                        <label htmlFor="propertyType">Type de bien</label>
+                        <Select id="propertyType" name="propertyType" value={formData.propertyType} onChange={handleChange}>
+                            <option value={"HOUSE"}>Maison</option>
+                            <option value={"APPARTEMENT"}>Appartement</option>
+                        </Select>
+                        <label htmlFor="instruction">Instruction</label>
+                        <Textarea id="instruction" name="instruction" value={formData.instruction} onChange={handleChange}/>
+                        {errors.instruction && <span className="text-red-500">{errors.instruction}</span>}
                     </div>
                 );
             case 2:

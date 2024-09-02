@@ -14,6 +14,22 @@ import { useAuth } from "@/hooks/useAuth";
 import {servicesService} from "@/api/services/services";
 import {Input} from "@/components/ui/input";
 import {Simulate} from "react-dom/test-utils";
+import {useSelector} from "react-redux";
+import {RootState} from "@/store";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import OrderServicesDialog from "@/components/properties/OrderServicesDialog";
+import { CrudModal, Field } from "@/components/public/CrudModal";
+import {ReviewSection} from "@/components/review/ReviewSection";
+
+const propertyFields: Field[] = [
+    { name: 'address', label: 'Address', type: 'text', required: true },
+    { name: 'postalCode', label: 'Postal Code', type: 'text', required: true },
+    { name: 'city', label: 'City', type: 'text', required: true },
+    { name: 'country', label: 'Country', type: 'text', required: true },
+    { name: 'pricePerNight', label: 'Price per night', type: 'number', required: true },
+    { name: 'description', label: 'Description', type: 'textarea', required: true },
+];
 
 export interface PropertyDetailsProps {
     propertyId: number;
@@ -30,15 +46,30 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
     const [availability, setAvailability] = useState<ServiceAvailability>({state: false, reason: ""});
     const [loading, setLoading] = useState<boolean>(true);
     const [isReservationDialogOpen, setIsReservationDialogOpen] = useState(false);
-    const [selectedDates, setSelectedDates] = useState<{ start: Date | null; end: Date | null }>({ start: null, end: null });
+    const [selectedDates, setSelectedDates] = useState<{ start: Date | null; end: Date | null }>({ start: new Date(), end: null });
+    const [servicesModal, setServicesModal] = useState<boolean>(false);
     const router = useRouter();
     const { toast } = useToast();
-    const { user, isAuthenticated, role } = useAuth();
+    const user = useSelector((root: RootState) => root.auth.user);
+    const role = useSelector((root: RootState) => root.auth.role);
+    const idRole = useSelector((root: RootState) => root.auth.idRole);
     let date = new Date();
     date.setDate(date.getDate() + 1);
 
+    const [modalState, setModalState] = useState<{isOpen: boolean, mode: 'edit' | 'delete', property: Property | null}>({
+        isOpen: false,
+        mode: 'edit',
+        property: null
+    });
+
     const loadProperty = async () => {
         if (propertyId) {
+            if (window.location.href.includes("/my-properties")){
+                const res = await propertiesService.getMyPropertyById(propertyId);
+                setProperty(res.data);
+                setLoading(false);
+                return;
+            }
             const res = await propertiesService.getPropertyById(propertyId);
             setProperty(res.data);
             setLoading(false);
@@ -84,17 +115,17 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
     }, [propertyId]);
 
     const setStartDate = (date: string) => {
-        setSelectedDates((prevDates) => ({ ...prevDates, start: new Date(date) }));
+        setSelectedDates((prevDates) => ({ ...prevDates, start: date }));
     };
 
     const setEndDate = (date: string) => {
-        setSelectedDates((prevDates) => ({ ...prevDates, end: new Date(date) }));
+        setSelectedDates((prevDates) => ({ ...prevDates, end: date }));
     };
 
     const handleGoBack = () => router.back();
 
     const handleReserveClick = () => {
-        if (!isAuthenticated) {
+        if (!user) {
             router.push('/login');
             return;
         }
@@ -121,14 +152,53 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
         setIsReservationDialogOpen(true);
     };
 
+    const handleModalClose = () => {
+        setModalState({ isOpen: false, mode: 'edit', property: null });
+    };
 
+    const handleModalSubmit = async (data: Partial<Property>) => {
+        try {
+            if (modalState.mode === 'edit') {
+                if (data.id) {
+                    const propertyId = data.id;
+                    delete data.id;
+                    delete data.landlordId;
+                    delete data.instruction;
+                    delete data.roomCount;
+                    delete data.propertyType;
+                    delete data.status;
+                    delete data.createdAt;
+                    delete data.updatedAt;
+                    await propertiesService.updateProperty(propertyId ,data as Property);
+                    toast({ title: "Success", description: "Property updated successfully" });
+                } else {
+                    toast({
+                        title: "Error",
+                        description: `Failed to ${modalState.mode === 'edit' ? 'update' : 'delete'} property`,
+                        variant: "destructive",
+                    });
+                }
+            } else if (modalState.mode === 'delete') {
+                await propertiesService.disableProperty(modalState.property!.id!);
+                toast({ title: "Success", description: "Property deleted successfully" });
+            }
+        } catch (error) {
+            console.error(`Error ${modalState.mode === 'edit' ? 'updating' : 'deleting'} property:`, error);
+            toast({
+                title: "Error",
+                description: `Failed to ${modalState.mode === 'edit' ? 'update' : 'delete'} property`,
+                variant: "destructive",
+            });
+        }
+        handleModalClose();
+    };
 
     const handleManageOccupations = () => {
         router.push(`/properties/${propertyId}/occupations`);
     };
 
     const handleEditProperty = () => {
-        router.push(`/properties/${propertyId}/edit`);
+        setModalState({ isOpen: true, mode: 'edit', property });
     };
 
     const handleDeleteProperty = async () => {
@@ -151,10 +221,14 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
         }
     };
 
+    const handleToggleServices = () => {
+        setServicesModal(true)
+    }
+
     if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
     if (!property) return <div className="text-center mt-10">Property not found</div>;
 
-    const isOwner = role === 'LANDLORD' && user?.id === property.landlordId;
+    const isOwner = role === 'LANDLORD' && idRole === property.landlordId;
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -174,8 +248,8 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
                     <ReservationCard
                         price={property.pricePerNight}
                         onReserveClick={handleReserveClick}
-                        startDate={selectedDates.start?.toISOString().split('T')[0] || ''}
-                        endDate={selectedDates.end?.toISOString().split('T')[0] || ''}
+                        startDate={selectedDates.start}
+                        endDate={selectedDates.end}
                         setStartDate={setStartDate}
                         setEndDate={setEndDate}
                     />
@@ -184,8 +258,12 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
                             onManageOccupations={handleManageOccupations}
                             onEditProperty={handleEditProperty}
                             onDeleteProperty={handleDeleteProperty}
+                            onToggleServices={handleToggleServices}
                         />
                     )}
+                </div>
+                <div>
+                    <ReviewSection propertyId={propertyId}/>
                 </div>
             </div>
 
@@ -198,11 +276,18 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
                     startDate={selectedDates.start ?? new Date()}
                     endDate={selectedDates.end ?? new Date()}
                 />
+            )}
 
+            {isOwner && (
+                <OrderServicesDialog
+                    isOpen={servicesModal}
+                    onClose={() => setServicesModal(false)}
+                    propertyId={propertyId}
+                />
             )}
 
             {
-                propertyServicesTab &&
+                isOwner &&
                 <div>
                     <h1>Available Services for your property</h1>
 
@@ -226,6 +311,16 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
                         </div>
                     )}
                     {!availability.state && <h1>{availability.reason}</h1>}
+
+                    <CrudModal<Property>
+                        isOpen={modalState.isOpen}
+                        onClose={handleModalClose}
+                        onSubmit={handleModalSubmit}
+                        fields={propertyFields}
+                        title={modalState.mode === 'edit' ? 'Edit Property' : 'Delete Property'}
+                        initialData={modalState.property || {}}
+                        mode={modalState.mode}
+                    />
                 </div>
             }
         </div>
@@ -270,7 +365,8 @@ const OwnerActions: React.FC<{
     onManageOccupations: () => void;
     onEditProperty: () => void;
     onDeleteProperty: () => void;
-}> = ({ onManageOccupations, onEditProperty, onDeleteProperty }) => (
+    onToggleServices: () => void;
+}> = ({ onManageOccupations, onEditProperty, onDeleteProperty, onToggleServices }) => (
     <Card>
         <CardHeader>
             <CardTitle>Owner Actions</CardTitle>
@@ -284,6 +380,10 @@ const OwnerActions: React.FC<{
                 <Edit className="mr-2 h-4 w-4" />
                 Edit Property
             </Button>
+            <Button onClick={onToggleServices} className="w-full">
+                <Edit className="mr-2 h-4 w-4" />
+                Access Services Tab
+            </Button>
             <Button onClick={onDeleteProperty} className="w-full" variant="destructive">
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete Property
@@ -294,32 +394,21 @@ const OwnerActions: React.FC<{
 const ReservationCard: React.FC<{
     price: number;
     onReserveClick: () => void;
-    startDate: string;
-    endDate: string;
+    startDate: Date | null;
+    endDate: Date | null;
     setStartDate: (date: string) => void;
     setEndDate: (date: string) => void;
 }> = ({ price, onReserveClick, startDate, endDate, setStartDate, setEndDate }) => {
+
+    const handleDateChange = (dates: any) => {
+        const [start, end] = dates
+        setStartDate(start)
+        setEndDate(end)
+    }
+
     return (
         <div>
-            <div>
-                <label>Check-in</label>
-                <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full p-2 border rounded"
-                />
-            </div>
-            <div>
-                <label>Check-out</label>
-                <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    min={startDate}
-                    className="w-full p-2 border rounded"
-                />
-            </div>
+            <DatePicker showIcon onChange={handleDateChange} startDate={startDate} selected={startDate} endDate={endDate} selectsRange/>
             <button onClick={onReserveClick}>Reserve</button>
         </div>
     );

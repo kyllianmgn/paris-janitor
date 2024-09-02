@@ -13,7 +13,6 @@ export interface Payment {
     propertyReservationId?: number;
     invoiceId?: number;
     services: ServicePayment[];
-
 }
 
 export interface ServicePayment {
@@ -43,4 +42,28 @@ export const paymentValidator = Joi.object<Payment>({
 });
 export const paymentPatchValidator = Joi.object<Partial<Payment>>({
     status: Joi.string().valid(...Object.values(PaymentStatus)),
+});
+
+export interface PaymentIntervention {
+    id: number;
+    amount: number;
+    currency: string;
+    status: PaymentStatus;
+    paymentMethod: string;
+    date: Date;
+    stripePaymentIntentId?: string;
+    stripeSessionId?: string;
+    serviceId?: number;
+    propertyId?: number;
+    invoiceId?: number;
+}
+
+export const paymentServiceValidator = Joi.object<PaymentIntervention>({
+    amount: Joi.number().positive().required(),
+    currency: Joi.string().length(3).uppercase().required(),
+    date: Joi.date().required(),
+    paymentMethod: Joi.string().required(),
+    stripeSessionId: Joi.string().optional(),
+    serviceId: Joi.number().positive().required(),
+    propertyId: Joi.number().positive().required()
 });

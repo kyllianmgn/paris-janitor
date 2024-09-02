@@ -1,5 +1,5 @@
 node_modules/
-.idea/
+.idea/*
 .vscode/
 .env
 api/public/

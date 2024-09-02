@@ -4,6 +4,7 @@ export interface Filter{
     page?: string,
     pageSize?: string,
     query?: string
+    date?: Date
     role?: {
         landlord?: boolean,
         serviceProvider?: boolean,
@@ -19,6 +20,7 @@ export const filterValidator = Joi.object<Filter>({
     page: Joi.string().pattern(/\d+/),
     pageSize: Joi.string().pattern(/\d+/),
     query: Joi.string(),
+    date: Joi.date(),
     role: Joi.object({
         landlord: Joi.boolean(),
         serviceProvider: Joi.boolean(),

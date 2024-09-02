@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { servicesService } from "@/api/services/services";
-import { Service } from "@/types";
+import {Service, ServicePayment} from "@/types";
 import {redirect, useRouter} from 'next/navigation';
 import {paymentService} from "@/api/services/paymentService";
 
@@ -73,7 +73,7 @@ const ReservationDialog: React.FC<ReservationDialogProps> = ({
                     serviceId,
                     name: services.find(s => s.id === serviceId)?.name,
                     amount: Number(services.find(s => s.id === serviceId)?.basePrice || 0)
-                }))
+                } as ServicePayment))
             });
             if (response.sessionUrl){
                 router.push(response.sessionUrl)

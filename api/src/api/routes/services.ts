@@ -49,7 +49,6 @@ export const initServices = (app: express.Express) => {
         }
     });
 
-
     app.get("/services/available/intervention", async (req, res) => {
         try {
             const validation = filterValidator.validate(req.query)
@@ -64,7 +63,17 @@ export const initServices = (app: express.Express) => {
                     where: filterParams.query ?
                         {
                             provider: {
-                                status: "ACCEPTED"
+                                status: "ACCEPTED",
+                                occupation : filterParams.date ? {none: {
+                                        AND: [
+                                            {
+                                                startDate: {lte: filterParams.date}
+                                            },
+                                            {
+                                                endDate: {gte: filterParams.date}
+                                            }
+                                        ]
+                                    }} : undefined
                             },
                             type: "INTERVENTION",
                             OR: [{
@@ -81,7 +90,17 @@ export const initServices = (app: express.Express) => {
                         }
                         : {
                             provider: {
-                                status: "ACCEPTED"
+                                status: "ACCEPTED",
+                                occupation : filterParams.date ? {none: {
+                                        AND: [
+                                            {
+                                                startDate: {lte: filterParams.date}
+                                            },
+                                            {
+                                                endDate: {gte: filterParams.date}
+                                            }
+                                        ]
+                                    }} : undefined
                             },
                             type: "INTERVENTION"
                         },

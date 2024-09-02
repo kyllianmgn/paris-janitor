@@ -108,7 +108,7 @@ model Property {
   country        String
   description    String
   instruction    String
-  roomCount      Decimal
+  roomCount      Int
   propertyType   PropertyType
   pricePerNight  Decimal              @default(100)
   status         PropertyStatus       @default(PENDING)
@@ -264,18 +264,19 @@ model ServiceReview {
 }
 
 model Intervention {
-  id                   Int                 @id @default(autoincrement())
+  id                   Int                  @id @default(autoincrement())
   serviceId            Int
-  service              Service             @relation(fields: [serviceId], references: [id])
-  propertyOccupationId Int?                @unique
-  propertyOccupation   PropertyOccupation? @relation(fields: [propertyOccupationId], references: [id])
-  providerOccupationId Int                 @unique
-  providerOccupation   ProviderOccupation  @relation(fields: [providerOccupationId], references: [id])
+  service              Service              @relation(fields: [serviceId], references: [id])
+  propertyOccupationId Int?                 @unique
+  propertyOccupation   PropertyOccupation?  @relation(fields: [propertyOccupationId], references: [id])
+  providerOccupationId Int                  @unique
+  providerOccupation   ProviderOccupation   @relation(fields: [providerOccupationId], references: [id])
   additionalPrice      Decimal
   status               InterventionStatus
   intervention         InterventionForm?
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @updatedAt
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  PaymentIntervention  PaymentIntervention?
 
   @@map("interventions")
 }
@@ -291,6 +292,7 @@ model InterventionForm {
   id             Int          @id @default(autoincrement())
   interventionId Int          @unique
   intervention   Intervention @relation(references: [id], fields: [interventionId])
+  comment        String
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -323,11 +325,11 @@ model Payment {
   status                PaymentStatus
   paymentMethod         String
   stripePaymentIntentId String?
-  stripeSessionId   String?
-  propertyReservationId Int?                      @unique
-  propertyReservation   PropertyReservation?     @relation(fields: [propertyReservationId], references: [id])
-  invoiceId             Int?                     @unique
-  invoice               Invoice?                 @relation(fields: [invoiceId], references: [id])
+  stripeSessionId       String?
+  propertyReservationId Int?                 @unique
+  propertyReservation   PropertyReservation? @relation(fields: [propertyReservationId], references: [id])
+  invoiceId             Int?                 @unique
+  invoice               Invoice?             @relation(fields: [invoiceId], references: [id])
   services              ServicePayment[]
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt
@@ -344,6 +346,22 @@ model ServicePayment {
   amount    Decimal
 
   @@map("service_payments")
+}
+
+model PaymentIntervention {
+  id                    Int           @id @default(autoincrement())
+  amount                Decimal
+  currency              String
+  status                PaymentStatus
+  paymentMethod         String
+  stripePaymentIntentId String?
+  stripeSessionId       String?
+  interventionId        Int?          @unique
+  intervention          Intervention? @relation(fields: [interventionId], references: [id])
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@map("payments_intervention")
 }
 
 enum PaymentStatus {

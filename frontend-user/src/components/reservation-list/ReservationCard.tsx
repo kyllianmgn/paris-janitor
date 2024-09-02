@@ -15,12 +15,12 @@ export default function ReservationCard({reservation, mode}: {reservation: Prope
             case "traveler":
                 return (<>
                         <div className="flex flex-col">
-                            <h1 className="text-xl font-bold">{reservation.propertyOccupation?.property?.address}</h1>
-                            <h2 className="text-sm">Du {reservation.propertyOccupation?.startDate} au {reservation.propertyOccupation?.endDate}</h2>
+                            <h1 className="text-xl font-bold">{reservation.occupation?.property?.address}</h1>
+                            <h2 className="text-sm">Du {reservation.occupation?.startDate} au {reservation.occupation?.endDate}</h2>
                         </div>
                         <div className="flex flex-col ml-5 text-sm">
                             <h2>Status : {reservation.status}</h2>
-                            <h2>Landlord : {reservation.propertyOccupation?.property?.landlord?.user?.firstName} {reservation.propertyOccupation?.property?.landlord?.user?.lastName}</h2>
+                            <h2>Landlord : {reservation.occupation?.property?.landlord?.user?.firstName} {reservation.occupation?.property?.landlord?.user?.lastName}</h2>
                         </div>
                         </>
                 )
@@ -28,7 +28,7 @@ export default function ReservationCard({reservation, mode}: {reservation: Prope
                 return (<>
                         <div className="flex flex-col">
                             <h1 className="text-xl font-bold">{reservation.traveler?.user?.firstName} {reservation.traveler?.user?.lastName}</h1>
-                            <h2 className="text-sm">Du {reservation.propertyOccupation?.startDate} au {reservation.propertyOccupation?.endDate}</h2>
+                            <h2 className="text-sm">Du {reservation.occupation?.startDate} au {reservation.occupation?.endDate}</h2>
                         </div>
                         <div className="flex flex-col ml-5 text-sm">
                             <h2>Status : {reservation.status}</h2>

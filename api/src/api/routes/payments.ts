@@ -1,10 +1,11 @@
 import express from "express";
 import { prisma } from "../../utils/prisma";
 import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
-import { paymentValidator, paymentPatchValidator } from "../validators/payment-validator";
+import {paymentValidator, paymentPatchValidator, paymentServiceValidator} from "../validators/payment-validator";
 import Stripe from 'stripe';
 import { filterValidator } from "../validators/filter-validator";
 import {Payment, PropertyReservation, ReservationStatus, ServicePayment} from "@prisma/client";
+import {Intervention, InterventionStatus} from "../validators/service-validator";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-06-20',
@@ -123,10 +124,10 @@ export const initPayments = (app: express.Express) => {
                     stripeSessionId: session.id,
                     propertyReservationId: paymentRequest.propertyReservationId,
                     services: {
-                        create: paymentRequest.services.map(servicePayment => ({
-                            serviceId: servicePayment.serviceId,
-                            amount: servicePayment.amount
-                        }))
+                        createMany: {data: paymentRequest.services.map(servicePayment => ({
+                                serviceId: servicePayment.serviceId,
+                                amount: servicePayment.amount
+                            }))}
                     }
                 },
                 include: {
@@ -145,9 +146,9 @@ export const initPayments = (app: express.Express) => {
         }
     });
 
-    app.post("/paymentstest", isAuthenticated, async (req, res) => {
+    app.post("/payments/service", isAuthenticated, async (req, res) => {
         try {
-            const validation = paymentValidator.validate(req.body);
+            const validation = paymentServiceValidator.validate(req.body);
 
             if (validation.error) {
                 return res.status(400).json({ error: validation.error });
@@ -155,14 +156,16 @@ export const initPayments = (app: express.Express) => {
 
             const paymentRequest = validation.value;
 
-            // Vérifiez que la réservation existe et est en statut PENDING
-            const reservation: PropertyReservation | null = await prisma.propertyReservation.findFirst({
-                where: { id: paymentRequest.propertyReservationId }
-            });
 
-            if (!reservation || reservation.status !== ReservationStatus.PENDING) {
-                return res.status(400).json({ error: 'Invalid or already processed reservation' });
-            }
+            const service = await prisma.service.findUnique({
+                where: {id: paymentRequest.serviceId}
+            })
+            if (!service) return res.sendStatus(404);
+
+            const property = await prisma.property.findUnique({
+                where: {id: paymentRequest.propertyId}
+            })
+            if (!property) return res.sendStatus(404);
 
             // Créer une session de paiement Stripe
             const session = await stripe.checkout.sessions.create({
@@ -172,17 +175,7 @@ export const initPayments = (app: express.Express) => {
                         price_data: {
                             currency: paymentRequest.currency,
                             product_data: {
-                                name: 'Property Reservation',
-                            },
-                            unit_amount: Math.round(paymentRequest.amount * 100),
-                        },
-                        quantity: 1,
-                    },
-                    {
-                        price_data: {
-                            currency: paymentRequest.currency,
-                            product_data: {
-                                name: 'Property Reservation',
+                                name: `Service : ${service.name}`,
                             },
                             unit_amount: Math.round(paymentRequest.amount * 100),
                         },
@@ -194,23 +187,43 @@ export const initPayments = (app: express.Express) => {
                 cancel_url: `${process.env.FRONTEND_URL}/payment/cancel`,
             });
 
-            const payment = await prisma.payment.create({
+            let endDate = new Date(paymentRequest.date);
+            endDate.setHours(endDate.getHours() + 4)
+
+            const providerOccupation = await prisma.providerOccupation.create({
+                data: {
+                    providerId: service.providerId,
+                    startDate: paymentRequest.date,
+                    endDate: endDate
+                }
+            })
+
+            const propertyOccupation = await prisma.propertyOccupation.create({
+                data: {
+                    propertyId: property.id,
+                    startDate: paymentRequest.date,
+                    endDate: endDate,
+                }
+            })
+
+            const intervention = await prisma.intervention.create({
+                data: {
+                    status: "PLANNED",
+                    serviceId: service.id,
+                    additionalPrice: 0,
+                    propertyOccupationId: propertyOccupation.id,
+                    providerOccupationId: providerOccupation.id
+                }
+            });
+
+            const payment = await prisma.paymentIntervention.create({
                 data: {
                     amount: paymentRequest.amount,
                     currency: paymentRequest.currency,
                     status: 'PENDING',
                     paymentMethod: 'stripe',
                     stripeSessionId: session.id,
-                    propertyReservationId: paymentRequest.propertyReservationId,
-                    services: {
-                        create: paymentRequest.services.map(servicePayment => ({
-                            serviceId: servicePayment.serviceId,
-                            amount: servicePayment.amount
-                        }))
-                    }
-                },
-                include: {
-                    services: true
+                    interventionId: intervention.id,
                 }
             });
 

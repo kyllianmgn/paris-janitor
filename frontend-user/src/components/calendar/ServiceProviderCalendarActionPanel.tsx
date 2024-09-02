@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PropertyOccupation } from '@/types';
+import {PropertyOccupation, ProviderOccupation} from '@/types';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -9,7 +9,7 @@ interface CalendarActionPanelProps {
     onCreateOccupation: (occupation: Omit<PropertyOccupation, 'id'>) => Promise<void>;
     onUpdateOccupation: (id: number, occupation: Partial<PropertyOccupation>) => Promise<void>;
     onDeleteOccupation: (id: number) => Promise<void>;
-    occupations: PropertyOccupation[];
+    occupations: PropertyOccupation[] | ProviderOccupation[];
 }
 
 const ServiceProviderCalendarActionPanel: React.FC<CalendarActionPanelProps> = ({

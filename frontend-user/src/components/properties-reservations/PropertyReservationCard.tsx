@@ -1,6 +1,6 @@
 "use client"
 
-import {PropertyReservation} from "@/components/properties-reservations/PropertiesReservations";
+import {PropertyReservation} from "@/types";
 import {useRouter} from "next/navigation";
 
 export interface PropertyReservationCardProps {

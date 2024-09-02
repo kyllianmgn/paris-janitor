@@ -4,7 +4,7 @@ import {
     isAuthenticated,
     isRole,
     isSuperAdmin,
-    isTravelerOrLandlord,
+    isTravelerOrLandlord, isTravelerOrSP,
     UserRole
 } from "../middlewares/auth-middleware";
 import {
@@ -90,7 +90,7 @@ export const initServiceReviews = (app: express.Express) => {
         }
     });
 
-    app.get("/service-reviews/me/:propertyId(\\d+)", isAuthenticated, isTravelerOrLandlord, async (req, res) => {
+    app.get("/service-reviews/me/:propertyId(\\d+)", isAuthenticated, isTravelerOrSP, async (req, res) => {
         try {
             if (!req.user?.travelerId || !req.user?.serviceProviderId) return;
             const propertyReviews = await prisma.serviceReview.findFirst({
@@ -102,7 +102,6 @@ export const initServiceReviews = (app: express.Express) => {
             return;
         }
     });
-
 
     app.post("/service-reviews/:id(\\d+)", isAuthenticated, isTravelerOrLandlord, async (req, res) => {
         try {
@@ -157,6 +156,42 @@ export const initServiceReviews = (app: express.Express) => {
         } catch (e) {
             res.status(500).send({ error: e });
             return;
+        }
+    });
+
+    app.get("/service-reviews/service/:serviceId", isAuthenticated, async (req, res) => {
+        try {
+            const serviceReviews = await prisma.serviceReview.findMany({
+                where: { serviceId: +req.params.serviceId },
+                include: {
+                    traveler: {
+                        include: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    firstName: true,
+                                    lastName: true
+                                }
+                            }
+                        }
+                    },
+                    landlord: {
+                        include: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    firstName: true,
+                                    lastName: true
+                                }
+                            }
+                        }
+                    }
+                },
+
+            });
+            res.status(200).json({data: serviceReviews});
+        } catch (e) {
+            return res.status(500).send({ error: e });
         }
     });
 };

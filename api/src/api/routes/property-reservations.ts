@@ -63,6 +63,37 @@ export const initPropertyReservations = (app: express.Express) => {
         }
     });
 
+    app.get("/property-reservations/landlord/future",isAuthenticated, isRole(UserRole.LANDLORD), async (req, res) => {
+        try {
+            const todayWithoutHours = new Date()
+            todayWithoutHours.setHours(0,0,0,0)
+            const allPropertyReservations = await prisma.propertyReservation.findMany({
+                include: {
+                    occupation: {
+                        include: {
+                            property: true
+                        }
+                    }
+                },
+                where: {
+                    occupation: {
+                        property: {
+                            landlordId: req.user?.landlordId,
+                        },
+                        startDate: {
+                            gte: todayWithoutHours
+                        }
+                    }
+                }
+            });
+            const countReservations = await prisma.propertyReservation.count()
+            res.status(200).json({data: allPropertyReservations, count: countReservations});
+        } catch (e) {
+            res.status(500).send({error: e});
+            return;
+        }
+    });
+
     app.get("/property-reservations/:id(\\d+)", async (req, res) => {
         try {
             const PropertyReservations = await prisma.propertyReservation.findUnique({

@@ -1,11 +1,10 @@
 import express from "express";
-import { prisma } from "../../utils/prisma";
-import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
+import {prisma} from "../../utils/prisma";
+import {isAuthenticated, isRole, isSuperAdmin, UserRole} from "../middlewares/auth-middleware";
 import {
+    interventionFormValidator,
     interventionPatchValidator,
-    interventionValidator,
-    servicePatchValidator,
-    serviceValidator
+    interventionValidator
 } from "../validators/service-validator";
 
 export const initInterventionForms = (app: express.Express) => {
@@ -19,10 +18,10 @@ export const initInterventionForms = (app: express.Express) => {
         }
     });
 
-    app.get("/intervention-forms/:id(\\d+)", async (req, res) => {
+    app.get("/intervention-forms/:id(\\d+)", isAuthenticated, async (req, res) => {
         try {
-            const interventionForm = await prisma.intervention.findUnique({
-                where: { id: +req.params.id },
+            const interventionForm = await prisma.interventionForm.findFirst({
+                where: { interventionId: +req.params.id },
             });
             res.status(200).json({data: interventionForm});
         } catch (e) {
@@ -31,9 +30,9 @@ export const initInterventionForms = (app: express.Express) => {
         }
     });
 
-    app.post("/intervention-forms/", async (req, res) => {
+    app.post("/intervention-forms/:id(\\d+)", isAuthenticated, isRole(UserRole.SERVICE_PROVIDER), async (req, res) => {
         try {
-            const validation = interventionValidator.validate(req.body);
+            const validation = interventionFormValidator.validate(req.body);
 
             if (validation.error) {
                 res.status(400).json({ error: validation.error });
@@ -41,9 +40,33 @@ export const initInterventionForms = (app: express.Express) => {
             }
 
             const serviceRequest = validation.value;
-            const interventionForm = await prisma.intervention.create({
-                data: serviceRequest
+            const intervention = await prisma.intervention.findUnique({
+                where: { id: +req.params.id, providerOccupation: {providerId: req.user?.serviceProviderId} },
             })
+            if (!intervention) return res.sendStatus(401)
+            const oldInterventionForm = await prisma.interventionForm.findFirst({
+                where: { interventionId: intervention.id},
+            })
+
+            let interventionForm;
+            if (oldInterventionForm){
+                interventionForm = await prisma.interventionForm.update({
+                    where: {
+                        interventionId: intervention.id
+                    },
+                    data: {
+                        comment: serviceRequest.comment,
+                    }
+                })
+            }else{
+                interventionForm = await prisma.interventionForm.create({
+                    data: {
+                        interventionId: intervention.id,
+                        comment: serviceRequest.comment,
+                    }
+                })
+            }
+
             res.status(200).json({data: interventionForm});
         } catch (e) {
             res.status(500).send({ error: e });

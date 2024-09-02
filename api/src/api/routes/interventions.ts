@@ -1,8 +1,18 @@
 import express from "express";
-import { prisma } from "../../utils/prisma";
-import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
+import {prisma} from "../../utils/prisma";
 import {
-    interventionPatchValidator, InterventionWithOccupationValidator, InterventionStatus, InterventionInPropertyValidator
+    isAuthenticated,
+    isRole,
+    isRoleOrAdmin,
+    isSuperAdmin,
+    isTravelerOrSP,
+    UserRole
+} from "../middlewares/auth-middleware";
+import {
+    InterventionInPropertyValidator,
+    interventionPatchValidator,
+    InterventionStatus,
+    InterventionWithOccupationValidator
 } from "../validators/service-validator";
 
 export const initInterventions = (app: express.Express) => {
@@ -16,16 +26,44 @@ export const initInterventions = (app: express.Express) => {
         }
     });
 
-    app.get("/interventions/:id(\\d+)", async (req, res) => {
+    app.get("/interventions/sp/me",isAuthenticated, isRole(UserRole.SERVICE_PROVIDER), async (req, res) => {
         try {
-            const Interventions = await prisma.intervention.findUnique({
+            if (!req.user?.serviceProviderId) return res.sendStatus(404);
+            const allInterventions = await prisma.intervention.findMany({
+                where: {
+                     service: {
+                         provider: {
+                             id: +req.user?.serviceProviderId
+                         }
+                     }
+                },
+                include: {
+                    propertyOccupation: {include: {property: {include: {landlord: {include: {user: true}}}}}},
+                    providerOccupation: true,
+                    service: {include: {provider: {include: {user: true}}}}
+                }
+            });
+            res.status(200).json({data: allInterventions});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.get("/interventions/:id(\\d+)",isAuthenticated, isTravelerOrSP, async (req, res) => {
+        try {
+            const intervention = await prisma.intervention.findUnique({
                 where: { id: +req.params.id },
                 include: {
                     service: true,
-                    providerOccupation: true
+                    providerOccupation: true,
+                    propertyOccupation: {include: {property: {include: {landlord: {include: {user: true}}}}}}
                 }
             });
-            res.status(200).json({data: Interventions});
+            if (!intervention) return res.sendStatus(404)
+            console.log(intervention)
+            if (intervention.service.providerId !== req.user?.serviceProviderId && intervention.propertyOccupation?.property.landlordId !== req.user?.serviceProviderId) return res.sendStatus(401);
+            res.status(200).json({data: intervention});
         } catch (e) {
             res.status(500).send({ error: e });
             return;
@@ -37,7 +75,7 @@ export const initInterventions = (app: express.Express) => {
             const interventions = await prisma.intervention.findMany({
                 where: { serviceId: +req.params.id },
                 include: {
-                    propertyOccupation: {include: {property: true}},
+                    propertyOccupation: {include: {property: {include: {landlord: {include: {user: true}}}}}},
                     service: {include: {provider: {include: {user: true}}}}
                 }
             });
@@ -137,7 +175,7 @@ export const initInterventions = (app: express.Express) => {
         }
     });
 
-    app.patch("/interventions/:id(\\d+)", isAuthenticated, isSuperAdmin, async (req, res) => {
+    app.patch("/interventions/:id(\\d+)", isAuthenticated, isRoleOrAdmin(UserRole.SERVICE_PROVIDER), async (req, res) => {
         const validation = interventionPatchValidator.validate(req.body);
 
         if (validation.error) {
@@ -150,6 +188,10 @@ export const initInterventions = (app: express.Express) => {
             const property = await prisma.intervention.update({
                 where: {
                     id: +req.params.id,
+                },
+                include: {
+                    propertyOccupation: {include: {property: {include: {landlord: {include: {user: true}}}}}},
+                    service: {include: {provider: {include: {user: true}}}}
                 },
                 data: interventionPatch,
             });

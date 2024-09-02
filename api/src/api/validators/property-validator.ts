@@ -15,12 +15,23 @@ export interface Property {
     city: string,
     country: string,
     description: string,
+    roomCount: number,
+    instruction: string,
+    propertyType: PropertyType,
     files: string[],
     pricePerNight: number,
     status: PropertyStatus
 }
 
+export enum PropertyType{
+    HOUSE="HOUSE",
+    APPARTEMENT="APPARTEMENT"
+}
+
 export const propertyValidator = Joi.object<Omit<Property, "status" | "id">>({
+    roomCount: Joi.number().required(),
+    instruction: Joi.string().required(),
+    propertyType: Joi.string().valid("HOUSE","APPARTEMENT").required(),
     address: Joi.string().required(),
     postalCode: Joi.string().required(),
     city: Joi.string().required(),
