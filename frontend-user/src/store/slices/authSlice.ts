@@ -33,7 +33,8 @@ const authSlice = createSlice({
             if (decodedToken.landlordId) {
                 state.idRole = decodedToken.landlordId;
                 state.role = 'LANDLORD';
-            } else if (decodedToken.travelerId) {
+            } else if (decodedToken.travelerId && decodedToken.travelerPlan) {
+                state.travelerPlan = decodedToken.travelerPlan
                 state.idRole = decodedToken.travelerId;
                 state.role = 'TRAVELER';
             } else if (decodedToken.serviceProviderId && decodedToken.serviceProviderStatus) {
