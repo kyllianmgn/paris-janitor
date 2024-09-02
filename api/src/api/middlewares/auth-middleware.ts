@@ -57,7 +57,7 @@ export const isRole = (role: UserRole) => {
 }
 
 export const isTravelerOrLandlord = (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user?.landlordId || !req.user?.travelerId){
+    if (!req.user?.landlordId && !req.user?.travelerId){
         res.status(401).json({error: "Unauthorized"})
         return;
     }
@@ -65,7 +65,7 @@ export const isTravelerOrLandlord = (req: Request, res: Response, next: NextFunc
 }
 
 export const isTravelerOrSP = (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user?.travelerId || !req.user?.serviceProviderId){
+    if (!req.user?.travelerId && !req.user?.serviceProviderId){
         res.status(401).json({error: "Unauthorized"})
         return;
     }
@@ -73,7 +73,7 @@ export const isTravelerOrSP = (req: Request, res: Response, next: NextFunction) 
 }
 
 export const isLandlordOrSP = (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user?.landlordId || !req.user?.serviceProviderId){
+    if (!req.user?.landlordId && !req.user?.serviceProviderId){
         res.status(401).json({error: "Unauthorized"})
         return;
     }

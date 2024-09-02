@@ -112,16 +112,17 @@ export const interventionPatchValidator = Joi.object<Intervention>({
     propertyOccupationId: Joi.number().optional(),
     providerOccupationId: Joi.number().optional(),
     additionalPrice: Joi.number().optional(),
-    status: Joi.string().optional()
+    status: Joi.string().optional(),
 })
 
 export interface InterventionForm {
     id: number,
     interventionId: number
+    comment: string
 }
 
 export const interventionFormValidator = Joi.object<InterventionForm>({
-    interventionId: Joi.number().optional()
+    comment: Joi.string().required(),
 })
 
 export interface ProviderOccupation{

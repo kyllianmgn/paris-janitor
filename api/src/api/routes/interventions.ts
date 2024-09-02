@@ -1,6 +1,13 @@
 import express from "express";
 import {prisma} from "../../utils/prisma";
-import {isAuthenticated, isRole, isSuperAdmin, isTravelerOrSP, UserRole} from "../middlewares/auth-middleware";
+import {
+    isAuthenticated,
+    isRole,
+    isRoleOrAdmin,
+    isSuperAdmin,
+    isTravelerOrSP,
+    UserRole
+} from "../middlewares/auth-middleware";
 import {
     InterventionInPropertyValidator,
     interventionPatchValidator,
@@ -50,10 +57,11 @@ export const initInterventions = (app: express.Express) => {
                 include: {
                     service: true,
                     providerOccupation: true,
-                    propertyOccupation: {include: {property: true}}
+                    propertyOccupation: {include: {property: {include: {landlord: {include: {user: true}}}}}}
                 }
             });
             if (!intervention) return res.sendStatus(404)
+            console.log(intervention)
             if (intervention.service.providerId !== req.user?.serviceProviderId && intervention.propertyOccupation?.property.landlordId !== req.user?.serviceProviderId) return res.sendStatus(401);
             res.status(200).json({data: intervention});
         } catch (e) {
@@ -167,7 +175,7 @@ export const initInterventions = (app: express.Express) => {
         }
     });
 
-    app.patch("/interventions/:id(\\d+)", isAuthenticated, isSuperAdmin, async (req, res) => {
+    app.patch("/interventions/:id(\\d+)", isAuthenticated, isRoleOrAdmin(UserRole.SERVICE_PROVIDER), async (req, res) => {
         const validation = interventionPatchValidator.validate(req.body);
 
         if (validation.error) {
@@ -180,6 +188,10 @@ export const initInterventions = (app: express.Express) => {
             const property = await prisma.intervention.update({
                 where: {
                     id: +req.params.id,
+                },
+                include: {
+                    propertyOccupation: {include: {property: {include: {landlord: {include: {user: true}}}}}},
+                    service: {include: {provider: {include: {user: true}}}}
                 },
                 data: interventionPatch,
             });

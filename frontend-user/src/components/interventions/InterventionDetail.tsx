@@ -1,12 +1,12 @@
 "use client"
-import React, { useEffect, useState } from "react";
-import {Intervention, Service} from "@/types";
-import { servicesService } from "@/api/services/services";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {Edit, Calendar, Settings, ArrowLeft} from "lucide-react";
+import React, {useEffect, useRef, useState} from "react";
+import {Intervention, InterventionStatus} from "@/types";
+import {Button} from "@/components/ui/button";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {ArrowLeft, Calendar, Edit, Settings} from "lucide-react";
 import {useRouter} from "next/navigation";
-import {serviceInterventionsService} from "@/api/services/service-interventions";
+import {InterventionForm, serviceInterventionsService} from "@/api/services/service-interventions";
+import {Textarea} from "@/components/ui/textarea";
 
 export interface InterventionDetailProps {
     interventionId: number
@@ -14,8 +14,10 @@ export interface InterventionDetailProps {
 
 export const InterventionDetails = ({ interventionId }: InterventionDetailProps) => {
     const [intervention, setIntervention] = useState<Intervention | null>(null);
+    const [interventionForm, setInterventionForm] = useState<InterventionForm | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const router = useRouter()
+    const interventionTextAreaRef = useRef<HTMLTextAreaElement>(null);
 
     const loadService = async () => {
         if (interventionId) {
@@ -24,6 +26,45 @@ export const InterventionDetails = ({ interventionId }: InterventionDetailProps)
             setLoading(false);
         }
     };
+
+    const loadInterventionForm = async () => {
+        const res = await serviceInterventionsService.getInterventionForm(interventionId);
+        console.log(res)
+        setInterventionForm(res.data)
+        if (res.data.comment && interventionTextAreaRef.current){
+            interventionTextAreaRef.current.value = res.data.comment
+        }
+    }
+
+    const uploadInterventionForm = async () => {
+        if (interventionTextAreaRef.current && interventionTextAreaRef.current.value) {
+            const res = await serviceInterventionsService.createInterventionForm(interventionId, interventionTextAreaRef.current.value);
+            setInterventionForm(res.data);
+            if (res.data.comment){
+                interventionTextAreaRef.current.value = res.data.comment
+            }
+        }
+    }
+
+    const cancelIntervention = async () => {
+        const res = await serviceInterventionsService.updateIntervention(interventionId, {serviceId: intervention?.serviceId, propertyOccupationId: intervention?.propertyOccupationId, providerOccupationId: intervention?.providerOccupationId, additionalPrice: intervention?.additionalPrice,status: InterventionStatus.CANCELLED})
+        setIntervention(res.data)
+    }
+
+    const completeIntervention = async () => {
+        const res = await serviceInterventionsService.updateIntervention(interventionId, {
+            serviceId: intervention?.serviceId,
+            propertyOccupationId: intervention?.propertyOccupationId,
+            providerOccupationId: intervention?.providerOccupationId,
+            additionalPrice: intervention?.additionalPrice,
+            status: InterventionStatus.COMPLETED
+        })
+        setIntervention(res.data)
+    }
+
+    useEffect(() => {
+        loadInterventionForm().then();
+    }, [intervention]);
 
     useEffect(() => {
         loadService().then();
@@ -75,17 +116,41 @@ export const InterventionDetails = ({ interventionId }: InterventionDetailProps)
                     </CardHeader>
                     <CardContent>
                         <p><strong>Nom:</strong> {intervention.service?.name}</p>
-                        <p><strong>Client :</strong> {intervention.property?.landlord?.user?.firstName} {intervention.property?.landlord?.user?.firstName}</p>
-                        <p><strong>Propriétés :</strong> {intervention.property?.address}</p>
+                        {
+                            intervention.service?.type == "INTERVENTION" &&
+                            <>
+                                <p><strong>Client
+                                    :</strong> {intervention.propertyOccupation?.property?.landlord?.user?.firstName} {intervention.propertyOccupation?.property?.landlord?.user?.lastName}
+                                </p>
+                                <p><strong>Propriétés :</strong> {intervention.propertyOccupation?.property?.address} - {intervention.propertyOccupation?.property?.city}, {intervention.propertyOccupation?.property?.country}</p>
+                            </>
+                        }
+                        <h1>Status : {intervention.status}</h1>
+                        {intervention.status === "PLANNED" && <Button onClick={cancelIntervention}>Annulez l&apos;intervention</Button>}
+                        {intervention.status === "IN_PROGRESS" && <Button onClick={completeIntervention}>Complété l&apos;intervention</Button>}
                     </CardContent>
                 </Card>
                 {/* Placeholder for future information */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Additional Details</CardTitle>
+                    <CardTitle>Formulaire d&apos;intervention</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p>Additional service information will be displayed here.</p>
+                        {
+                            intervention.status === "COMPLETED" &&
+                            <>
+                                <p>Veuillez rentrer le récapitulatif de votre intervention</p>
+                                <Textarea ref={interventionTextAreaRef}/>
+                                <p className={"text-sm text-gray-500"}>Dernière mise à jour
+                                    : {interventionForm?.updatedAt ? `${String(interventionForm?.updatedAt).split('T')[0]} à ${String(interventionForm?.updatedAt).split('T')[1].split('.')[0]} ` : "Aucune"}</p>
+                                <Button
+                                    onClick={uploadInterventionForm}>{!interventionForm ? "Envoyer votre compte rendu" : "Mettre a jour votre compte rendu"}</Button>
+                            </>
+                        }
+                        {
+                            intervention.status !== "COMPLETED" &&
+                            <h1>Intervention non finie, veuillez terminer l&apos;intervention avant de remplir le formulaire</h1>
+                        }
                     </CardContent>
                 </Card>
 
