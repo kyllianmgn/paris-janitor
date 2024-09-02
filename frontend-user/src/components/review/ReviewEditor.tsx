@@ -10,6 +10,7 @@ export default function ReviewEditor({baseReview,uploadReview}:{baseReview: Prop
     const [note, setNote] = useState<number>(1);
 
     useEffect(() => {
+        if (!reviewTextAreaRef.current) return;
         if (baseReview){
             setNote(baseReview.note)
             reviewTextAreaRef.current.value = baseReview.comment

@@ -4,7 +4,7 @@ import {
     isAuthenticated,
     isRole,
     isSuperAdmin,
-    isTravelerOrLandlord,
+    isTravelerOrLandlord, isTravelerOrSP,
     UserRole
 } from "../middlewares/auth-middleware";
 import {
@@ -90,7 +90,7 @@ export const initServiceReviews = (app: express.Express) => {
         }
     });
 
-    app.get("/service-reviews/me/:propertyId(\\d+)", isAuthenticated, isTravelerOrLandlord, async (req, res) => {
+    app.get("/service-reviews/me/:propertyId(\\d+)", isAuthenticated, isTravelerOrSP, async (req, res) => {
         try {
             if (!req.user?.travelerId || !req.user?.serviceProviderId) return;
             const propertyReviews = await prisma.serviceReview.findFirst({

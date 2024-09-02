@@ -249,6 +249,7 @@ export interface ProviderOccupation{
 export interface Intervention {
   id: number,
   serviceId: number,
+  service?: Service,
   propertyOccupationId?: number
   propertyOccupation?: PropertyOccupation
   propertyId?: number
