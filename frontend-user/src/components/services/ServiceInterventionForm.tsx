@@ -87,7 +87,6 @@ export const ServiceInterventionForm = ({serviceId, serviceType, price, properti
             return;
         }
 
-        console.log(propertySelectRef.current?.value)
 
         let endDate = new Date(String(startDateInput.current?.value));
         endDate.setHours(endDate.getHours() + 4);

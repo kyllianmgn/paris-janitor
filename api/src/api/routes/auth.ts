@@ -40,7 +40,6 @@ export const initAuth = (app: express.Express) => {
                 }
 
                 const jti = uuidv4();
-                console.log(user)
                 const {accessToken, refreshToken} = generateTokens(
                     user,
                     jti
@@ -292,7 +291,6 @@ export const initAuth = (app: express.Express) => {
                     process.env.JWT_REFRESH_SECRET!
                 );
                 const savedRefreshToken = await findRefreshTokenById(payload.jti);
-                console.log(savedRefreshToken)
                 if (!savedRefreshToken || savedRefreshToken.revoked === true) {
                     return res.status(401).send({error: "Refresh token revoked"});
                 }

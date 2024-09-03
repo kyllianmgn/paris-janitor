@@ -34,7 +34,6 @@ export const getSubscriptionPlan = async (id: number): Promise<ApiResponse<Subsc
 };
 
 export const createSubscriptionPlan = async (plan: Partial<SubscriptionPlan>): Promise<ApiResponse<SubscriptionPlan>> => {
-    console.log("PLAN", plan);
     return await api.post('subscription-plans', { json: plan }).json();
 };
 

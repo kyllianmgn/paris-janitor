@@ -29,7 +29,7 @@ export default function TravelerSubscriptionSuccess() {
             const response = await api.get(`subscriptions/traveler/success?session_id=${sessionId}`);
             if (response.ok) {
                 const data: any = await response.json();
-                console.log(data);
+
                 // Mettez à jour le state global avec les nouveaux tokens si nécessaire
                 tokenUtils.setTokens(data);
                 dispatch(setCredentials(data));

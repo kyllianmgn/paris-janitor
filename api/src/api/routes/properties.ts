@@ -398,7 +398,6 @@ export const initProperties = (app: express.Express) => {
 
             for (const [index,file] of propertyRequest.files.entries()){
                 const base64data = file.replace(/^data:image\/(png;base64|jpeg;base64),/, "");
-                console.log(base64data)
                 fs.mkdir(`./public/image/property/${property.id}`, { recursive: true}, function (err) {
                     if (err) console.error(err)
 
@@ -485,7 +484,6 @@ export const initProperties = (app: express.Express) => {
         }
 
         const propertyRequest = validation.value;
-        console.log(propertyRequest)
         try {
             const property = await prisma.property.update({
                 where: {

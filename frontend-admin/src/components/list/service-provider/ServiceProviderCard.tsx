@@ -15,7 +15,6 @@ export default function ServiceProviderCard({serviceProvider}: {serviceProvider:
 
     useEffect(() => {
         loadCount().then()
-        console.log(serviceProvider)
     }, []);
 
     return (

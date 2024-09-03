@@ -29,7 +29,6 @@ export default function SubscriptionSuccess() {
             const response = await api.get(`subscriptions/success?session_id=${sessionId}`);
             if (response.ok) {
                 const data = await response.json();
-                console.log(data);
                 // Mettez à jour le state global avec les nouveaux tokens si nécessaire
                 tokenUtils.setTokens(data);
                 dispatch(setCredentials(data));

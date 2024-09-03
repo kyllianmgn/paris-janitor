@@ -43,7 +43,6 @@ const OrderServicesDialog: React.FC<ReservationDialogProps> = ({
     const handleSubmit = async () => {
         try {
             if (!date) return;
-            console.log(date)
             const response = await paymentService.createServicePayment({
                 amount: Number(totalPrice), // Assurez-vous que c'est un nombre
                 currency: 'EUR', // ou la devise appropriée
