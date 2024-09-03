@@ -12,7 +12,7 @@ import { RootState } from "@/store";
 import { useEffect, useState } from "react";
 import SubscriptionDialog from "@/components/subscriptions/SubscriptionDialog";
 import { authService } from "@/api/services/authService";
-import { LandlordStatus, User } from "@/types";
+import {LandlordStatus, TravelerSubscription, User} from "@/types";
 
 export default function Header() {
   const router = useRouter();
@@ -29,7 +29,7 @@ export default function Header() {
 
   useEffect(() => {
     setShowNav(true);
-    fetchUserInfo();
+    fetchUserInfo().then();
   }, []);
 
   const fetchUserInfo = async () => {
@@ -42,8 +42,7 @@ export default function Header() {
   };
 
   const isLandlordPending = userInfo?.Landlord?.status === LandlordStatus.PENDING;
-  const isTravelerFree = userInfo?.Traveler?.status === TravelerStatus.FREE;
-
+  const isTravelerFree = userInfo?.Traveler?.subscriptionType === TravelerSubscription.FREE;
   return (
       <header className="border-b fixed w-full bg-white shadow z-40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -91,6 +90,15 @@ export default function Header() {
             {isLandlordPending && (
                 <Button onClick={() => setIsSubscriptionDialogOpen(true)}>
                   Subscribe Now
+                </Button>
+            )}
+
+            {role === "TRAVELER" && isTravelerFree && (
+                <Button
+                    variant="ghost"
+                    onClick={() => router.push('/subscriptions/traveler')}
+                >
+                  Upgrade Plan
                 </Button>
             )}
 
