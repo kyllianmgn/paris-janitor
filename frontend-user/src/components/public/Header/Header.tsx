@@ -31,6 +31,7 @@ export default function Header() {
   }, []);
 
   const isLandlordPending = landlordStatus === "PENDING";
+  const isTravelerFree= user?.Traveler?.subscriptionType === "FREE";
 
   return (
       <header className="border-b fixed w-full bg-white shadow z-40">
@@ -81,6 +82,8 @@ export default function Header() {
                   Subscribe Now
                 </Button>
             )}
+
+            {!isTravelerFree && <Button onClick={() => router.push('subscription/traveler')}>Upgrade plan</Button>}
 
             <SubscriptionDialog
                 isOpen={isSubscriptionDialogOpen}

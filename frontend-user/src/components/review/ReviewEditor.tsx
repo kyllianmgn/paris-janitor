@@ -36,7 +36,7 @@ export default function ReviewEditor({baseReview,uploadReview}:{baseReview: Prop
                 }
             </div>
             <Textarea ref={reviewTextAreaRef}/>
-            <Button onClick={handleUploadReview}>Poster la review</Button>
+            <Button onClick={handleUploadReview}>Post review</Button>
         </div>
     )
 }
