@@ -107,7 +107,7 @@ model Property {
   city           String
   country        String
   description    String
-  instruction    String
+  instruction    String               @default("")
   roomCount      Int
   propertyType   PropertyType
   pricePerNight  Decimal              @default(100)
