@@ -31,7 +31,6 @@ export enum UserRole{
 
 export const isRole = (role: UserRole) => {
     return (req: Request, res: Response, next: NextFunction) => {
-        console.log(req.user)
         switch (role) {
             case UserRole.LANDLORD:
                 if (!req.user?.landlordId){
@@ -54,6 +53,30 @@ export const isRole = (role: UserRole) => {
         }
         next()
     }
+}
+
+export const isTravelerOrLandlord = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user?.landlordId && !req.user?.travelerId){
+        res.status(401).json({error: "Unauthorized"})
+        return;
+    }
+    next()
+}
+
+export const isTravelerOrSP = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user?.travelerId && !req.user?.serviceProviderId){
+        res.status(401).json({error: "Unauthorized"})
+        return;
+    }
+    next()
+}
+
+export const isLandlordOrSP = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user?.landlordId && !req.user?.serviceProviderId){
+        res.status(401).json({error: "Unauthorized"})
+        return;
+    }
+    next()
 }
 
 export const isRoleOrAdmin = (role: UserRole) => {

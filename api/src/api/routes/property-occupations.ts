@@ -45,7 +45,9 @@ export const initPropertyOccupations = (app: express.Express) => {
                 },
                 include: {
                     property: true,
-                    reservation: true
+                    reservation: true,
+                    intervention: true
+
                 }
             });
             res.status(200).json({data: occupations});
@@ -75,7 +77,6 @@ export const initPropertyOccupations = (app: express.Express) => {
 
     app.post("/property-occupations/",isAuthenticated, async (req, res) => {
         try {
-            console.log(req.body)
             const validation = propertyOccupationValidator.validate(req.body);
 
             if (validation.error) {
@@ -89,7 +90,6 @@ export const initPropertyOccupations = (app: express.Express) => {
             })
             res.status(200).json({data: propertyOccupation});
         } catch (e) {
-            console.log(e);
             res.status(500).send({ error: e });
             return;
         }
@@ -178,7 +178,7 @@ export const initPropertyOccupations = (app: express.Express) => {
             const deletedProperty = await prisma.propertyOccupation.delete({
                 where: { id: Number(req.params.id) },
             });
-            res.status(200);
+            res.status(200).send({data: deletedProperty});
         } catch (e) {
             res.status(500).send({ error: e });
         }

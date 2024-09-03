@@ -2,7 +2,7 @@ import express from "express";
 import {prisma} from "../../utils/prisma";
 import {isAuthenticated, isRole, isSuperAdmin, UserRole} from "../middlewares/auth-middleware";
 import {serviceValidator} from "../validators/service-validator";
-import {filterValidator} from "../validators/filter-validator";
+import {dateValidator, filterValidator} from "../validators/filter-validator";
 
 export const initServices = (app: express.Express) => {
     app.get("/services", async (req, res) => {
@@ -43,6 +43,109 @@ export const initServices = (app: express.Express) => {
                 }
             );
             res.status(200).json({data: allservices});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.get("/services/available/intervention", async (req, res) => {
+        try {
+            const validation = filterValidator.validate(req.query)
+
+            if (validation.error) {
+                res.status(400).json({ error: validation.error });
+                return;
+            }
+
+            const filterParams = validation.value;
+            const allservices = await prisma.service.findMany({
+                    where: filterParams.query ?
+                        {
+                            provider: {
+                                status: "ACCEPTED",
+                                occupation : filterParams.date ? {none: {
+                                        AND: [
+                                            {
+                                                startDate: {lte: filterParams.date}
+                                            },
+                                            {
+                                                endDate: {gte: filterParams.date}
+                                            }
+                                        ]
+                                    }} : undefined
+                            },
+                            type: "INTERVENTION",
+                            OR: [{
+                                name: {
+                                    contains: filterParams.query,
+                                    mode: "insensitive"
+                                }
+                            }, {
+                                description: {
+                                    contains: filterParams.query,
+                                    mode: "insensitive"
+                                }
+                            }]
+                        }
+                        : {
+                            provider: {
+                                status: "ACCEPTED",
+                                occupation : filterParams.date ? {none: {
+                                        AND: [
+                                            {
+                                                startDate: {lte: filterParams.date}
+                                            },
+                                            {
+                                                endDate: {gte: filterParams.date}
+                                            }
+                                        ]
+                                    }} : undefined
+                            },
+                            type: "INTERVENTION"
+                        },
+                    take: (filterParams.pageSize) ? +filterParams.pageSize : 10,
+                    skip: (filterParams.page) ? (filterParams.pageSize) ? +filterParams.page * +filterParams.pageSize : (+filterParams.page-1) * 10 : 0,
+                }
+            );
+            res.status(200).json({data: allservices});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.get("/services/availability/:id(\\d+)", async (req, res) => {
+        try {
+            const validation = dateValidator.validate(req.query)
+
+            if (validation.error) {
+                res.status(400).json({ error: validation.error });
+                return;
+            }
+
+            const filterParams = validation.value;
+            const service = await prisma.service.findUnique({
+                    where: {
+                        id: +req.params.id,
+                        provider: {
+                            occupation: {
+                                none: {
+                                    AND: [
+                                        {startDate:
+                                                {lte: validation.value.date}
+                                        },
+                                        {endDate:
+                                                {gte: validation.value.date}
+                                        },
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+            res.status(200).json({data: service});
         } catch (e) {
             res.status(500).send({ error: e });
             return;

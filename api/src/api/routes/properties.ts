@@ -8,13 +8,13 @@ import {
     PropertyStatus,
     propertyValidator
 } from "../validators/property-validator";
-import {Filter, filterValidator} from "../validators/filter-validator";
+import {dateValidator, Filter, filterValidator} from "../validators/filter-validator";
 import * as fs from "fs"
 
 export const initProperties = (app: express.Express) => {
     app.get("/properties/public", async (req, res) => {
         try {
-            console.log("public");
+
             const validation = filterValidator.validate(req.query);
             if (validation.error) {
                 return res.status(400).json({error: validation.error});
@@ -29,6 +29,16 @@ export const initProperties = (app: express.Express) => {
                             address: { contains: filter.query, mode: "insensitive" }
                         }, {
                             description: { contains: filter.query, mode: "insensitive" }
+                        }, {
+                            city: {
+                                contains: filter.query,
+                                mode: "insensitive"
+                            }
+                        }, {
+                            country: {
+                                contains: filter.query,
+                                mode: "insensitive"
+                            }
                         }]
                     } : {status: PropertyStatus.APPROVED})
                 },
@@ -51,6 +61,16 @@ export const initProperties = (app: express.Express) => {
                                 contains: filter.query,
                                 mode: "insensitive"
                             }
+                        }, {
+                            city: {
+                                contains: filter.query,
+                                mode: "insensitive"
+                            }
+                        }, {
+                            country: {
+                                contains: filter.query,
+                                mode: "insensitive"
+                            }
                         }]
                     }
                     : {status: PropertyStatus.APPROVED}
@@ -66,6 +86,41 @@ export const initProperties = (app: express.Express) => {
         try {
             const allProperties = await prisma.property.findMany({});
             res.status(200).json({data: allProperties});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.get("/properties/availability/:id(\\d+)", async (req, res) => {
+        try {
+            const validation = dateValidator.validate(req.query)
+
+            if (validation.error) {
+                res.status(400).json({ error: validation.error });
+                return;
+            }
+
+            const filterParams = validation.value;
+            const property = await prisma.property.findFirst({
+                    where: {
+                        id: +req.params.id,
+                        occupations: {
+                            none: {
+                                AND: [
+                                    {startDate:
+                                            {lte: validation.value.date}
+                                    },
+                                    {endDate:
+                                            {gte: validation.value.date}
+                                    },
+                                ]
+                            }
+                        }
+                    }
+                }
+            );
+            res.status(200).json({data: property});
         } catch (e) {
             res.status(500).send({ error: e });
             return;
@@ -285,6 +340,55 @@ export const initProperties = (app: express.Express) => {
         }
     });
 
+    app.get("/properties/me/:id(\\d+)",isAuthenticated, isRole(UserRole.LANDLORD), async (req, res) => {
+        try {
+            if (!req.user?.landlordId) return res.sendStatus(401);
+            const property = await prisma.property.findUnique({
+                where: { id: Number(req.params.id),landlordId: +req.user?.landlordId }
+            });
+            res.status(200).json({data: property});
+        } catch (e) {
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.get("/properties/:id(\\d+)/image", async (req, res) => {
+        try {
+            const property = await prisma.property.findUnique({
+                where: { id: Number(req.params.id),status: PropertyStatus.APPROVED },
+                include: {landlord: {include: {user: true}}}
+            });
+            if (!property) return res.sendStatus(404);
+            const files = fs.readdirSync(`./public/image/property/${+req.params.id}`)
+            res.status(200).json({data: files});
+        } catch (e: any) {
+            if (e.errno == -4058){
+                return res.status(404).send({ error: e });
+            }
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.get("/properties/me/:id(\\d+)/image",isAuthenticated, isRole(UserRole.LANDLORD), async (req, res) => {
+        try {
+            if (!req.user?.landlordId) return res.sendStatus(401);
+            const property = await prisma.property.findUnique({
+                where: { id: Number(req.params.id),landlordId: +req.user?.landlordId }
+            });
+            if (!property) return res.sendStatus(404);
+            const files = fs.readdirSync(`./public/image/property/${+req.params.id}`)
+            res.status(200).json({data: files});
+        } catch (e: any) {
+            if (e.errno == -4058){
+                return res.status(404).send({ error: e });
+            }
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
     app.get("/properties/admin/:id(\\d+)", async (req, res) => {
         try {
             const property = await prisma.property.findUnique({
@@ -305,6 +409,7 @@ export const initProperties = (app: express.Express) => {
         const validation = propertyValidator.validate(req.body);
 
         if (validation.error) {
+            console.error(validation.error);
             res.status(400).json({ error: validation.error });
             return;
         }
@@ -314,6 +419,9 @@ export const initProperties = (app: express.Express) => {
         try {
             const property = await prisma.property.create({
                 data: {
+                    roomCount: propertyRequest.roomCount,
+                    propertyType: propertyRequest.propertyType,
+                    instruction: propertyRequest.instruction,
                     address: propertyRequest.address,
                     postalCode: propertyRequest.postalCode,
                     city: propertyRequest.city,
@@ -328,7 +436,6 @@ export const initProperties = (app: express.Express) => {
 
             for (const [index,file] of propertyRequest.files.entries()){
                 const base64data = file.replace(/^data:image\/(png;base64|jpeg;base64),/, "");
-                console.log(base64data)
                 fs.mkdir(`./public/image/property/${property.id}`, { recursive: true}, function (err) {
                     if (err) console.error(err)
 
@@ -357,6 +464,9 @@ export const initProperties = (app: express.Express) => {
         try {
             const property = await prisma.property.create({
                 data: {
+                    roomCount: propertyRequest.roomCount,
+                    propertyType: propertyRequest.propertyType,
+                    instruction: propertyRequest.instruction,
                     address: propertyRequest.address,
                     postalCode: propertyRequest.postalCode,
                     city: propertyRequest.city,
@@ -412,7 +522,6 @@ export const initProperties = (app: express.Express) => {
         }
 
         const propertyRequest = validation.value;
-        console.log(propertyRequest)
         try {
             const property = await prisma.property.update({
                 where: {

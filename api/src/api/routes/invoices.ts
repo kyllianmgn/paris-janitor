@@ -2,6 +2,11 @@ import express from "express";
 import { prisma } from "../../utils/prisma";
 import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
 import {invoicePatchValidator, invoiceValidator,} from "../validators/invoice-validator";
+import Stripe from "stripe";
+
+const stripe: Stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: "2024-06-20",
+});
 
 export const initInvoices = (app: express.Express) => {
     app.get("/invoices", async (_req, res) => {
@@ -14,12 +19,21 @@ export const initInvoices = (app: express.Express) => {
         }
     });
 
-    app.get("/invoices/:id(\\d+)", async (req, res) => {
+    app.get("/invoices/me",isAuthenticated, async (req, res) => {
         try {
-            const Invoices = await prisma.invoice.findUnique({
-                where: { id: +req.params.id },
-            });
-            res.status(200).json({data: Invoices});
+            if (!req.user?.userId) return res.sendStatus(401)
+            const user = await prisma.user.findUnique({
+                where: {id: +req.user?.userId}
+            })
+            if (!user) return res.sendStatus(401)
+            if (!user.stripeCustomerId) return res.status(401).send({error: "No payments"})
+
+
+            const invoices = await stripe.invoices.list({
+                customer: user.stripeCustomerId
+            })
+
+            res.status(200).json({data: invoices});
         } catch (e) {
             res.status(500).send({ error: e });
             return;

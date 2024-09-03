@@ -6,47 +6,56 @@ import UserMenu from "./UserMenu";
 import AuthButton from "../auth/AuthButton";
 import SearchBar from "@/components/public/Header/SearchBar";
 import { useAuth } from "@/hooks/useAuth";
-import {BadgeProps} from "@/components/ui/badge";
-import {useSelector} from "react-redux";
-import {RootState} from "@/store";
-import {useEffect, useState} from "react";
-
+import { BadgeProps } from "@/components/ui/badge";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { useEffect, useState } from "react";
+import SubscriptionDialog from "@/components/subscriptions/SubscriptionDialog";
 
 export default function Header() {
   const router = useRouter();
-  const user = useSelector((state: RootState) => state.auth.user)
-  const role = useSelector((state: RootState) => state.auth.role)
+  const role = useSelector((state: RootState) => state.auth.role);
+  const user = useSelector((state: RootState) => state.auth.user);
+  const landlordStatus = useSelector((state: RootState) => state.auth.landlordStatus);
+  const travelerPlan = useSelector((state: RootState) => state.auth.travelerPlan);
   const { isLoading } = useAuth();
   const currentPath = usePathname();
   const [showNav, setShowNav] = useState(false);
+  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
+  const [isLandlordPending, setIsLandlordPending] = useState(true);
+  const [isTravelerFree, setIsTravelerFree] = useState(true);
 
-    const isLinkActive = (path: string) => {
-        return currentPath.startsWith(path);
-    };
+  const isLinkActive = (path: string) => {
+    return currentPath.startsWith(path);
+  };
 
   useEffect(() => {
     setShowNav(true);
   }, []);
 
+  useEffect(() => {
+    setIsLandlordPending(landlordStatus == "PENDING")
+  }, [landlordStatus]);
+
+    useEffect(() => {
+        setIsTravelerFree(travelerPlan === "FREE")
+    }, [travelerPlan]);
+
   return (
-      <header className="border-b">
+      <header className="border-b fixed w-full bg-white shadow z-40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex-shrink-0">
-              {
-                user && showNav && (role === "LANDLORD" || role === "SERVICE_PROVIDER") ? <Link href={"/dashboard"}>
-                  <span className="text-2xl font-bold text-red-500">
-                    Paris Janitor
-                  </span>
-                </Link> :
-                    <Link href={"/"}>
-                  <span className="text-2xl font-bold text-red-500">
-                    Paris Janitor
-                  </span>
-                    </Link>
-              }
-
+              {user && showNav && (role === "LANDLORD" || role === "SERVICE_PROVIDER") ? (
+                  <Link href="/dashboard">
+                    <span className="text-2xl font-bold text-red-500">Paris Janitor</span>
+                  </Link>
+              ) : (
+                  <Link href="/">
+                    <span className="text-2xl font-bold text-red-500">Paris Janitor</span>
+                  </Link>
+              )}
             </div>
 
             {/* Search bar */}
@@ -76,6 +85,19 @@ export default function Header() {
                 </nav>
             )}
 
+            {isLandlordPending && (
+                <Button onClick={() => setIsSubscriptionDialogOpen(true)}>
+                  Subscribe Now
+                </Button>
+            )}
+
+            {!isTravelerFree && <Button onClick={() => router.push('subscription/traveler')}>Upgrade plan</Button>}
+
+            <SubscriptionDialog
+                isOpen={isSubscriptionDialogOpen}
+                onClose={() => setIsSubscriptionDialogOpen(false)}
+            />
+
             {/* Auth Button or User Menu */}
             <div>{user && showNav ? <UserMenu /> : <AuthButton />}</div>
           </div>
@@ -83,6 +105,9 @@ export default function Header() {
       </header>
   );
 }
+
+// Helper functions remain the same
+// Helper functions remain the same
 // Helper functions
 function getDashboardPath(role: string | null) {
   switch (role) {
@@ -114,7 +139,7 @@ function getNavLinks(role: string | null) {
     case "SERVICE_PROVIDER":
       return [
         { path: "/dashboard", label: "Dashboard" },
-        { path: "my-services", label: "My Services" },
+        { path: "/my-services", label: "My Services" },
         {
           path: "/calendar",
           label: "Calendar",

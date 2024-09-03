@@ -1,6 +1,6 @@
 import express from "express";
-import { prisma } from "../../utils/prisma";
-import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
+import {prisma} from "../../utils/prisma";
+import {isAuthenticated, isRole, isSuperAdmin, UserRole} from "../middlewares/auth-middleware";
 import {propertyReviewValidator} from "../validators/property-validator";
 
 export const initPropertyReviews = (app: express.Express) => {
@@ -14,10 +14,11 @@ export const initPropertyReviews = (app: express.Express) => {
         }
     });
 
-    app.get("/property-reviews/:id(\\d+)", async (req, res) => {
+    app.get("/property-reviews/me/:propertyId(\\d+)", isAuthenticated, isRole(UserRole.TRAVELER), async (req, res) => {
         try {
-            const propertyReviews = await prisma.propertyReview.findUnique({
-                where: { id: Number(req.params.id) },
+            if (!req.user?.travelerId) return;
+            const propertyReviews = await prisma.propertyReview.findFirst({
+                where: { travelerId: req.user?.travelerId, propertyId: +req.params.propertyId },
             });
             res.status(200).json({data: propertyReviews});
         } catch (e) {
@@ -26,7 +27,7 @@ export const initPropertyReviews = (app: express.Express) => {
         }
     });
 
-    app.post("/property-reviews/", async (req, res) => {
+    app.post("/property-reviews/:id(\\d+)", isAuthenticated, isRole(UserRole.TRAVELER), async (req, res) => {
         try {
             const validation = propertyReviewValidator.validate(req.body);
 
@@ -35,10 +36,41 @@ export const initPropertyReviews = (app: express.Express) => {
                 return;
             }
 
-            const reservationRequest = validation.value;
-            const propertyReview = await prisma.propertyReview.create({
-                data: reservationRequest
+            if (!req.user?.travelerId) return res.sendStatus(401)
+            const reservation = await prisma.propertyReservation.findFirst({
+                where: { travelerId: req.user?.travelerId, occupation: {propertyId : +req.params.id} },
             })
+            if (!reservation) return res.sendStatus(401);
+            const previousReview = await prisma.propertyReview.findFirst({
+                where: {
+                    travelerId: req.user?.travelerId,
+                    propertyId: +req.params.id,
+                }
+            })
+
+            const reservationRequest = validation.value;
+            let propertyReview;
+            if (previousReview){
+                propertyReview = await prisma.propertyReview.update({
+                    where: {
+                        id: previousReview.id
+                    },
+                    data: {
+                        note: reservationRequest.note,
+                        comment: reservationRequest.comment
+                    }
+                })
+            }else{
+                propertyReview = await prisma.propertyReview.create({
+                    data: {
+                        travelerId: req.user?.travelerId,
+                        propertyId: +req.params.id,
+                        note: reservationRequest.note,
+                        comment: reservationRequest.comment
+                    }
+                })
+            }
+
             res.status(200).json({data: propertyReview});
         } catch (e) {
             res.status(500).send({ error: e });
@@ -81,6 +113,30 @@ export const initPropertyReviews = (app: express.Express) => {
             res.status(200).json({data: deletedProperty});
         } catch (e) {
             res.status(500).send({ error: e });
+        }
+    });
+
+    app.get("/property-reviews/property/:propertyId", async (req, res) => {
+        try {
+            const propertyReviews = await prisma.propertyReview.findMany({
+                where: { propertyId: +req.params.propertyId },
+                include: {
+                    traveler: {
+                        include: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    firstName: true,
+                                    lastName: true
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            res.status(200).json({data: propertyReviews});
+        } catch (e) {
+            return res.status(500).send({ error: e });
         }
     });
 };

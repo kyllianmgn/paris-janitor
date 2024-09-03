@@ -7,6 +7,7 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {ArrowLeft} from "lucide-react";
 import {useRouter} from "next/navigation";
 import {PropertyReservationForm} from "@/components/properties-reservations/PropertyReservationForm";
+import {ReviewSection} from "@/components/review/ReviewSection";
 
 export interface PropertyDetailProps {
     propertyId: number
@@ -94,6 +95,15 @@ export const PropertyPage = ({propertyId}: PropertyDetailProps) => {
                     </CardHeader>
                     <CardContent className="flex justify-center">
                         <PropertyReservationForm propertyId={propertyId}></PropertyReservationForm>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Review</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex justify-center">
+                        <ReviewSection propertyId={propertyId}/>
                     </CardContent>
                 </Card>
             </div>

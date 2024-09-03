@@ -7,6 +7,7 @@ import {
     ReservationStatus
 } from "../validators/property-validator";
 import {filterValidator} from "../validators/filter-validator";
+import {PropertyReservation} from "@prisma/client";
 
 export const initPropertyReservations = (app: express.Express) => {
     app.get("/property-reservations", async (_req, res) => {
@@ -62,6 +63,37 @@ export const initPropertyReservations = (app: express.Express) => {
         }
     });
 
+    app.get("/property-reservations/landlord/future",isAuthenticated, isRole(UserRole.LANDLORD), async (req, res) => {
+        try {
+            const todayWithoutHours = new Date()
+            todayWithoutHours.setHours(0,0,0,0)
+            const allPropertyReservations = await prisma.propertyReservation.findMany({
+                include: {
+                    occupation: {
+                        include: {
+                            property: true
+                        }
+                    }
+                },
+                where: {
+                    occupation: {
+                        property: {
+                            landlordId: req.user?.landlordId,
+                        },
+                        startDate: {
+                            gte: todayWithoutHours
+                        }
+                    }
+                }
+            });
+            const countReservations = await prisma.propertyReservation.count()
+            res.status(200).json({data: allPropertyReservations, count: countReservations});
+        } catch (e) {
+            res.status(500).send({error: e});
+            return;
+        }
+    });
+
     app.get("/property-reservations/:id(\\d+)", async (req, res) => {
         try {
             const PropertyReservations = await prisma.propertyReservation.findUnique({
@@ -78,7 +110,7 @@ export const initPropertyReservations = (app: express.Express) => {
         try {
             const PropertyReservationFull = await prisma.propertyReservation.findUnique({
                 where: {id: Number(req.params.id)},
-                include: {occupation: true}
+                include: {occupation: {include: {property: true}}}
             });
             res.status(200).json({data: PropertyReservationFull});
         } catch (e) {
@@ -153,7 +185,8 @@ export const initPropertyReservations = (app: express.Express) => {
         }
     });
 
-    app.post("/property-reservations/",isAuthenticated, isRole(UserRole.TRAVELER), async (req, res) => {
+
+    app.post("/property-reservations/", isAuthenticated, isRole(UserRole.TRAVELER), async (req, res) => {
         try {
             const validation = propertyReservationWithOccupationValidator.validate(req.body);
 
@@ -164,24 +197,32 @@ export const initPropertyReservations = (app: express.Express) => {
 
             const reservationRequest = validation.value;
 
-            const propertyReservation = await prisma.propertyOccupation.create({
+            // Créer d'abord l'occupation
+            const occupation = await prisma.propertyOccupation.create({
                 data: {
                     startDate: reservationRequest.startDate,
                     endDate: reservationRequest.endDate,
                     propertyId: reservationRequest.propertyId,
-                    reservation: {
-                        create: {
-                            travelerId: req.user?.travelerId,
-                            totalPrice: reservationRequest.totalPrice,
-                            status: ReservationStatus.PENDING,
-                        }
-                    },
                 }
-            })
+            });
+
+            // Ensuite, créer la réservation liée à cette occupation
+            const propertyReservation = await prisma.propertyReservation.create({
+                data: {
+                    travelerId: req.user.travelerId,
+                    totalPrice: reservationRequest.totalPrice,
+                    status: ReservationStatus.PENDING,
+                    occupationId: occupation.id, // Utiliser l'ID de l'occupation créée
+                },
+                include: {
+                    occupation: true
+                }
+            });
+
             res.status(200).json({data: propertyReservation});
         } catch (e) {
-            res.status(500).send({error: e});
-            return;
+            console.error('Error creating reservation:', e);
+            res.status(500).send({error: 'An error occurred while creating the reservation'});
         }
     });
 

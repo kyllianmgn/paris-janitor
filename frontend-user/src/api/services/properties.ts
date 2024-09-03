@@ -1,4 +1,13 @@
-import {ApiResponse, Filter, Property, PropertyFormData, PropertyOccupation, PropertyReservation, User} from "@/types";
+import {
+    ApiResponse,
+    Filter,
+    Property,
+    PropertyFormData,
+    PropertyOccupation,
+    PropertyReservation,
+    PropertyReview,
+    User
+} from "@/types";
 import { api, getUserFromToken } from "@/api/config";
 
 export const propertiesService = {
@@ -10,12 +19,29 @@ export const propertiesService = {
         return api.get(`properties/${id}`).json<ApiResponse<Property>>();
     },
 
+    getMyPropertyById: async (id: number): Promise<ApiResponse<Property>> => {
+        return api.get(`properties/me/${id}`).json<ApiResponse<Property>>();
+    },
+
+    getPropertyImageById: async (id: number): Promise<ApiResponse<string[]>> => {
+        return api.get(`properties/${id}/image`).json<ApiResponse<string[]>>();
+    },
+
+    getMyPropertyImageById: async (id: number): Promise<ApiResponse<string[]>> => {
+        return api.get(`properties/me/${id}/image`).json<ApiResponse<string[]>>();
+    },
+
     getProperties: async (): Promise<ApiResponse<Property[]>> => {
         return api.get('properties').json<ApiResponse<Property[]>>();
     },
 
+
     getMyProperties: async (): Promise<ApiResponse<Property[]>> => {
         return api.get('properties/me').json<ApiResponse<Property[]>>();
+    },
+
+    getMyPropertyById: async (id: number): Promise<ApiResponse<Property>> => {
+        return api.get(`properties/me/${id}`).json<ApiResponse<Property>>();
     },
 
     getAvailableProperties: async (query?: string, page?: number): Promise<ApiResponse<Property[]>> => {
@@ -90,6 +116,22 @@ export const propertiesService = {
 
     deletePropertyOccupation: async (id: number): Promise<ApiResponse<PropertyOccupation>> => {
         return api.delete(`property-occupations/${id}`).json<ApiResponse<PropertyOccupation>>();
+    },
+
+    getPropertyAvailability: async (id: number, date: string): Promise<ApiResponse<boolean>> => {
+        return api.get(`properties/availability/${id}?date=${date}`).json<ApiResponse<boolean>>();
+    },
+
+    createPropertyReview: async (propertyId: number, note: number, comment: string): Promise<ApiResponse<PropertyReview>> => {
+        return api.post(`property-reviews/${propertyId}`, {json: {note: note, comment: comment}}).json<ApiResponse<PropertyReview>>();
+    },
+
+    getMyReviewOnProperty: async (propertyId: number): Promise<ApiResponse<PropertyReview>> => {
+        return api.get(`property-reviews/me/${propertyId}`).json<ApiResponse<PropertyReview>>();
+    },
+
+    getLandlordPropertyOccupations: async (): Promise<ApiResponse<PropertyOccupation[]>> => {
+        return api.get('property-occupations/landlord').json<ApiResponse<PropertyOccupation[]>>();
     },
 };
 

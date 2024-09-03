@@ -15,6 +15,7 @@ declare global{
 }
 
 export interface RequestUser extends User{
+  userId: number
   adminId?: number,
   username?: string,
   landlordId?: number,

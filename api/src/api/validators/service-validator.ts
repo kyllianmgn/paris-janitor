@@ -1,18 +1,33 @@
 import Joi from "joi";
 
-export interface Service{
-    id: number,
-    providerId: number,
-    name: string,
-    description: string,
-    basePrice: number
+export interface Service {
+    id: number;
+    providerId: number;
+    name: string;
+    description: string;
+    basePrice: number;
+    type: ServiceType;
+    isDynamicPricing: boolean;
+    pricingRules?: any;
+}
+
+export enum ServiceType {
+    INTERVENTION = "INTERVENTION",
+    MISSION = "MISSION"
 }
 
 export const serviceValidator = Joi.object<Service>({
     name: Joi.string().required(),
     description: Joi.string().required(),
-    basePrice: Joi.number().required()
-})
+    basePrice: Joi.number().required(),
+    type: Joi.string().valid(...Object.values(ServiceType)).required(),
+    isDynamicPricing: Joi.boolean().required(),
+    pricingRules: Joi.when('isDynamicPricing', {
+        is: true,
+        then: Joi.object().required(),
+        otherwise: Joi.forbidden()
+    })
+});
 
 export const servicePatchValidator = Joi.object<Partial<Service>>({
     name: Joi.string().optional(),
@@ -30,9 +45,6 @@ export interface ServiceReview {
 }
 
 export const serviceReviewValidator = Joi.object<ServiceReview>({
-    travelerId: Joi.number().optional(),
-    landlordId: Joi.number().optional(),
-    serviceId: Joi.number().required(),
     note: Joi.number().required().max(5).min(0),
     comment: Joi.string().required()
 }).xor("travelerId","landlordId")
@@ -100,16 +112,17 @@ export const interventionPatchValidator = Joi.object<Intervention>({
     propertyOccupationId: Joi.number().optional(),
     providerOccupationId: Joi.number().optional(),
     additionalPrice: Joi.number().optional(),
-    status: Joi.string().optional()
+    status: Joi.string().optional(),
 })
 
 export interface InterventionForm {
     id: number,
     interventionId: number
+    comment: string
 }
 
 export const interventionFormValidator = Joi.object<InterventionForm>({
-    interventionId: Joi.number().optional()
+    comment: Joi.string().required(),
 })
 
 export interface ProviderOccupation{
@@ -120,8 +133,6 @@ export interface ProviderOccupation{
 }
 
 export const providerOccupationValidator = Joi.object<ProviderOccupation>({
-    id: Joi.number().required(),
-    providerId: Joi.number().required(),
     startDate: Joi.date().required(),
     endDate: Joi.date().required(),
 })

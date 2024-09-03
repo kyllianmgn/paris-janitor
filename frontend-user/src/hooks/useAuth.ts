@@ -40,6 +40,6 @@ export const useAuth = () => {
         isLoading,
         login,
         logout: logoutUser,
-        signup
+        signup,
     };
 };

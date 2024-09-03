@@ -10,6 +10,8 @@ const initialState: AuthState = {
     isAuthenticated: false,
     idRole: null,
     role: null,
+    travelerPlan: null,
+    landlordStatus: null,
     serviceProviderStatus: null,
 };
 
@@ -28,10 +30,12 @@ const authSlice = createSlice({
                 firstName: decodedToken.firstName,
                 lastName: decodedToken.lastName,
             };
-            if (decodedToken.landlordId) {
+            if (decodedToken.landlordId && decodedToken.landlordStatus) {
+                state.landlordStatus = decodedToken.landlordStatus;
                 state.idRole = decodedToken.landlordId;
                 state.role = 'LANDLORD';
-            } else if (decodedToken.travelerId) {
+            } else if (decodedToken.travelerId && decodedToken.travelerPlan) {
+                state.travelerPlan = decodedToken.travelerPlan
                 state.idRole = decodedToken.travelerId;
                 state.role = 'TRAVELER';
             } else if (decodedToken.serviceProviderId && decodedToken.serviceProviderStatus) {

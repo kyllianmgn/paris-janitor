@@ -15,12 +15,23 @@ export interface Property {
     city: string,
     country: string,
     description: string,
+    roomCount: number,
+    instruction: string,
+    propertyType: PropertyType,
     files: string[],
     pricePerNight: number,
     status: PropertyStatus
 }
 
+export enum PropertyType{
+    HOUSE="HOUSE",
+    APARTMENT="APARTMENT"
+}
+
 export const propertyValidator = Joi.object<Omit<Property, "status" | "id">>({
+    roomCount: Joi.number().required(),
+    instruction: Joi.string().required(),
+    propertyType: Joi.string().valid("HOUSE","APARTMENT").required(),
     address: Joi.string().required(),
     postalCode: Joi.string().required(),
     city: Joi.string().required(),
@@ -63,8 +74,6 @@ export interface PropertyReview {
 }
 
 export const propertyReviewValidator = Joi.object<PropertyReview>({
-    travelerId: Joi.number().required(),
-    propertyId: Joi.number().required(),
     note: Joi.number().required(),
     comment: Joi.string().required()
 })
@@ -95,12 +104,14 @@ export enum ReservationStatus {
 }
 
 export interface PropertyReservation {
-    id: number
-    travelerId: number
-    occupationId: number
-    status: ReservationStatus
-    totalPrice: number
+    id: number;
+    travelerId: number;
+    occupationId: number;
+    status: ReservationStatus;
+    totalPrice: number;
+    propertyOccupation?: PropertyOccupation
 }
+
 
 export const propertyReservationWithOccupationValidator = Joi.object<PropertyReservation & PropertyOccupation>({
     totalPrice: Joi.number().required(),
@@ -124,3 +135,13 @@ export const propertyReservationPatchValidator = Joi.object<PropertyReservation>
     status: Joi.string().optional().valid("PENDING", "CONFIRMED", "CANCELLED"),
     totalPrice: Joi.number().optional()
 })
+
+export interface ServicePayment {
+    serviceId: number;
+    amount: number;
+}
+
+export const servicePaymentValidator = Joi.object<ServicePayment>({
+    serviceId: Joi.number().positive().required(),
+    amount: Joi.number().positive().required()
+});

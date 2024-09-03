@@ -2,14 +2,14 @@
 import {PropertyReservationList} from "@/components/properties-reservations/PropertyReservationList";
 import {useEffect, useState} from "react";
 import {propertiesReservationsService} from "@/api/services/properties-reservations";
-import {PropertyReservationFull} from "@/components/properties-reservations/PropertiesReservations";
+import {PropertyReservation} from "@/types";
 
 interface MyPropertyReservationsProps {
     propertyId: number
 }
 
 export const MyPropertyReservations = ({ propertyId }: MyPropertyReservationsProps) => {
-    const [propertiesReservationsFullList, setPropertiesReservationsFullList] = useState<PropertyReservationFull[]>([]);
+    const [propertiesReservationsFullList, setPropertiesReservationsFullList] = useState<PropertyReservation[]>([]);
 
     const loadPropertiesReservationsFull = async () => {
         const res = await propertiesReservationsService.getPropertiesReservationsFullByPropertyId(propertyId);

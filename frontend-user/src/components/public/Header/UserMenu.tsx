@@ -42,16 +42,9 @@ export default function UserMenu() {
                 <DropdownMenuItem onClick={() => router.push("/invoices")}>
                   <span>Invoices</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push("/subscription")}>
-                  <span>Subscription</span>
-                </DropdownMenuItem>
               </>
           )}
-          {role === "LANDLORD" && (
-              <DropdownMenuItem onClick={() => router.push("/subscription")}>
-                <span>Subscription</span>
-              </DropdownMenuItem>
-          )}
+          {role === "LANDLORD" && (<></>)}
           {role === "SERVICE_PROVIDER" && (
               <DropdownMenuItem onClick={() => router.push("/reviews")}>
                 <span>Reviews</span>

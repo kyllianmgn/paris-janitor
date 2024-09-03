@@ -17,53 +17,53 @@ model Admin {
 }
 
 model User {
-  id                    Int                  @id @default(autoincrement())
-  firstName             String
-  lastName              String
-  email                 String               @unique
-  password              String
-  bannedUntil           DateTime?
-  refreshTokens         RefreshToken[]
-  resetPasswordTokens   ResetPasswordToken[]
-  Landlord              Landlord?
-  Traveler              Traveler?
-  ServiceProvider       ServiceProvider?
-  stripeCustomerId      String?
-  subscriptions         Subscription[]
+  id                  Int                  @id @default(autoincrement())
+  firstName           String
+  lastName            String
+  email               String               @unique
+  password            String
+  bannedUntil         DateTime?
+  refreshTokens       RefreshToken[]
+  resetPasswordTokens ResetPasswordToken[]
+  Landlord            Landlord?
+  Traveler            Traveler?
+  ServiceProvider     ServiceProvider?
+  stripeCustomerId    String?
+  subscriptions       Subscription[]
 
   @@map("users")
 }
 
 model Subscription {
-  id                   Int               @id @default(autoincrement())
+  id                   Int                @id @default(autoincrement())
   userId               Int
-  user                 User              @relation(fields: [userId], references: [id])
+  user                 User               @relation(fields: [userId], references: [id])
   planId               Int
-  plan                 SubscriptionPlan  @relation(fields: [planId], references: [id])
+  plan                 SubscriptionPlan   @relation(fields: [planId], references: [id])
   status               SubscriptionStatus
   startDate            DateTime
   endDate              DateTime?
   stripeSubscriptionId String?
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
 
   @@map("subscriptions")
 }
 
 model SubscriptionPlan {
-  id            Int            @id @default(autoincrement())
-  name          String
-  description   String
-  monthlyPrice  Decimal
-  yearlyPrice   Decimal
-  userType      UserType
-  features      Json
-  stripeProductId     String
+  id                   Int            @id @default(autoincrement())
+  name                 String
+  description          String
+  monthlyPrice         Decimal
+  yearlyPrice          Decimal
+  userType             UserType
+  features             Json
+  stripeProductId      String
   stripePriceIdMonthly String
   stripePriceIdYearly  String
-  subscriptions Subscription[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  subscriptions        Subscription[]
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
 
   @@map("subscription_plans")
 }
@@ -86,8 +86,16 @@ model Landlord {
   user          User            @relation(references: [id], fields: [userId], onDelete: Cascade)
   property      Property[]
   ServiceReview ServiceReview[]
+  status        LandlordStatus  @default(PENDING)
 
   @@map("landlords")
+}
+
+enum LandlordStatus {
+  PENDING
+  ACTIVE
+  PAST_DUE
+  CANCELED
 }
 
 model Property {
@@ -99,6 +107,9 @@ model Property {
   city           String
   country        String
   description    String
+  instruction    String               @default("")
+  roomCount      Int
+  propertyType   PropertyType
   pricePerNight  Decimal              @default(100)
   status         PropertyStatus       @default(PENDING)
   occupations    PropertyOccupation[]
@@ -107,6 +118,11 @@ model Property {
   PropertyReview PropertyReview[]
 
   @@map("properties")
+}
+
+enum PropertyType {
+  HOUSE
+  APARTMENT
 }
 
 model PropertyReview {
@@ -152,6 +168,7 @@ model PropertyReservation {
   occupation   PropertyOccupation @relation(fields: [occupationId], references: [id], onDelete: Cascade)
   status       ReservationStatus
   totalPrice   Decimal
+  payment      Payment?
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
@@ -166,14 +183,21 @@ enum ReservationStatus {
 }
 
 model Traveler {
-  id             Int                   @id @default(autoincrement())
-  userId         Int                   @unique
-  user           User                  @relation(references: [id], fields: [userId], onDelete: Cascade)
-  reservations   PropertyReservation[]
-  ServiceReview  ServiceReview[]
-  PropertyReview PropertyReview[]
+  id               Int                   @id @default(autoincrement())
+  userId           Int                   @unique
+  user             User                  @relation(references: [id], fields: [userId], onDelete: Cascade)
+  subscriptionType TravelerSubscription  @default(FREE)
+  reservations     PropertyReservation[]
+  ServiceReview    ServiceReview[]
+  PropertyReview   PropertyReview[]
 
   @@map("travelers")
+}
+
+enum TravelerSubscription {
+  FREE
+  BAG_PACKER
+  EXPLORATOR
 }
 
 model ServiceProvider {
@@ -207,17 +231,20 @@ model ProviderOccupation {
 }
 
 model Service {
-  id           Int             @id @default(autoincrement())
-  providerId   Int
-  provider     ServiceProvider @relation(references: [id], fields: [providerId])
-  intervention Intervention[]
-  type         ServiceType     @default(MISSION)
-  name         String
-  description  String
-  basePrice    Decimal
-  reviews      ServiceReview[]
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  id               Int              @id @default(autoincrement())
+  providerId       Int
+  provider         ServiceProvider  @relation(references: [id], fields: [providerId])
+  intervention     Intervention[]
+  type             ServiceType      @default(MISSION)
+  name             String
+  description      String
+  basePrice        Decimal
+  reviews          ServiceReview[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  payments         ServicePayment[]
+  isDynamicPricing Boolean          @default(false)
+  pricingRules     Json?
 
   @@map("services")
 }
@@ -244,18 +271,19 @@ model ServiceReview {
 }
 
 model Intervention {
-  id                   Int                 @id @default(autoincrement())
+  id                   Int                  @id @default(autoincrement())
   serviceId            Int
-  service              Service             @relation(fields: [serviceId], references: [id])
-  propertyOccupationId Int?                @unique
-  propertyOccupation   PropertyOccupation? @relation(fields: [propertyOccupationId], references: [id])
-  providerOccupationId Int                 @unique
-  providerOccupation   ProviderOccupation  @relation(fields: [providerOccupationId], references: [id])
+  service              Service              @relation(fields: [serviceId], references: [id])
+  propertyOccupationId Int?                 @unique
+  propertyOccupation   PropertyOccupation?  @relation(fields: [propertyOccupationId], references: [id])
+  providerOccupationId Int                  @unique
+  providerOccupation   ProviderOccupation   @relation(fields: [providerOccupationId], references: [id])
   additionalPrice      Decimal
   status               InterventionStatus
   intervention         InterventionForm?
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @updatedAt
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  PaymentIntervention  PaymentIntervention?
 
   @@map("interventions")
 }
@@ -271,6 +299,7 @@ model InterventionForm {
   id             Int          @id @default(autoincrement())
   interventionId Int          @unique
   intervention   Intervention @relation(references: [id], fields: [interventionId])
+  comment        String
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -282,6 +311,8 @@ model Invoice {
   amount      Decimal
   description String
   status      InvoiceStatus
+  paymentId   Int?          @unique
+  payment     Payment?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -292,6 +323,59 @@ enum InvoiceStatus {
   PENDING
   PAID
   CANCELLED
+}
+
+model Payment {
+  id                    Int                  @id @default(autoincrement())
+  amount                Decimal
+  currency              String
+  status                PaymentStatus
+  paymentMethod         String
+  stripePaymentIntentId String?
+  stripeSessionId       String?
+  propertyReservationId Int?                 @unique
+  propertyReservation   PropertyReservation? @relation(fields: [propertyReservationId], references: [id])
+  invoiceId             Int?                 @unique
+  invoice               Invoice?             @relation(fields: [invoiceId], references: [id])
+  services              ServicePayment[]
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  @@map("payments")
+}
+
+model ServicePayment {
+  id        Int     @id @default(autoincrement())
+  paymentId Int
+  payment   Payment @relation(fields: [paymentId], references: [id])
+  serviceId Int
+  service   Service @relation(fields: [serviceId], references: [id])
+  amount    Decimal
+
+  @@map("service_payments")
+}
+
+model PaymentIntervention {
+  id                    Int           @id @default(autoincrement())
+  amount                Decimal
+  currency              String
+  status                PaymentStatus
+  paymentMethod         String
+  stripePaymentIntentId String?
+  stripeSessionId       String?
+  interventionId        Int?          @unique
+  intervention          Intervention? @relation(fields: [interventionId], references: [id])
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@map("payments_intervention")
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
 }
 
 model RefreshToken {

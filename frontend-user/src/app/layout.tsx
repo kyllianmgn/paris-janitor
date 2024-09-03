@@ -4,6 +4,8 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import {Providers} from "@/components/public/providers";
 import Header from "@/components/public/Header/Header";
+import React from "react";
+import RootLayoutAds from "@/components/RootLayoutAds";
 
 
 
@@ -13,8 +15,8 @@ const fontSans = FontSans({
 });
 
 export const metadata: Metadata = {
-  title: "Paris Janitors Traveler App",
-  description: "A travel app for Paris Janitors",
+  title: "Paris Janitor",
+  description: "A travel app for Paris Janitor",
 };
 
 export default function RootLayout({
@@ -25,9 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
     <head>
-        <script async
-                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2643328897463340"
-                crossOrigin="anonymous"></script>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2643328897463340" crossOrigin="anonymous"></script>
     </head>
     <body
         className={cn(
@@ -37,7 +37,12 @@ export default function RootLayout({
     >
     <Providers>
           <Header/>
+            {false && <div className="container mx-auto pt-20 px-4 py-8">
               {children}
+            </div>}
+            <RootLayoutAds>
+              {children}
+            </RootLayoutAds>
       </Providers>
       </body>
     </html>

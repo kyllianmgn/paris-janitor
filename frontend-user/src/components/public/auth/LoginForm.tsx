@@ -44,7 +44,7 @@ export default function LoginForm({ onSignUpClick, onClose }: LoginFormProps ) {
           break;
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setError('Invalid login credentials');
     }
   };

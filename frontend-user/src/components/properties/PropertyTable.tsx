@@ -52,8 +52,26 @@ export const PropertyTable = ({ properties, onRefresh }: PropertyTableProps) => 
     const handleModalSubmit = async (data: Partial<Property>) => {
         try {
             if (modalState.mode === 'edit') {
-                //await propertiesService.updateProperty(data as Property);
-                toast({ title: "Success", description: "Property updated successfully" });
+                if (data.id) {
+                    const propertyId = data.id;
+                    delete data.id;
+                    delete data.landlord;
+                    delete data.landlordId;
+                    delete data.instruction;
+                    delete data.roomCount;
+                    delete data.propertyType;
+                    delete data.status;
+                    delete data.createdAt;
+                    delete data.updatedAt;
+                    await propertiesService.updateProperty(propertyId ,data as Property);
+                    toast({ title: "Success", description: "Property updated successfully" });
+                } else {
+                    toast({
+                        title: "Error",
+                        description: `Failed to ${modalState.mode === 'edit' ? 'update' : 'delete'} property`,
+                        variant: "destructive",
+                    });
+                }
             } else if (modalState.mode === 'delete') {
                 await propertiesService.disableProperty(modalState.property!.id!);
                 onRefresh();
