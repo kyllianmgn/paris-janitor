@@ -117,7 +117,6 @@ export const initSubscriptions = (app: express.Express) => {
                 });
             }
 
-            console.log(stripeCustomerId);
             let planId : string = "";
             switch (subscriptionRequest.plan){
                 case "explorator":
