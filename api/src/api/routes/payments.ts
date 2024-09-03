@@ -79,6 +79,27 @@ export const initPayments = (app: express.Express) => {
                 return res.status(400).json({ error: 'Invalid or already processed reservation' });
             }
 
+
+            if (!req.user?.userId) return res.sendStatus(401)
+
+            const user = await prisma.user.findUnique({
+                where: {id: +req.user?.userId}
+            })
+            if (!user) return res.sendStatus(401)
+
+            let stripeCustomerId = user.stripeCustomerId;
+            if (!stripeCustomerId) {
+                const customer = await stripe.customers.create({
+                    email: user.email,
+                    name: `${user.firstName} ${user.lastName}`,
+                });
+                stripeCustomerId = customer.id;
+                await prisma.user.update({
+                    where: { id: user.id },
+                    data: { stripeCustomerId },
+                });
+            }
+
             const serviceTotalAmount = paymentRequest.services.reduce((previousValue, currentValue) => {return previousValue + currentValue.amount},0)
 
             // Créer une session de paiement Stripe
@@ -112,6 +133,7 @@ export const initPayments = (app: express.Express) => {
                 mode: 'payment',
                 success_url: `${process.env.FRONTEND_URL}/payment/success?reservation_id=${reservation.id}`,
                 cancel_url: `${process.env.FRONTEND_URL}/payment/cancel`,
+                customer: stripeCustomerId
             });
 
             const payment = await prisma.payment.create({
