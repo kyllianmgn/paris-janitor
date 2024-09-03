@@ -136,7 +136,7 @@ export const UserDetails: React.FC<{ id: number }> = ({ id }) => {
     };
 
     const handleBack = () => {
-        router.push('/users');
+        router.back();
     };
 
     if (loading) {

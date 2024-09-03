@@ -72,7 +72,7 @@ export const SubscriptionDetails: React.FC<{ id: number }> = ({ id }) => {
     };
 
     const handleBack = () => {
-        router.push('/subscriptions');
+        router.back();
     };
 
     if (loading) {
