@@ -21,6 +21,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import OrderServicesDialog from "@/components/properties/OrderServicesDialog";
 import { CrudModal, Field } from "@/components/public/CrudModal";
 import {ReviewSection} from "@/components/review/ReviewSection";
+import AuthModal from "@/components/public/auth/AuthModal";
 
 const propertyFields: Field[] = [
     { name: 'address', label: 'Address', type: 'text', required: true },
@@ -37,24 +38,18 @@ export interface PropertyDetailsProps {
 
 interface ServiceAvailability { state: boolean, reason: string }
 
-export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
+export const PropertyDetails = ({ propertyId }: PropertyDetailsProps) => {
     const [property, setProperty] = useState<Property | null>(null);
-    const [propertyServicesTab, setPropertyServicesTab] = useState<boolean>(false);
-    const [availableServices, setAvailableServices] = useState<Service[]>([]);
-    const [selectedService, setSelectedService] = useState<Service|null>(null);
-    const [serviceInterventionDate, setServiceInterventionDate] = useState<string>("");
-    const [availability, setAvailability] = useState<ServiceAvailability>({state: false, reason: ""});
     const [loading, setLoading] = useState<boolean>(true);
     const [isReservationDialogOpen, setIsReservationDialogOpen] = useState(false);
     const [selectedDates, setSelectedDates] = useState<{ start: Date | null; end: Date | null }>({ start: new Date(), end: null });
     const [servicesModal, setServicesModal] = useState<boolean>(false);
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const router = useRouter();
     const { toast } = useToast();
-    const user = useSelector((root: RootState) => root.auth.user);
-    const role = useSelector((root: RootState) => root.auth.role);
-    const idRole = useSelector((root: RootState) => root.auth.idRole);
-    let date = new Date();
-    date.setDate(date.getDate() + 1);
+    const user = useSelector((state: RootState) => state.auth.user);
+    const role = useSelector((state: RootState) => state.auth.role);
+    const idRole = useSelector((state: RootState) => state.auth.idRole);
 
     const [modalState, setModalState] = useState<{isOpen: boolean, mode: 'edit' | 'delete', property: Property | null}>({
         isOpen: false,
@@ -62,71 +57,33 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
         property: null
     });
 
-    const loadProperty = async () => {
-        if (propertyId) {
-            if (window.location.href.includes("/my-properties")){
-                const res = await propertiesService.getMyPropertyById(propertyId);
-                setProperty(res.data);
-                setLoading(false);
-                return;
+    useEffect(() => {
+        const loadProperty = async () => {
+            if (propertyId) {
+                try {
+                    const res = await propertiesService.getPropertyById(propertyId);
+                    setProperty(res.data);
+                } catch (error) {
+                    console.error("Failed to load property:", error);
+                    toast({
+                        title: "Error",
+                        description: "Failed to load property details.",
+                        variant: "destructive",
+                    });
+                } finally {
+                    setLoading(false);
+                }
             }
-            const res = await propertiesService.getPropertyById(propertyId);
-            setProperty(res.data);
-            setLoading(false);
-        }
-    };
+        };
 
-    const toggleServices = async () => {
-        setPropertyServicesTab(prevState => !prevState);
-    }
-
-    const loadAvailability = async () => {
-        if (!serviceInterventionDate || !selectedService) return;
-        const SPResponse = await servicesService.getProviderAvailabilityFromService(selectedService?.id, serviceInterventionDate)
-        const propertyResponse = await propertiesService.getPropertyAvailability(propertyId, serviceInterventionDate)
-        if (SPResponse.data && propertyResponse.data){
-            setAvailability({state: true, reason: "All Good"});
-        }else if (!SPResponse.data){
-            setAvailability({state: false, reason: "Service Provider Not Available at selected date."});
-        } else if (!propertyResponse.data){
-            setAvailability({state: false, reason: "Property Unavailable at selected date."});
-        }
-        console.log(SPResponse, propertyResponse)
-    }
-
-    useEffect(() => {
-        loadAvailability().then()
-    }, [serviceInterventionDate]);
-
-    const loadServices = async () => {
-        const res = await servicesService.getAvailableInterventionServices();
-        console.log(res)
-        setAvailableServices(res.data)
-    }
-
-    useEffect(() => {
-        if (propertyServicesTab){
-            loadServices().then()
-        }
-    }, [propertyServicesTab]);
-
-    useEffect(() => {
-        loadProperty().then();
-    }, [propertyId]);
-
-    const setStartDate = (date: string) => {
-        setSelectedDates((prevDates) => ({ ...prevDates, start: date }));
-    };
-
-    const setEndDate = (date: string) => {
-        setSelectedDates((prevDates) => ({ ...prevDates, end: date }));
-    };
+        loadProperty();
+    }, [propertyId, toast]);
 
     const handleGoBack = () => router.back();
 
     const handleReserveClick = () => {
         if (!user) {
-            router.push('/login');
+            setIsAuthModalOpen(true);
             return;
         }
 
@@ -148,7 +105,6 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
             return;
         }
 
-        // Si toutes les conditions sont remplies, ouvrir le dialogue de réservation
         setIsReservationDialogOpen(true);
     };
 
@@ -160,27 +116,16 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
         try {
             if (modalState.mode === 'edit') {
                 if (data.id) {
-                    const propertyId = data.id;
-                    delete data.id;
-                    delete data.landlordId;
-                    delete data.instruction;
-                    delete data.roomCount;
-                    delete data.propertyType;
-                    delete data.status;
-                    delete data.createdAt;
-                    delete data.updatedAt;
-                    await propertiesService.updateProperty(propertyId ,data as Property);
+                    await propertiesService.updateProperty(data.id, data as Property);
                     toast({ title: "Success", description: "Property updated successfully" });
-                } else {
-                    toast({
-                        title: "Error",
-                        description: `Failed to ${modalState.mode === 'edit' ? 'update' : 'delete'} property`,
-                        variant: "destructive",
-                    });
+                    // Refresh property data
+                    const updatedProperty = await propertiesService.getPropertyById(data.id);
+                    setProperty(updatedProperty.data);
                 }
             } else if (modalState.mode === 'delete') {
                 await propertiesService.disableProperty(modalState.property!.id!);
                 toast({ title: "Success", description: "Property deleted successfully" });
+                router.push('/my-properties');
             }
         } catch (error) {
             console.error(`Error ${modalState.mode === 'edit' ? 'updating' : 'deleting'} property:`, error);
@@ -201,34 +146,20 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
         setModalState({ isOpen: true, mode: 'edit', property });
     };
 
-    const handleDeleteProperty = async () => {
-        if (window.confirm("Are you sure you want to delete this property?")) {
-            try {
-                await propertiesService.disableProperty(propertyId);
-                toast({
-                    title: "Property deleted",
-                    description: "The property has been successfully deleted.",
-                    variant: "default",
-                });
-                router.push('/my-properties');
-            } catch (error) {
-                toast({
-                    title: "Error",
-                    description: "Failed to delete the property. Please try again.",
-                    variant: "destructive",
-                });
-            }
-        }
+    const handleDeleteProperty = () => {
+        setModalState({ isOpen: true, mode: 'delete', property });
     };
 
     const handleToggleServices = () => {
-        setServicesModal(true)
-    }
+        setServicesModal(true);
+    };
 
     if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
     if (!property) return <div className="text-center mt-10">Property not found</div>;
 
     const isOwner = role === 'LANDLORD' && idRole === property.landlordId;
+    const canReserve = role === 'TRAVELER';
+
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -239,20 +170,22 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
             <h1 className="text-3xl font-bold mb-6">{property.address}</h1>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
+                <div className="flex flex-col space-y-4">
                     <PropertyImageCarousel propertyId={propertyId} />
                     <PropertyInfo property={property} />
                     <PropertyDescription description={property.description} />
                 </div>
                 <div>
-                    <ReservationCard
+                    {canReserve && <ReservationCard
                         price={property.pricePerNight}
                         onReserveClick={handleReserveClick}
                         startDate={selectedDates.start}
                         endDate={selectedDates.end}
-                        setStartDate={setStartDate}
-                        setEndDate={setEndDate}
-                    />
+                        setStartDate={(date) => setSelectedDates(prev => ({ ...prev, start: date }))}
+                        setEndDate={(date) => setSelectedDates(prev => ({ ...prev, end: date }))}
+                        canReserve={canReserve}
+                    />}
+
                     {isOwner && (
                         <OwnerActions
                             onManageOccupations={handleManageOccupations}
@@ -262,12 +195,12 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
                         />
                     )}
                 </div>
-                <div>
+                <div className="md:col-span-2">
                     <ReviewSection propertyId={propertyId}/>
                 </div>
             </div>
 
-            {!isOwner && (
+            {canReserve && (
                 <ReservationDialog
                     isOpen={isReservationDialogOpen}
                     onClose={() => setIsReservationDialogOpen(false)}
@@ -286,43 +219,21 @@ export const PropertyDetails = ({propertyId}: PropertyDetailsProps) => {
                 />
             )}
 
-            {
-                isOwner &&
-                <div>
-                    <h1>Available Services for your property</h1>
+            <CrudModal<Property>
+                isOpen={modalState.isOpen}
+                onClose={handleModalClose}
+                onSubmit={handleModalSubmit}
+                fields={propertyFields}
+                title={modalState.mode === 'edit' ? 'Edit Property' : 'Delete Property'}
+                initialData={modalState.property || {}}
+                mode={modalState.mode}
+            />
 
-                    {availableServices.map((service: Service, index: number) => (
-                        <div key={index} onClick={() => {setSelectedService(service)}}>
-                            <h1>{service.name}</h1>
-                        </div>
-                    ))}
-                    {selectedService && (
-                        <div className={"shadow-card"}>
-                            <h1 className={"font-bold"}>{selectedService.name}</h1>
-                            <Input
-                                type="datetime-local"
-                                id="startDate"
-                                min={date.toISOString().split('T')[0] + "T00:00:00"}
-                                value={serviceInterventionDate}
-                                onChange={(e) => setServiceInterventionDate(e.target.value)}
-                                required
-                                className="mt-1"
-                            />
-                        </div>
-                    )}
-                    {!availability.state && <h1>{availability.reason}</h1>}
-
-                    <CrudModal<Property>
-                        isOpen={modalState.isOpen}
-                        onClose={handleModalClose}
-                        onSubmit={handleModalSubmit}
-                        fields={propertyFields}
-                        title={modalState.mode === 'edit' ? 'Edit Property' : 'Delete Property'}
-                        initialData={modalState.property || {}}
-                        mode={modalState.mode}
-                    />
-                </div>
-            }
+            <AuthModal
+                isOpen={isAuthModalOpen}
+                onClose={() => setIsAuthModalOpen(false)}
+                initialMode="login"
+            />
         </div>
     );
 };
@@ -396,21 +307,40 @@ const ReservationCard: React.FC<{
     onReserveClick: () => void;
     startDate: Date | null;
     endDate: Date | null;
-    setStartDate: (date: string) => void;
-    setEndDate: (date: string) => void;
-}> = ({ price, onReserveClick, startDate, endDate, setStartDate, setEndDate }) => {
-
-    const handleDateChange = (dates: any) => {
-        const [start, end] = dates
-        setStartDate(start)
-        setEndDate(end)
-    }
-
+    setStartDate: (date: Date | null) => void;
+    setEndDate: (date: Date | null) => void;
+    canReserve: boolean;
+}> = ({ price, onReserveClick, startDate, endDate, setStartDate, setEndDate, canReserve }) => {
     return (
-        <div>
-            <DatePicker showIcon onChange={handleDateChange} startDate={startDate} selected={startDate} endDate={endDate} selectsRange/>
-            <button onClick={onReserveClick}>Reserve</button>
-        </div>
+        <Card>
+            <CardHeader>
+                <CardTitle>Reservation</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-2xl font-bold mb-4">€{price} / night</p>
+                <DatePicker
+                    selected={startDate}
+                    onChange={(dates) => {
+                        const [start, end] = dates;
+                        setStartDate(start);
+                        setEndDate(end);
+                    }}
+                    startDate={startDate}
+                    endDate={endDate}
+                    selectsRange
+                    inline
+                />
+                {canReserve ? (
+                    <Button onClick={onReserveClick} className="w-full mt-4">
+                        Reserve
+                    </Button>
+                ) : (
+                    <p className="text-sm text-gray-500 mt-4">
+                        You must be logged in as a traveler to make reservations.
+                    </p>
+                )}
+            </CardContent>
+        </Card>
     );
 };
 

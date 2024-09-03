@@ -27,8 +27,29 @@ export interface Traveler {
   id: number;
   userId: number;
   user?: User
+  subscriptionType?: TravelerSubscription;
 }
 
+export enum TravelerSubscription {
+  FREE="FREE",
+  BAG_PACKER="BAG_PACKER",
+  EXPLORATOR="EXPLORATOR"
+}
+
+export interface SubscriptionPlan {
+  id: number;
+  name: string;
+  description: string;
+  monthlyPrice: number;
+  yearlyPrice: number;
+  userType: UserType;
+  features: string[];
+}
+
+export enum UserType {
+  TRAVELER="TRAVELER",
+  LANDLORD="LANDLORD"
+}
 export interface ServiceProvider {
   id: number;
   userId: number;
@@ -274,8 +295,8 @@ export interface Intervention {
 export interface ProviderCalendarEvent extends ProviderOccupation {
   title: string;
   resourceId?: number;
-  start: Date; // ajouté pour react-big-calendar
-  end: Date; // ajouté pour react-big-calendar
+  start: Date;
+  end: Date;
 }
 
 export interface PropertyReservation {

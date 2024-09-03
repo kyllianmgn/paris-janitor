@@ -371,6 +371,7 @@ export const initProperties = (app: express.Express) => {
         const validation = propertyValidator.validate(req.body);
 
         if (validation.error) {
+            console.error(validation.error);
             res.status(400).json({ error: validation.error });
             return;
         }

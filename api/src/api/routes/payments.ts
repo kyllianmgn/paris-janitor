@@ -77,8 +77,6 @@ export const initPayments = (app: express.Express) => {
             });
 
             if (!reservation || reservation.status !== ReservationStatus.PENDING) {
-
-
                 return res.status(400).json({ error: 'Invalid or already processed reservation' });
             }
 

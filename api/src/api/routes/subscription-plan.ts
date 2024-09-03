@@ -7,7 +7,7 @@ import {
 } from "../validators/subscription-validator";
 import { isAuthenticated, isSuperAdmin } from "../middlewares/auth-middleware";
 import Stripe from "stripe";
-import {SubscriptionPlan} from "@prisma/client";
+import {SubscriptionPlan, UserType} from "@prisma/client";
 
 
 
@@ -92,6 +92,25 @@ export const initSubscriptionPlans = (app: express.Express) => {
         }
     });
 
+    app.get("/subscription-plans/traveler", isAuthenticated, async (req, res) => {
+        try {
+            const travelerPlans = await prisma.subscriptionPlan.findMany({
+                where: {
+                    userType: UserType.TRAVELER,
+                },
+                orderBy: {
+                    monthlyPrice: 'asc',
+                },
+            });
+
+            res.status(200).json({ data: travelerPlans });
+        } catch (error) {
+            console.error("Error fetching traveler subscription plans:", error);
+            res.status(500).json({ error: "An error occurred while fetching subscription plans." });
+        }
+    });
+
+
     // Update a subscription plan
     app.patch("/subscription-plans/:id", isAuthenticated, isSuperAdmin, async (req, res) => {
         const validation = subscriptionPlanPatchValidation.validate(req.body);
@@ -158,6 +177,7 @@ export const initSubscriptionPlans = (app: express.Express) => {
             res.status(500).json({ error: "An error occurred while updating the subscription plan." });
         }
     });
+
 
     // Delete a subscription plan
     app.delete("/subscription-plans/:id", isAuthenticated, isSuperAdmin, async (req, res) => {
