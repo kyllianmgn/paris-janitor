@@ -116,7 +116,7 @@ export const initPropertyReviews = (app: express.Express) => {
         }
     });
 
-    app.get("/property-reviews/property/:propertyId", isAuthenticated, async (req, res) => {
+    app.get("/property-reviews/property/:propertyId", async (req, res) => {
         try {
             const propertyReviews = await prisma.propertyReview.findMany({
                 where: { propertyId: +req.params.propertyId },

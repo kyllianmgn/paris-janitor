@@ -31,7 +31,6 @@ export enum UserRole{
 
 export const isRole = (role: UserRole) => {
     return (req: Request, res: Response, next: NextFunction) => {
-        console.log(req.user)
         switch (role) {
             case UserRole.LANDLORD:
                 if (!req.user?.landlordId){
