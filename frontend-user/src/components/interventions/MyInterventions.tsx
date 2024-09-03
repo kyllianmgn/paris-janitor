@@ -3,15 +3,17 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, List, Grid } from "lucide-react";
-import {Intervention, InterventionStatus} from "@/types";
+import {Intervention, InterventionStatus, Service} from "@/types";
 import {useSelector} from "react-redux";
 import {RootState} from "@/store";
 import {serviceInterventionsService} from "@/api/services/service-interventions";
 import {InterventionList} from "@/components/interventions/InterventionList";
+import {Select} from "@/components/ui/select";
 
 export const MyInterventions = () => {
     const router = useRouter();
     const [interventionList, setInterventionList] = useState<Intervention[]>([]);
+    const [serviceList, setServiceList] = useState<Service[]>([]);
     const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
     const [isClient, setIsClient] = useState(false);
 
@@ -46,6 +48,9 @@ export const MyInterventions = () => {
                 <div className="flex space-x-2">
                 </div>
             </div>
+                <Select>
+
+                </Select>
                 <InterventionList interventions={interventionList} personal={true} />
         </div>
     );

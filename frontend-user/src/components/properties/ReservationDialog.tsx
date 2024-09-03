@@ -7,6 +7,7 @@ import { servicesService } from "@/api/services/services";
 import {Service, ServicePayment} from "@/types";
 import {redirect, useRouter} from 'next/navigation';
 import {paymentService} from "@/api/services/paymentService";
+import {propertiesReservationsService} from "@/api/services/properties-reservations";
 
 interface ReservationDialogProps {
     isOpen: boolean;
@@ -64,11 +65,18 @@ const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
     const handleSubmit = async () => {
         try {
+            const responseReservation = await propertiesReservationsService.createPropertyReservation({
+                propertyId: propertyId,
+                endDate: endDate.toISOString(),
+                startDate: startDate.toISOString(),
+                totalPrice: totalPrice
+            });
+
             const response = await paymentService.createPayment({
                 amount: Number(totalPrice), // Assurez-vous que c'est un nombre
                 currency: 'EUR', // ou la devise appropriée
                 paymentMethod: 'stripe',
-                propertyReservationId: propertyId,
+                propertyReservationId: responseReservation.data.id,
                 services: selectedServices.map(serviceId => ({
                     serviceId,
                     name: services.find(s => s.id === serviceId)?.name,

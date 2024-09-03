@@ -60,7 +60,7 @@ export const initPayments = (app: express.Express) => {
         }
     });
 
-    /*app.post("/payments", isAuthenticated, async (req, res) => {
+    app.post("/payments", isAuthenticated, async (req, res) => {
         try {
             const validation = paymentValidator.validate(req.body);
             console.log(validation.value);
@@ -77,6 +77,8 @@ export const initPayments = (app: express.Express) => {
             });
 
             if (!reservation || reservation.status !== ReservationStatus.PENDING) {
+
+
                 return res.status(400).json({ error: 'Invalid or already processed reservation' });
             }
 
@@ -111,7 +113,7 @@ export const initPayments = (app: express.Express) => {
                 ],
 
                 mode: 'payment',
-                success_url: `${process.env.FRONTEND_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+                success_url: `${process.env.FRONTEND_URL}/payment/success?reservation_id=${reservation.id}`,
                 cancel_url: `${process.env.FRONTEND_URL}/payment/cancel`,
             });
 
@@ -134,6 +136,13 @@ export const initPayments = (app: express.Express) => {
                     services: true
                 }
             });
+
+            await prisma.propertyReservation.update({
+                where: {id: reservation.id},
+                data: {
+                    status: ReservationStatus.CONFIRMED
+                }
+            })
 
             res.status(200).json({
                 data: payment,
@@ -236,7 +245,7 @@ export const initPayments = (app: express.Express) => {
             console.error('Error creating payment:', e);
             res.status(500).send({ error: 'An error occurred while processing the payment' });
         }
-    });*/
+    });
 
     app.patch("/payments/:id(\\d+)/status", isAuthenticated, isSuperAdmin, async (req, res) => {
         const validation = paymentPatchValidator.validate(req.body);
