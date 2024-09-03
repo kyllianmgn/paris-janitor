@@ -17,11 +17,13 @@ export default function Header() {
   const role = useSelector((state: RootState) => state.auth.role);
   const user = useSelector((state: RootState) => state.auth.user);
   const landlordStatus = useSelector((state: RootState) => state.auth.landlordStatus);
+  const travelerPlan = useSelector((state: RootState) => state.auth.travelerPlan);
   const { isLoading } = useAuth();
   const currentPath = usePathname();
   const [showNav, setShowNav] = useState(false);
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
   const [isLandlordPending, setIsLandlordPending] = useState(true);
+  const [isTravelerFree, setIsTravelerFree] = useState(true);
 
   const isLinkActive = (path: string) => {
     return currentPath.startsWith(path);
@@ -34,6 +36,10 @@ export default function Header() {
   useEffect(() => {
     setIsLandlordPending(landlordStatus == "PENDING")
   }, [landlordStatus]);
+
+    useEffect(() => {
+        setIsTravelerFree(travelerPlan === "FREE")
+    }, [travelerPlan]);
 
   return (
       <header className="border-b fixed w-full bg-white shadow z-40">
@@ -84,6 +90,8 @@ export default function Header() {
                   Subscribe Now
                 </Button>
             )}
+
+            {!isTravelerFree && <Button onClick={() => router.push('subscription/traveler')}>Upgrade plan</Button>}
 
             <SubscriptionDialog
                 isOpen={isSubscriptionDialogOpen}

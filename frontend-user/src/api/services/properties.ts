@@ -123,7 +123,6 @@ export const propertiesService = {
     },
 
     createPropertyReview: async (propertyId: number, note: number, comment: string): Promise<ApiResponse<PropertyReview>> => {
-        console.log({note: note, comment: comment})
         return api.post(`property-reviews/${propertyId}`, {json: {note: note, comment: comment}}).json<ApiResponse<PropertyReview>>();
     },
 

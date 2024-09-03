@@ -73,7 +73,7 @@ export const PropertyReservationDetail = ({propertyReservationId}: PropertyReser
                         : </strong>{propertyReservationFull.totalPrice}€</h3>
                     <Link
                         className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-700"
-                        href={`/properties/${propertyReservationFull.occupation.propertyId}`}>
+                        href={`/${propertyReservationFull.occupation.propertyId}`}>
                         <strong>See property</strong>
                     </Link>
                     <ReviewEditor baseReview={review} uploadReview={uploadReview}></ReviewEditor>

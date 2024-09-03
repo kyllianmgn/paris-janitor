@@ -29,7 +29,6 @@ export const InterventionDetails = ({ interventionId }: InterventionDetailProps)
 
     const loadInterventionForm = async () => {
         const res = await serviceInterventionsService.getInterventionForm(interventionId);
-        console.log(res)
         setInterventionForm(res.data)
         if (res.data.comment && interventionTextAreaRef.current){
             interventionTextAreaRef.current.value = res.data.comment

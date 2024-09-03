@@ -77,11 +77,12 @@ export const initSubscriptionPlans = (app: express.Express) => {
     });
 
     // Get a specific subscription plan
-    app.get("/subscription-plans/:id", async (req, res) => {
+    /*app.get("/subscription-plans/:id", async (req, res) => {
         try {
+
             const plan = await prisma.subscriptionPlan.findUnique({
-                where: { id: parseInt(req.params.id) },
-            });
+                where: { id: parseInt(req.params.id) }
+                    });
             if (!plan) {
                 return res.status(404).json({ error: "Subscription plan not found." });
             }
@@ -90,7 +91,7 @@ export const initSubscriptionPlans = (app: express.Express) => {
             console.error(error);
             res.status(500).json({ error: "An error occurred while fetching the subscription plan." });
         }
-    });
+    });*/
 
     app.get("/subscription-plans/traveler", isAuthenticated, async (req, res) => {
         try {
@@ -99,8 +100,8 @@ export const initSubscriptionPlans = (app: express.Express) => {
                     userType: UserType.TRAVELER,
                 },
                 orderBy: {
-                    monthlyPrice: 'asc',
-                },
+                    name: 'asc'
+                }
             });
 
             res.status(200).json({ data: travelerPlans });
@@ -114,9 +115,6 @@ export const initSubscriptionPlans = (app: express.Express) => {
     // Update a subscription plan
     app.patch("/subscription-plans/:id", isAuthenticated, isSuperAdmin, async (req, res) => {
         const validation = subscriptionPlanPatchValidation.validate(req.body);
-        console.log("je suis dans le patch");
-        console.log("VALIDATION", validation);
-        console.log("REQ BODY", req.body);
 
         if (validation.error) {
             return res.status(400).json({ error: validation.error.details });

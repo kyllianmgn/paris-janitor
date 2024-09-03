@@ -63,7 +63,6 @@ export const initPayments = (app: express.Express) => {
     app.post("/payments", isAuthenticated, async (req, res) => {
         try {
             const validation = paymentValidator.validate(req.body);
-            console.log(validation.value);
 
             if (validation.error) {
                 return res.status(400).json({ error: validation.error });
