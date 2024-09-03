@@ -29,6 +29,16 @@ export const initProperties = (app: express.Express) => {
                             address: { contains: filter.query, mode: "insensitive" }
                         }, {
                             description: { contains: filter.query, mode: "insensitive" }
+                        }, {
+                            city: {
+                                contains: filter.query,
+                                mode: "insensitive"
+                            }
+                        }, {
+                            country: {
+                                contains: filter.query,
+                                mode: "insensitive"
+                            }
                         }]
                     } : {status: PropertyStatus.APPROVED})
                 },
@@ -48,6 +58,16 @@ export const initProperties = (app: express.Express) => {
                             }
                         }, {
                             description: {
+                                contains: filter.query,
+                                mode: "insensitive"
+                            }
+                        }, {
+                            city: {
+                                contains: filter.query,
+                                mode: "insensitive"
+                            }
+                        }, {
+                            country: {
                                 contains: filter.query,
                                 mode: "insensitive"
                             }
@@ -338,6 +358,24 @@ export const initProperties = (app: express.Express) => {
             const property = await prisma.property.findUnique({
                 where: { id: Number(req.params.id),status: PropertyStatus.APPROVED },
                 include: {landlord: {include: {user: true}}}
+            });
+            if (!property) return res.sendStatus(404);
+            const files = fs.readdirSync(`./public/image/property/${+req.params.id}`)
+            res.status(200).json({data: files});
+        } catch (e: any) {
+            if (e.errno == -4058){
+                return res.status(404).send({ error: e });
+            }
+            res.status(500).send({ error: e });
+            return;
+        }
+    });
+
+    app.get("/properties/me/:id(\\d+)/image",isAuthenticated, isRole(UserRole.LANDLORD), async (req, res) => {
+        try {
+            if (!req.user?.landlordId) return res.sendStatus(401);
+            const property = await prisma.property.findUnique({
+                where: { id: Number(req.params.id),landlordId: +req.user?.landlordId }
             });
             if (!property) return res.sendStatus(404);
             const files = fs.readdirSync(`./public/image/property/${+req.params.id}`)

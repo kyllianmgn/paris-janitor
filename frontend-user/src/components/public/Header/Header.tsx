@@ -21,6 +21,7 @@ export default function Header() {
   const currentPath = usePathname();
   const [showNav, setShowNav] = useState(false);
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
+  const [isLandlordPending, setIsLandlordPending] = useState(true);
 
   const isLinkActive = (path: string) => {
     return currentPath.startsWith(path);
@@ -30,7 +31,9 @@ export default function Header() {
     setShowNav(true);
   }, []);
 
-  const isLandlordPending = landlordStatus === "PENDING";
+  useEffect(() => {
+    setIsLandlordPending(landlordStatus == "PENDING")
+  }, [landlordStatus]);
 
   return (
       <header className="border-b fixed w-full bg-white shadow z-40">

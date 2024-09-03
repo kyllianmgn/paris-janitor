@@ -2,27 +2,38 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Property } from "@/types";
+import {Filter, Property} from "@/types";
 import { useRouter } from "next/navigation";
 import { propertiesService } from "@/api/services/properties";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import Pagination from "@/components/ui/pagination";
+import Search from "@/components/ui/search";
 
-export default function RentalList() {
+export default function RentalList({query, page}: {query: string, page: number}) {
     const router = useRouter();
     const [propertyList, setPropertyList] = useState<Property[]>([]);
+    const [propertyCount, setPropertyCount] = useState<number>(0);
     const apiLink = process.env.NEXT_PUBLIC_API_URL || "https://api.parisjanitor.fr/";
 
     const loadProperties = async () => {
-        const res = await propertiesService.getPublicProperties();
+        let filter : Filter = {}
+        if (query) filter.query = query
+        if (page) filter.page = page
+        const res = await propertiesService.getPublicProperties(filter);
         setPropertyList(res.data);
+        setPropertyCount(res.count)
     }
 
     useEffect(() => {
         loadProperties().then()
-    }, []);
+    }, [query]);
 
     return (
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+            <div className={"mb-2"}>
+                <Search placeholder={"Chercher une adresse"}></Search>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {propertyList.map((property) => (
                     <Card key={property.id} className="overflow-hidden">
@@ -56,6 +67,9 @@ export default function RentalList() {
                         </CardContent>
                     </Card>
                 ))}
+            </div>
+            <div className={"mt-2"}>
+                <Pagination count={propertyCount} itemsName={"Properties"}></Pagination>
             </div>
         </div>
     );

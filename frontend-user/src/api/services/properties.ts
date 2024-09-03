@@ -19,8 +19,16 @@ export const propertiesService = {
         return api.get(`properties/${id}`).json<ApiResponse<Property>>();
     },
 
+    getMyPropertyById: async (id: number): Promise<ApiResponse<Property>> => {
+        return api.get(`properties/me/${id}`).json<ApiResponse<Property>>();
+    },
+
     getPropertyImageById: async (id: number): Promise<ApiResponse<string[]>> => {
         return api.get(`properties/${id}/image`).json<ApiResponse<string[]>>();
+    },
+
+    getMyPropertyImageById: async (id: number): Promise<ApiResponse<string[]>> => {
+        return api.get(`properties/me/${id}/image`).json<ApiResponse<string[]>>();
     },
 
     getProperties: async (): Promise<ApiResponse<Property[]>> => {

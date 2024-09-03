@@ -34,17 +34,21 @@ const propertyFields: Field[] = [
 
 export interface PropertyDetailsProps {
     propertyId: number;
+    isPersonal: boolean;
 }
+
+
 
 interface ServiceAvailability { state: boolean, reason: string }
 
-export const PropertyDetails = ({ propertyId }: PropertyDetailsProps) => {
+export const PropertyDetails = ({ propertyId, isPersonal = false }: PropertyDetailsProps) => {
     const [property, setProperty] = useState<Property | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [isReservationDialogOpen, setIsReservationDialogOpen] = useState(false);
     const [selectedDates, setSelectedDates] = useState<{ start: Date | null; end: Date | null }>({ start: new Date(), end: null });
     const [servicesModal, setServicesModal] = useState<boolean>(false);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const [imageList, setImageList] = useState<string[]>([]);
     const router = useRouter();
     const { toast } = useToast();
     const user = useSelector((state: RootState) => state.auth.user);
@@ -60,22 +64,41 @@ export const PropertyDetails = ({ propertyId }: PropertyDetailsProps) => {
     useEffect(() => {
         const loadProperty = async () => {
             if (propertyId) {
-                try {
-                    const res = await propertiesService.getPropertyById(propertyId);
-                    setProperty(res.data);
-                } catch (error) {
-                    console.error("Failed to load property:", error);
-                    toast({
-                        title: "Error",
-                        description: "Failed to load property details.",
-                        variant: "destructive",
-                    });
-                } finally {
-                    setLoading(false);
+                if (isPersonal){
+                    try {
+                        const res = await propertiesService.getMyPropertyById(propertyId);
+                        const images = await propertiesService.getMyPropertyImageById(propertyId);
+                        setProperty(res.data);
+                        setImageList(images.data)
+                    } catch (error) {
+                        console.error("Failed to load property:", error);
+                        toast({
+                            title: "Error",
+                            description: "Failed to load property details.",
+                            variant: "destructive",
+                        });
+                    } finally {
+                        setLoading(false);
+                    }
+                }else{
+                    try {
+                        const res = await propertiesService.getPropertyById(propertyId);
+                        const images = await propertiesService.getPropertyImageById(propertyId);
+                        setProperty(res.data);
+                        setImageList(images.data)
+                    } catch (error) {
+                        console.error("Failed to load property:", error);
+                        toast({
+                            title: "Error",
+                            description: "Failed to load property details.",
+                            variant: "destructive",
+                        });
+                    } finally {
+                        setLoading(false);
+                    }
                 }
             }
         };
-
         loadProperty();
     }, [propertyId, toast]);
 
@@ -171,7 +194,7 @@ export const PropertyDetails = ({ propertyId }: PropertyDetailsProps) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col space-y-4">
-                    <PropertyImageCarousel propertyId={propertyId} />
+                    <PropertyImageCarousel propertyId={propertyId} images={imageList} />
                     <PropertyInfo property={property} />
                     <PropertyDescription description={property.description} />
                 </div>

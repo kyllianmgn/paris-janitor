@@ -41,12 +41,6 @@ export const initSubscriptions = (app: express.Express) => {
                 return res.status(404).json({ error: "User not found." });
             }
 
-
-            const plan: SubscriptionPlan | null = await prisma.subscriptionPlan.findUnique({ where: { id: subscriptionData.planId } });
-            if (!plan) {
-                return res.status(404).json({ error: "Subscription plan not found." });
-            }
-
             let stripeCustomerId = user.stripeCustomerId;
             if (!stripeCustomerId) {
                 const customer = await stripe.customers.create({
@@ -66,7 +60,7 @@ export const initSubscriptions = (app: express.Express) => {
                 payment_method_types: ['card'],
                 line_items: [
                     {
-                        price: plan.stripePriceIdYearly,
+                        price: "price_1PuGAEH84D9JafENhpuh7FIl",
                         quantity: 1,
                     },
                 ],
@@ -75,8 +69,7 @@ export const initSubscriptions = (app: express.Express) => {
                 cancel_url: `${process.env.FRONTEND_URL}/subscription/cancel`,
                 customer: stripeCustomerId,
                 metadata: {
-                    userId: user.id.toString(),
-                    planId: plan.id.toString()
+                    userId: user.id.toString()
                 }
             });
 
@@ -177,23 +170,25 @@ export const initSubscriptions = (app: express.Express) => {
             const userId = session.metadata?.userId;
             const planId = session.metadata?.planId;
 
-            if (!userId || !planId) {
+            if (!userId) {
                 return res.status(400).json({ error: "Invalid session metadata" });
             }
 
-            const subscription = await prisma.subscription.create({
+            /*const subscription = await prisma.subscription.create({
                 data: {
                     userId: parseInt(userId),
-                    planId: parseInt(planId),
+                    planId: 0,
                     stripeSubscriptionId: session.subscription as string,
                     status: 'ACTIVE',
                     startDate: new Date(),
                     endDate: new Date(session.expires_at! * 1000),
                 },
-            });
+            });*/
+
+            if (!req.user?.landlordId) return res.sendStatus(401)
 
             await prisma.landlord.update({
-                where: { userId: parseInt(userId) },
+                where: { userId: req.user?.landlordId },
                 data: { status: LandlordStatus.ACTIVE },
             });
 
