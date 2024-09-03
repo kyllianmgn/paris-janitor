@@ -28,8 +28,7 @@ export const initSubscriptions = (app: express.Express) => {
             if (validation.error) {
                 return res.status(400).json({ error: "Invalid input data", details: validation.error.details });
             }
-            console.log("nous sommes dans le post subscriptions");
-            console.log(validation.value);
+
             const subscriptionData: SubscriptionRequest = validation.value;
 
             const user:User | null = await prisma.user.findUnique({
@@ -59,8 +58,6 @@ export const initSubscriptions = (app: express.Express) => {
                     data: { stripeCustomerId },
                 });
             }
-
-            console.log(stripeCustomerId);
 
             const session = await stripe.checkout.sessions.create({
                 payment_method_types: ['card'],
@@ -94,12 +91,10 @@ export const initSubscriptions = (app: express.Express) => {
             if (validation.error) {
                 return res.status(400).json({ error: "Invalid input data", details: validation.error.details });
             }
-            console.log("nous sommes dans le post subscriptions");
-            console.log(validation.value);
             const subscriptionRequest = validation.value;
             if (!req.user?.userId) return res.sendStatus(401)
 
-            const user = await prisma.user.findUnique({
+            const user:User | null = await prisma.user.findUnique({
                 where: {id: +req.user?.userId}
             })
             if (!user) return res.sendStatus(401)
@@ -117,7 +112,6 @@ export const initSubscriptions = (app: express.Express) => {
                 });
             }
 
-            console.log(stripeCustomerId);
             let planId : string = "";
             switch (subscriptionRequest.plan){
                 case "explorator":
@@ -238,7 +232,6 @@ export const initSubscriptions = (app: express.Express) => {
                 return res.status(400).json({ error: "Payment not completed" });
             }
 
-            console.log(session.metadata)
             const userId = session.metadata?.userId;
             const planId = session.metadata?.planId;
             const planInfo = JSON.parse(String(session.metadata?.planInformation)) as TravelerSubscriptionRequest;
@@ -406,8 +399,6 @@ export const initSubscriptions = (app: express.Express) => {
 
             // Check if the user is authorized to cancel this subscription
             if (!req.user.adminId  && subscription.userId !== req.userId) {
-                console.log(req.user.admin);
-                console.log(subscription.userId);
                 return res.status(403).json({ error: "Not authorized to view this subscription." });
             }
 

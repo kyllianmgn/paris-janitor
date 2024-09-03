@@ -15,6 +15,6 @@ export const travelerSubscriptions = async (plan: string, type: string): Promise
 };
 
 // Subscription Plans
-export const getTravelerSubscriptionPlans = async (): Promise<ApiResponse<SubscriptionPlan[]>> => {
+export const getTravelerSubscriptionPlans = async (): any => {
     return await api.get('subscription-plans/traveler').json();
 };
