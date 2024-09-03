@@ -16,7 +16,7 @@ export const MyServices = () => {
     const [serviceList, setServiceList] = useState<Service[]>([]);
     const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
     const [isClient, setIsClient] = useState(false);
-    const [SPStatus, setSPStatus] = useState<ServiceProviderStatus|null>(null);
+    const SPStatus = useSelector((root: RootState) => root.auth.serviceProviderStatus);
 
     const loadServices = async () => {
         try {
@@ -28,19 +28,9 @@ export const MyServices = () => {
         }
     };
 
-    const loadStatus = async () => {
-        try{
-            const res = await authService.getUserInfo();
-            setSPStatus(res.ServiceProvider?.status)
-        }catch (error) {
-
-        }
-    }
-
     useEffect(() => {
         setIsClient(true)
         loadServices().then();
-        loadStatus().then();
     }, []);
 
     const handleAddService = () => {

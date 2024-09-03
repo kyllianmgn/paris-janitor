@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 
 interface CalendarActionPanelProps {
-    selectedOccupation: PropertyOccupation | null;
-    onCreateOccupation: (occupation: Omit<PropertyOccupation, 'id'>) => Promise<void>;
-    onUpdateOccupation: (id: number, occupation: Partial<PropertyOccupation>) => Promise<void>;
+    selectedOccupation: ProviderOccupation | null;
+    onCreateOccupation: (occupation: Pick<ProviderOccupation, "startDate" | "endDate">) => Promise<void>;
+    onUpdateOccupation: (id: number, occupation: Pick<ProviderOccupation, "startDate" | "endDate">) => Promise<void>;
     onDeleteOccupation: (id: number) => Promise<void>;
     occupations: PropertyOccupation[] | ProviderOccupation[];
 }
@@ -76,13 +76,13 @@ const ServiceProviderCalendarActionPanel: React.FC<CalendarActionPanelProps> = (
 
         try {
             if (selectedOccupation) {
-                await onUpdateOccupation(selectedOccupation.id, { startDate: newStart.toISOString(), endDate: newEnd.toDateString() });
+                await onUpdateOccupation(selectedOccupation.id, { startDate: newStart, endDate: newEnd });
                 toast({
                     title: "Success",
                     description: "Unavailability updated successfully",
                 });
             } else {
-                await onCreateOccupation({ startDate: newStart.toISOString(), endDate: newEnd.toISOString() });
+                await onCreateOccupation({ startDate: newStart, endDate: newEnd });
                 toast({
                     title: "Success",
                     description: "Unavailability created successfully",

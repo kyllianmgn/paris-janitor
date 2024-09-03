@@ -3,10 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { User, ApiResponse, ServiceProviderStatus } from '@/types';
 import DataTable from '@/components/public/DataTable';
 import CrudModal from '@/components/public/CrudModal';
-import { getUsers, editUser, banUser, deleteUser } from '@/api/services/user-service';
+import { getUsers, editUser, banUser } from '@/api/services/user-service';
 import {
-    approveServiceProvider,
-    rejectServiceProvider,
     updateServiceProviderStatus
 } from '@/api/services/service-provider-service';
 import { Button } from "@/components/ui/button";
@@ -106,7 +104,7 @@ const UserTable: React.FC = () => {
         }
     };
 
-    const handleDelete = async (id: number) => {
+    /*const handleDelete = async (id: number) => {
         if (confirm('Are you sure you want to delete this user?')) {
             try {
                 await deleteUser(id);
@@ -124,12 +122,12 @@ const UserTable: React.FC = () => {
                 });
             }
         }
-    };
+    };*/
 
     const handleSubmit = async (data: Partial<User>) => {
         if (modalMode === 'edit' && selectedUser) {
             try {
-                await editUser(selectedUser.id, data);
+                await editUser(selectedUser.id, data as Pick<User, "email" | "firstName" | "lastName">);
                 fetchUsers();
                 setModalOpen(false);
                 toast({
@@ -210,7 +208,9 @@ const UserTable: React.FC = () => {
         { key: 'firstName', header: 'First Name' },
         { key: 'lastName', header: 'Last Name' },
         { key: 'email', header: 'Email' },
-        {
+    ];
+
+    /*        {
             key: 'role',
             header: 'Role',
             render: (user: User) => getUserRole(user)
@@ -229,8 +229,7 @@ const UserTable: React.FC = () => {
             key: 'serviceProviderStatus',
             header: 'Service Provider Status',
             render: (user: User) => user.ServiceProvider ? user.ServiceProvider.status : 'N/A'
-        },
-    ];
+        },*/
 
     const getUserRole = (user: User): string => {
         if (user.Landlord) return "Landlord";
@@ -256,12 +255,14 @@ const UserTable: React.FC = () => {
     const handleFilterChange = (filterType: string, value: string) => {
         setFilters(prevFilters => ({
             ...prevFilters,
+        }));
+    };
+
+    /*
             [filterType]: {
                 ...prevFilters[filterType as keyof typeof prevFilters],
                 [value]: !prevFilters[filterType as keyof typeof prevFilters][value as keyof typeof prevFilters[typeof filterType]]
-            }
-        }));
-    };
+            }*/
 
     const AdvancedFilters = () => (
         <Popover>
@@ -340,7 +341,6 @@ const UserTable: React.FC = () => {
                 data={users}
                 columns={columns}
                 onUpdate={handleEdit}
-                onDelete={handleDelete}
                 onBan={handleBan}
                 onDetails={handleDetails}
                 onSearchChange={setSearchQuery}

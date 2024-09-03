@@ -1,5 +1,5 @@
 {
-  "name": "frontend-admin",
+  "name": "frontend-user",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -50,6 +50,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/canvas-confetti": "^1.6.4",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-big-calendar": "^1.8.9",

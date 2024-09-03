@@ -50,7 +50,7 @@ export const ServiceForm = () => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
     }, [formData]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prevState => ({
             ...prevState,
@@ -137,7 +137,7 @@ export const ServiceForm = () => {
                                 <label htmlFor="type">Type de service</label>
                                 <Select style={{borderWidth: "1px"}} className="p-2 bg-white border-gray-200 rounded-lg" id="type" name="type" value={formData.type} onChange={handleChange}>
                                     <option value={"INTERVENTION"}>Intervention (Nécéssite une intervention dans le logement)</option>
-                                    <option value={"MISSION"}>Mission (S'éffectue en dehors du logement)</option>
+                                    <option value={"MISSION"}>Mission (S&apos;éffectue en dehors du logement)</option>
                                 </Select>
                             </div>
                         </div>

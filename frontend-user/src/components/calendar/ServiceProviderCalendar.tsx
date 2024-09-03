@@ -3,7 +3,7 @@ import React, {useState, useEffect} from 'react';
 import {Calendar as BigCalendar, momentLocalizer, View} from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import {Property, PropertyOccupation} from '@/types';
+import {Property,  ProviderOccupation} from '@/types';
 import CalendarActionPanel from './CalendarActionPanel';
 import useCalendarActions from '@/hooks/useCalendarActions';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
@@ -11,12 +11,13 @@ import {useToast} from "@/components/ui/use-toast";
 import PropertySelector from "@/components/properties/PropertySelector";
 import ServiceProviderCalendarActionPanel from "@/components/calendar/ServiceProviderCalendarActionPanel";
 import useServiceProviderCalendarActions from "@/hooks/useServiceProviderCalendarActions";
+import {Provider} from "react-redux";
 
 const localizer = momentLocalizer(moment);
 
 const ServiceProviderCalendar: React.FC = () => {
     const {occupations, actions} = useServiceProviderCalendarActions();
-    const [selectedOccupation, setSelectedOccupation] = useState<PropertyOccupation | null>(null);
+    const [selectedOccupation, setSelectedOccupation] = useState<ProviderOccupation | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [view, setView] = useState<View>('month');
@@ -59,8 +60,8 @@ const ServiceProviderCalendar: React.FC = () => {
 
         try {
             await actions.createOccupation({
-                startDate: slotInfo.start.toISOString(),
-                endDate: slotInfo.end.toISOString(),
+                startDate: slotInfo.start,
+                endDate: slotInfo.end,
             });
             await actions.refreshCalendar();
             toast({
@@ -72,7 +73,7 @@ const ServiceProviderCalendar: React.FC = () => {
         }
     };
 
-    const handleSelectEvent = (event: PropertyOccupation) => {
+    const handleSelectEvent = (event: ProviderOccupation) => {
         setSelectedOccupation(event);
     };
 
@@ -92,7 +93,7 @@ const ServiceProviderCalendar: React.FC = () => {
                                 title: occupation.intervention ? 'Reservation' : 'Unavailable',
                                 start: new Date(occupation.startDate),
                                 end: new Date(occupation.endDate),
-                            }))}
+                            })) as ProviderOccupation[]}
                             dayPropGetter={(date) => {
                                 const now = new Date();
                                 now.setHours(now.getHours() + 1);
@@ -106,18 +107,16 @@ const ServiceProviderCalendar: React.FC = () => {
                                 }
                                 return {};
                             }}
-                            eventPropGetter={(event: PropertyOccupation) => {
+                            eventPropGetter={(event: ProviderOccupation) => {
                                 let backgroundColor = '#3174ad';
-                                if (event.reservation) {
+                                if (event.intervention) {
                                     backgroundColor = '#4caf50';
                                 } else {
                                     backgroundColor = '#f44336'; // red
                                 }
                                 return {style: {backgroundColor}};
                             }}
-                            startAccessor="start"
                             min={new Date(new Date().setHours(new Date().getHours() + 1))}
-                            endAccessor="end"
                             style={{height: 500}}
                             onSelectSlot={handleSelectSlot}
                             onSelectEvent={handleSelectEvent}
@@ -129,8 +128,8 @@ const ServiceProviderCalendar: React.FC = () => {
                             components={{
                                 event: (props) => (
                                     <div
-                                        title={`${props.event.title}\nStart: ${moment(props.event.start).format('LLL')}\nEnd: ${moment(props.event.end).format('LLL')}`}>
-                                        {props.event.title}
+                                        title={`${props.event.intervention ? props.event.intervention.service?.name : "Reservation" }\nStart: ${moment(props.event.startDate).format('LLL')}\nEnd: ${moment(props.event.endDate).format('LLL')}`}>
+                                        {props.event.intervention ? props.event.intervention.service?.name : "Reservation" }
                                     </div>
                                 ),
                             }}
@@ -140,11 +139,11 @@ const ServiceProviderCalendar: React.FC = () => {
                     <div className="col-span-1">
                         <ServiceProviderCalendarActionPanel
                             selectedOccupation={selectedOccupation}
-                            onCreateOccupation={async (occupation) => {
+                            onCreateOccupation={async (occupation: Pick<ProviderOccupation, "startDate" | "endDate">) => {
                                 await actions.createOccupation(occupation);
                                 await actions.refreshCalendar();
                             }}
-                            onUpdateOccupation={async (id, occupation) => {
+                            onUpdateOccupation={async (id, occupation: Pick<ProviderOccupation, "startDate" | "endDate">) => {
                                 await actions.updateOccupation(id, occupation);
                                 await actions.refreshCalendar();
                             }}

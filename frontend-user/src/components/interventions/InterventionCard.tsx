@@ -20,7 +20,7 @@ export const InterventionCard = ({ intervention }: InterventionCardProps) => {
                 </CardTitle>
             </CardHeader>
             <CardContent>
-                <p className="mt-2 text-sm line-clamp-3">{intervention?.providerOccupation?.startDate} {intervention?.providerOccupation?.endDate}</p>
+                <p className="mt-2 text-sm line-clamp-3">{intervention?.providerOccupation?.startDate.toISOString()} {intervention?.providerOccupation?.endDate.toISOString()}</p>
             </CardContent>
         </Card>
     )

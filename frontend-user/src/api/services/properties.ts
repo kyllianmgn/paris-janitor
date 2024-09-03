@@ -40,10 +40,6 @@ export const propertiesService = {
         return api.get('properties/me').json<ApiResponse<Property[]>>();
     },
 
-    getMyPropertyById: async (id: number): Promise<ApiResponse<Property>> => {
-        return api.get(`properties/me/${id}`).json<ApiResponse<Property>>();
-    },
-
     getAvailableProperties: async (query?: string, page?: number): Promise<ApiResponse<Property[]>> => {
         let searchParams = ""
         if (query){

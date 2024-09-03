@@ -99,8 +99,8 @@ const SubscriptionTable: React.FC = () => {
         }
     };
 
-    const columns = [
-        { key: 'userId', header: 'User ID' },
+    const columns: {key: keyof Subscription, header: string}[] = [
+        { key: "userId", header: 'User ID' },
         { key: 'planId', header: 'Plan ID' },
         { key: 'status', header: 'Status' },
         { key: 'startDate', header: 'Start Date' },

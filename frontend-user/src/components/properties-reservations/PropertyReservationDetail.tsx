@@ -45,10 +45,11 @@ export const PropertyReservationDetail = ({propertyReservationId}: PropertyReser
         return <h1 className="text-2xl font-semibold text-center mt-10">Loading...</h1>;
     }
 
-    const uploadReview = async (note: number, comment: string) => {
+    const uploadReview = async (note: number, comment: string): Promise<PropertyReview | undefined> => {
         if (!propertyReservationFull?.occupation?.propertyId) return;
         const response = await propertiesService.createPropertyReview(propertyReservationFull?.occupation?.propertyId, note, comment)
         setReview(response.data)
+        return response.data
     }
 
     return (
