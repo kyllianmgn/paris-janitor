@@ -95,15 +95,7 @@ export const SubscriptionDetails: React.FC<{ id: number }> = ({ id }) => {
                     {subscription.endDate && <div><strong>End Date:</strong> {new Date(subscription.endDate).toLocaleDateString()}</div>}
                 </div>
             ),
-        },
-        {
-            title: "Stripe Information",
-            content: (subscription: Subscription) => (
-                <div className="space-y-2">
-                    <div><strong>Stripe Subscription ID:</strong> {subscription.stripeSubscriptionId}</div>
-                </div>
-            ),
-        },
+        }
     ];
 
     const actions = (

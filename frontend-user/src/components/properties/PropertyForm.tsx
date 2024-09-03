@@ -33,9 +33,11 @@ const steps = [
 
 const STORAGE_KEY = 'property_form_draft';
 
-interface PropertyFormDataError extends Omit<PropertyFormData, "files" | "roomCount">{
+interface PropertyFormDataError extends Omit<PropertyFormData, "files" | "roomCount" | "pricePerNight" | "propertyType">{
     files: string;
     roomCount: string;
+    pricePerNight: string;
+    propertyType: string
 }
 
 export const PropertyForm = () => {

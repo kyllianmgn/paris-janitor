@@ -70,7 +70,7 @@ export const initSubscriptions = (app: express.Express) => {
                 }
             });
 
-            res.status(200).json({ url: session.url });
+            res.status(200).json({ sessionUrl: session.url });
         } catch (error) {
             console.error("Error in /subscriptions/landlord:", error);
             res.status(500).json({ error: "An error occurred while creating the subscription." });

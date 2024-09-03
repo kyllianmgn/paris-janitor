@@ -34,7 +34,7 @@ const propertyFields: Field[] = [
 
 export interface PropertyDetailsProps {
     propertyId: number;
-    isPersonal: boolean;
+    isPersonal?: boolean;
 }
 
 
@@ -348,8 +348,8 @@ const ReservationCard: React.FC<{
                         setStartDate(start);
                         setEndDate(end);
                     }}
-                    startDate={startDate}
-                    endDate={endDate}
+                    startDate={startDate ? startDate : undefined}
+                    endDate={endDate ? endDate : undefined}
                     selectsRange
                     inline
                 />

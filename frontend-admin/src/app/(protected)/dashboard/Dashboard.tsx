@@ -77,20 +77,32 @@ interface DashboardCardProps {
     href?: string;
 }
 
-const DashboardCard = ({ title, value, href }: DashboardCardProps) => {
+const DashboardCard = ({ title, value, href = undefined }: DashboardCardProps) => {
     const CardComponent = href ? Link : Card;
-    const cardProps = href ? { href } : {};
 
     return (
-        <CardComponent {...cardProps}>
-            <Card className={`h-full ${href ? 'hover:shadow-lg transition-shadow cursor-pointer' : ''}`}>
-                <CardHeader>
-                    <CardTitle className="text-lg">{title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-3xl font-bold">{value}</p>
-                </CardContent>
-            </Card>
-        </CardComponent>
+        <>
+            {href ?
+                <Link href={String(href)}>
+                    <Card className={`h-full ${href ? 'hover:shadow-lg transition-shadow cursor-pointer' : ''}`}>
+                        <CardHeader>
+                            <CardTitle className="text-lg">{title}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-3xl font-bold">{value}</p>
+                        </CardContent>
+                    </Card>
+                </Link>
+                :
+                <Card className={`h-full ${href ? 'hover:shadow-lg transition-shadow cursor-pointer' : ''}`}>
+                    <CardHeader>
+                        <CardTitle className="text-lg">{title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-3xl font-bold">{value}</p>
+                    </CardContent>
+                </Card>
+            }
+        </>
     );
 };

@@ -13,7 +13,7 @@ export const getUsers = async (query?: string, page?: number, filters?: any): Pr
     }
     if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
-            if (typeof value === 'object') {
+            if (typeof value === 'object' && value) {
                 Object.entries(value).forEach(([subKey, subValue]) => {
                     if (subValue) {
                         searchParams.append(`${key}[${subKey}]`, 'true');

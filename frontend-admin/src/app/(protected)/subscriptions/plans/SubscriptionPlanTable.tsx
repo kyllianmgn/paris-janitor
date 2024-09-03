@@ -28,7 +28,7 @@ const SubscriptionPlanTable: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<'create' | 'edit' | 'delete'>('create');
-    const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
+    const [selectedPlan, setSelectedPlan] = useState<Partial<SubscriptionPlan> | null>(null);
 
     const router = useRouter();
     const { toast } = useToast();
@@ -99,13 +99,13 @@ const SubscriptionPlanTable: React.FC = () => {
                 console.log("DATA", data);
                 console.log("SELECTEDPLAN", selectedPlan);
 
-                await updateSubscriptionPlan(selectedPlan.id, data);
+                await updateSubscriptionPlan(selectedPlan.id || 0, data);
                 toast({
                     title: "Success",
                     description: "Subscription plan updated successfully",
                 });
             } else if (modalMode === 'delete' && selectedPlan) {
-                await deleteSubscriptionPlan(selectedPlan.id);
+                await deleteSubscriptionPlan(selectedPlan.id || 0);
                 toast({
                     title: "Success",
                     description: "Subscription plan deleted successfully",
@@ -145,7 +145,7 @@ const SubscriptionPlanTable: React.FC = () => {
     };
 
 
-    const columns = [
+    const columns: {key: keyof  SubscriptionPlan, header: string}[] = [
         { key: 'name', header: 'Name' },
         { key: 'description', header: 'Description' },
         { key: 'monthlyPrice', header: 'Monthly Price' },
