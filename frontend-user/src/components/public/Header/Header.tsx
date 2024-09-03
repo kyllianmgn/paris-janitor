@@ -11,17 +11,16 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { useEffect, useState } from "react";
 import SubscriptionDialog from "@/components/subscriptions/SubscriptionDialog";
-import { authService } from "@/api/services/authService";
-import {LandlordStatus, TravelerSubscription, User} from "@/types";
 
 export default function Header() {
   const router = useRouter();
-  const { role } = useSelector((state: RootState) => state.auth);
+  const role = useSelector((state: RootState) => state.auth.role);
+  const user = useSelector((state: RootState) => state.auth.user);
+  const landlordStatus = useSelector((state: RootState) => state.auth.landlordStatus);
   const { isLoading } = useAuth();
   const currentPath = usePathname();
   const [showNav, setShowNav] = useState(false);
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
-  const [userInfo, setUserInfo] = useState<User | null>(null);
 
   const isLinkActive = (path: string) => {
     return currentPath.startsWith(path);
@@ -29,27 +28,17 @@ export default function Header() {
 
   useEffect(() => {
     setShowNav(true);
-    fetchUserInfo().then();
   }, []);
 
-  const fetchUserInfo = async () => {
-    try {
-      const info = await authService.getUserInfo();
-      setUserInfo(info);
-    } catch (error) {
-      console.error("Error fetching user info:", error);
-    }
-  };
+  const isLandlordPending = landlordStatus === "PENDING";
 
-  const isLandlordPending = userInfo?.Landlord?.status === LandlordStatus.PENDING;
-  const isTravelerFree = userInfo?.Traveler?.subscriptionType === TravelerSubscription.FREE;
   return (
       <header className="border-b fixed w-full bg-white shadow z-40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex-shrink-0">
-              {userInfo && showNav && (role === "LANDLORD" || role === "SERVICE_PROVIDER") ? (
+              {user && showNav && (role === "LANDLORD" || role === "SERVICE_PROVIDER") ? (
                   <Link href="/dashboard">
                     <span className="text-2xl font-bold text-red-500">Paris Janitor</span>
                   </Link>
@@ -64,7 +53,7 @@ export default function Header() {
             {currentPath === "/" && <SearchBar />}
 
             {/* Navigation */}
-            {userInfo && showNav && (
+            {user && showNav && (
                 <nav className="hidden md:flex space-x-4">
                   {(role === "LANDLORD" || role === "SERVICE_PROVIDER") && currentPath === "/" ? (
                       <Button
@@ -93,22 +82,13 @@ export default function Header() {
                 </Button>
             )}
 
-            {role === "TRAVELER" && isTravelerFree && (
-                <Button
-                    variant="ghost"
-                    onClick={() => router.push('/subscriptions/traveler')}
-                >
-                  Upgrade Plan
-                </Button>
-            )}
-
             <SubscriptionDialog
                 isOpen={isSubscriptionDialogOpen}
                 onClose={() => setIsSubscriptionDialogOpen(false)}
             />
 
             {/* Auth Button or User Menu */}
-            <div>{userInfo && showNav ? <UserMenu /> : <AuthButton />}</div>
+            <div>{user && showNav ? <UserMenu /> : <AuthButton />}</div>
           </div>
         </div>
       </header>
