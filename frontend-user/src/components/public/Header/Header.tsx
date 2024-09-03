@@ -42,6 +42,7 @@ export default function Header() {
   };
 
   const isLandlordPending = userInfo?.Landlord?.status === LandlordStatus.PENDING;
+  const isTravelerFree = userInfo?.Traveler?.status === TravelerStatus.FREE;
 
   return (
       <header className="border-b fixed w-full bg-white shadow z-40">
