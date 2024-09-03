@@ -11,6 +11,7 @@ const initialState: AuthState = {
     idRole: null,
     role: null,
     travelerPlan: null,
+    landlordStatus: null,
     serviceProviderStatus: null,
 };
 
@@ -30,7 +31,8 @@ const authSlice = createSlice({
                 firstName: decodedToken.firstName,
                 lastName: decodedToken.lastName,
             };
-            if (decodedToken.landlordId) {
+            if (decodedToken.landlordId && decodedToken.landlordStatus) {
+                state.landlordStatus = decodedToken.landlordStatus;
                 state.idRole = decodedToken.landlordId;
                 state.role = 'LANDLORD';
             } else if (decodedToken.travelerId && decodedToken.travelerPlan) {
