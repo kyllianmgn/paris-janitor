@@ -164,8 +164,6 @@ export const initSubscriptions = (app: express.Express) => {
 
     app.get("/subscriptions/success", isAuthenticated, async (req, res) => {
         try {
-            console.log("je suis dans la route success");
-            console.log(req.query.session_id);
             const sessionId = req.query.session_id as string;
             if (!sessionId) {
                 return res.status(400).json({ error: "Missing session_id parameter" });
@@ -228,8 +226,7 @@ export const initSubscriptions = (app: express.Express) => {
 
     app.get("/subscriptions/traveler/success", isAuthenticated, async (req, res) => {
         try {
-            console.log("je suis dans la route success");
-            console.log(req.query.session_id);
+
             const sessionId = req.query.session_id as string;
             if (!sessionId) {
                 return res.status(400).json({ error: "Missing session_id parameter" });
