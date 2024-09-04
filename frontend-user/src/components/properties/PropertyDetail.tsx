@@ -179,8 +179,8 @@ export const PropertyDetails = ({ propertyId, isPersonal = false }: PropertyDeta
         handleModalClose();
     };
 
-    const handleManageOccupations = () => {
-        router.push(`/properties/${propertyId}/occupations`);
+    const handleManageReservations = () => {
+        router.push(`/my-properties/${propertyId}/reservations`);
     };
 
     const handleEditProperty = () => {
@@ -229,7 +229,7 @@ export const PropertyDetails = ({ propertyId, isPersonal = false }: PropertyDeta
 
                     {isOwner && (
                         <OwnerActions
-                            onManageOccupations={handleManageOccupations}
+                            onManageOccupations={handleManageReservations}
                             onEditProperty={handleEditProperty}
                             onDeleteProperty={handleDeleteProperty}
                             onToggleServices={handleToggleServices}
@@ -326,7 +326,7 @@ const OwnerActions: React.FC<{
         <CardContent className="flex flex-col space-y-4">
             <Button onClick={onManageOccupations} className="w-full">
                 <Calendar className="mr-2 h-4 w-4" />
-                Manage Occupations
+                Manage Reservations
             </Button>
             <Button onClick={onEditProperty} className="w-full">
                 <Edit className="mr-2 h-4 w-4" />
