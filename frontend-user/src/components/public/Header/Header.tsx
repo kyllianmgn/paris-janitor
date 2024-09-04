@@ -149,6 +149,7 @@ function getNavLinks(role: string | null) {
     case "TRAVELER":
       return [
         { path: "/my-reservations", label: "Reservations" },
+        { path: "/invoices", label: "Invoices" },
       ];
     case "LANDLORD":
       return [

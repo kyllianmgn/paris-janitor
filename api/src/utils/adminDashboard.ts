@@ -1,5 +1,5 @@
 import { prisma } from './prisma';
-import { SubscriptionStatus, UserType } from '@prisma/client';
+import {InterventionStatus, PropertyStatus, ReservationStatus, SubscriptionStatus, UserType} from '@prisma/client';
 
 export async function getAdminDashboardStats() {
     const currentDate = new Date();
@@ -61,4 +61,118 @@ export async function updateAdminDashboard(
     // Nous n'avons pas besoin de stocker quoi que ce soit ici
     // car nous calculons toutes les statistiques en temps réel
     console.log(`Subscription ${subscription.id} updated to status ${status}`);
+}
+
+export async function getLandlordDashboardStats(landlordId: number) {
+    const currentDate = new Date();
+    const thirtyDaysAgo = new Date(currentDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const [
+        totalRevenue,
+        newReservations,
+        canceledReservations,
+        pendingProperties,
+        activeProperties,
+        upcomingInterventions,
+        averageRating
+    ] = await Promise.all([
+        prisma.propertyReservation.aggregate({
+            where: {
+                status: ReservationStatus.CONFIRMED,
+                occupation: { property: { landlordId } }
+            },
+            _sum: { totalPrice: true }
+        }),
+        prisma.propertyReservation.count({
+            where: {
+                createdAt: { gte: thirtyDaysAgo },
+                occupation: { property: { landlordId } }
+            }
+        }),
+        prisma.propertyReservation.count({
+            where: {
+                status: ReservationStatus.CANCELLED,
+                updatedAt: { gte: thirtyDaysAgo },
+                occupation: { property: { landlordId } }
+            }
+        }),
+        prisma.property.count({ where: { status: PropertyStatus.PENDING, landlordId } }),
+        prisma.property.count({ where: { status: PropertyStatus.APPROVED, landlordId } }),
+        prisma.intervention.count({
+            where: {
+                status: InterventionStatus.PLANNED,
+                propertyOccupation: { property: { landlordId } }
+            }
+        }),
+        prisma.propertyReview.aggregate({
+            where: { property: { landlordId } },
+            _avg: { note: true }
+        })
+    ]);
+
+    return {
+        totalRevenue: totalRevenue._sum.totalPrice || 0,
+        newReservations,
+        canceledReservations,
+        pendingProperties,
+        activeProperties,
+        upcomingInterventions,
+        averageRating: averageRating._avg.note || 0
+    };
+}
+
+export async function getServiceProviderDashboardStats(providerId: number) {
+    const currentDate = new Date();
+    const thirtyDaysAgo = new Date(currentDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const [
+        totalRevenue,
+        completedInterventions,
+        upcomingInterventions,
+        canceledInterventions,
+        activeServices,
+        averageRating
+    ] = await Promise.all([
+        prisma.intervention.aggregate({
+            where: {
+                status: InterventionStatus.COMPLETED,
+                service: { providerId }
+            },
+            _sum: { additionalPrice: true }
+        }),
+        prisma.intervention.count({
+            where: {
+                status: InterventionStatus.COMPLETED,
+                updatedAt: { gte: thirtyDaysAgo },
+                service: { providerId }
+            }
+        }),
+        prisma.intervention.count({
+            where: {
+                status: InterventionStatus.PLANNED,
+                service: { providerId }
+            }
+        }),
+        prisma.intervention.count({
+            where: {
+                status: InterventionStatus.CANCELLED,
+                updatedAt: { gte: thirtyDaysAgo },
+                service: { providerId }
+            }
+        }),
+        prisma.service.count({ where: { providerId } }),
+        prisma.serviceReview.aggregate({
+            where: { service: { providerId } },
+            _avg: { note: true }
+        })
+    ]);
+
+    return {
+        totalRevenue: totalRevenue._sum.additionalPrice || 0,
+        completedInterventions,
+        upcomingInterventions,
+        canceledInterventions,
+        activeServices,
+        averageRating: averageRating._avg.note || 0
+    };
 }
