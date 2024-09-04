@@ -158,6 +158,8 @@ function getNavLinks(role: string | null) {
         { path: "/calendar", label: "Calendar" },
         { path: "/interventions", label: "Interventions" },
         { path: "/invoices", label: "Invoices" },
+        { path: "/services", label: "Services" }, 
+
       ];
     case "SERVICE_PROVIDER":
       return [
