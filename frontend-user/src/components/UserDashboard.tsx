@@ -29,7 +29,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user }) => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                let dashboardStats;
+                let dashboardStats:any;
                 if (user.Landlord) {
                     dashboardStats = await landlordsService.getDashboardStats();
                 } else if (user.ServiceProvider) {

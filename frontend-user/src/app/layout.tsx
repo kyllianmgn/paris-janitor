@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import {Providers} from "@/components/public/providers";
 import Header from "@/components/public/Header/Header";
 import RootLayoutAds from "@/components/RootLayoutAds";
-import Hydratefix from "@/components/public/Hydratefix";
+
 
 
 
