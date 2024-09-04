@@ -139,11 +139,29 @@ export const PropertyDetails = ({ propertyId, isPersonal = false }: PropertyDeta
         try {
             if (modalState.mode === 'edit') {
                 if (data.id) {
-                    await propertiesService.updateProperty(data.id, data as Property);
-                    toast({ title: "Success", description: "Property updated successfully" });
+                    const propertyId = data.id;
+                    delete data.id;
+                    delete data.landlord;
+                    delete data.landlordId;
+                    delete data.instruction;
+                    delete data.roomCount;
+                    delete data.propertyType;
+                    delete data.status;
+                    delete data.createdAt;
+                    delete data.updatedAt;
+                    await propertiesService.updateProperty(propertyId, data as Property);
+
                     // Refresh property data
-                    const updatedProperty = await propertiesService.getPropertyById(data.id);
+                    const updatedProperty = await propertiesService.getMyPropertyById(propertyId);
                     setProperty(updatedProperty.data);
+
+                    toast({title: "Success", description: "Property updated successfully"});
+                } else {
+                    toast({
+                        title: "Error",
+                        description: `Failed to ${modalState.mode === 'edit' ? 'update' : 'delete'} property`,
+                        variant: "destructive",
+                    });
                 }
             } else if (modalState.mode === 'delete') {
                 await propertiesService.disableProperty(modalState.property!.id!);
