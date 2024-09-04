@@ -139,11 +139,29 @@ export const PropertyDetails = ({ propertyId, isPersonal = false }: PropertyDeta
         try {
             if (modalState.mode === 'edit') {
                 if (data.id) {
-                    await propertiesService.updateProperty(data.id, data as Property);
-                    toast({ title: "Success", description: "Property updated successfully" });
+                    const propertyId = data.id;
+                    delete data.id;
+                    delete data.landlord;
+                    delete data.landlordId;
+                    delete data.instruction;
+                    delete data.roomCount;
+                    delete data.propertyType;
+                    delete data.status;
+                    delete data.createdAt;
+                    delete data.updatedAt;
+                    await propertiesService.updateProperty(propertyId, data as Property);
+
                     // Refresh property data
-                    const updatedProperty = await propertiesService.getPropertyById(data.id);
+                    const updatedProperty = await propertiesService.getMyPropertyById(propertyId);
                     setProperty(updatedProperty.data);
+
+                    toast({title: "Success", description: "Property updated successfully"});
+                } else {
+                    toast({
+                        title: "Error",
+                        description: `Failed to ${modalState.mode === 'edit' ? 'update' : 'delete'} property`,
+                        variant: "destructive",
+                    });
                 }
             } else if (modalState.mode === 'delete') {
                 await propertiesService.disableProperty(modalState.property!.id!);
@@ -161,8 +179,8 @@ export const PropertyDetails = ({ propertyId, isPersonal = false }: PropertyDeta
         handleModalClose();
     };
 
-    const handleManageOccupations = () => {
-        router.push(`/properties/${propertyId}/occupations`);
+    const handleManageReservations = () => {
+        router.push(`/my-properties/${propertyId}/reservations`);
     };
 
     const handleEditProperty = () => {
@@ -211,7 +229,7 @@ export const PropertyDetails = ({ propertyId, isPersonal = false }: PropertyDeta
 
                     {isOwner && (
                         <OwnerActions
-                            onManageOccupations={handleManageOccupations}
+                            onManageOccupations={handleManageReservations}
                             onEditProperty={handleEditProperty}
                             onDeleteProperty={handleDeleteProperty}
                             onToggleServices={handleToggleServices}
@@ -308,7 +326,7 @@ const OwnerActions: React.FC<{
         <CardContent className="flex flex-col space-y-4">
             <Button onClick={onManageOccupations} className="w-full">
                 <Calendar className="mr-2 h-4 w-4" />
-                Manage Occupations
+                Manage Reservations
             </Button>
             <Button onClick={onEditProperty} className="w-full">
                 <Edit className="mr-2 h-4 w-4" />
