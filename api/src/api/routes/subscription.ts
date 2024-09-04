@@ -189,6 +189,7 @@ export const initSubscriptions = (app: express.Express) => {
 
             const user:User | null = await prisma.user.findUnique({
                 where: { id: parseInt(userId) },
+                include: { Landlord: true }
             });
 
             if (!user) {
