@@ -180,10 +180,10 @@ export const initSubscriptions = (app: express.Express) => {
                 },
             });*/
 
-            if (!req.user?.landlordId) return res.sendStatus(401)
+            if (!req.user?.landlordId || !req.user?.userId) return res.sendStatus(401)
 
             await prisma.landlord.update({
-                where: { userId: req.user?.landlordId },
+                where: { userId: req.user?.userId },
                 data: { status: LandlordStatus.ACTIVE },
             });
 
