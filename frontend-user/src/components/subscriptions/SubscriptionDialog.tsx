@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/api/config";
 import { useToast } from "@/components/ui/use-toast";
+import {ApiResponse} from "@/types";
 
 interface SubscriptionDialogProps {
     isOpen: boolean;
@@ -23,8 +24,10 @@ export default function SubscriptionDialog({ isOpen, onClose }: SubscriptionDial
             const response = await api.post('subscriptions/landlord', { json: { userId: user?.id, planId: 6 } });
 
             if (response.ok) {
-                const data = await response.json();
-                router.push(data.url);
+                const data: ApiResponse<any> = await response.json();
+                if (data.sessionUrl){
+                    router.push(data.sessionUrl);
+                }
             } else {
                 console.error('Failed to initiate subscription');
                 toast({

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../../utils/prisma';
-import {Subscription, SubscriptionStatus, UserType} from '@prisma/client';
+import {SubscriptionStatus, UserType} from '@prisma/client';
 
 export const hasRequiredSubscription = (requiredUserType: UserType, requiredPlanName?: string) => {
     return async (req: Request, res: Response, next: NextFunction) => {
@@ -9,7 +9,7 @@ export const hasRequiredSubscription = (requiredUserType: UserType, requiredPlan
         }
 
         try {
-            const activeSubscription: Subscription | null = await prisma.subscription.findFirst({
+            const activeSubscription = await prisma.subscription.findFirst({
                 where: {
                     userId: req.user.id,
                     status: SubscriptionStatus.ACTIVE,

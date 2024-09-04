@@ -16,7 +16,7 @@ export default function RootLayoutAds({children}: {children: ReactNode}) {
     return (
         <div className="mx-auto pt-20 px-4 py-8 flex items-center justify-evenly">
             {
-                isClient && user && role == "TRAVELER" && travelerStatus == "FREE" &&
+                isClient && (!user || (user && role == "TRAVELER" && travelerStatus == "FREE")) &&
                 <div className={"flex justify-center align-middle text-center h-96 w-32 border-2 border-black"}>
                     Votre pub ici
                 </div>
@@ -25,7 +25,7 @@ export default function RootLayoutAds({children}: {children: ReactNode}) {
                 {children}
             </div>
             {
-                isClient && user && role == "TRAVELER" && travelerStatus == "FREE" &&
+                isClient && (!user || (user && role == "TRAVELER" && travelerStatus == "FREE")) &&
                 <div className={"flex justify-center align-middle text-center h-96 w-32 border-2 border-black"}>
                     Votre pub ici
                 </div>

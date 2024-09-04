@@ -39,7 +39,7 @@ export const UserDetails: React.FC<{ id: number }> = ({ id }) => {
         setLoading(false);
     };
 
-    const handleEdit = async (updatedData: Partial<User>) => {
+    const handleEdit = async (updatedData: Pick<User, "firstName" | "lastName" | "email">) => {
         if (!user) return;
         try {
             const response = await editUser(user.id, updatedData);

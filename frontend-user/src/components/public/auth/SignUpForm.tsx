@@ -18,7 +18,7 @@ export default function SignUpForm({ onLoginClick, onClose }: SignUpFormProps) {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"TRAVELER" | "LANDLORD" | "SERVICE-PROVIDER">("TRAVELER");
+  const [role, setRole] = useState<"TRAVELER" | "LANDLORD" | "SERVICE_PROVIDER">("TRAVELER");
   const [error, setError] = useState("");
   const { signup } = useAuth();
   const router = useRouter();
@@ -95,7 +95,7 @@ export default function SignUpForm({ onLoginClick, onClose }: SignUpFormProps) {
           </div>
           <div className="grid gap-2">
             <Label htmlFor="role">Role</Label>
-            <Select onValueChange={(value: "TRAVELER" | "LANDLORD" | "SERVICE-PROVIDER") => setRole(value)}>
+            <Select onValueChange={(value: "TRAVELER" | "LANDLORD" | "SERVICE_PROVIDER") => setRole(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select your role" />
               </SelectTrigger>

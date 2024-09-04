@@ -3,19 +3,22 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 
 interface PropertyImageCarouselProps {
     propertyId: number;
+    images: string[]
 }
 
-const PropertyImageCarousel: React.FC<PropertyImageCarouselProps> = ({ propertyId }) => {
+const PropertyImageCarousel: React.FC<PropertyImageCarouselProps> = ({ propertyId, images }) => {
     const apiLink = process.env.NEXT_PUBLIC_API_URL || "https://api.parisjanitor.fr/";
+
+
 
     return (
         <Carousel className="w-full">
             <CarouselContent>
-                {[1, 2, 3].map((imageIndex) => (
-                    <CarouselItem key={imageIndex}>
+                {images.map((image, index) => (
+                    <CarouselItem key={index}>
                         <img
-                            src={`${apiLink}public/image/property/${propertyId}/${imageIndex}.jpeg`}
-                            alt={`Property ${propertyId} image ${imageIndex}`}
+                            src={`${apiLink}public/image/property/${propertyId}/${image}`}
+                            alt={`Property ${propertyId} image ${index+1}`}
                             className="w-full h-96 object-cover rounded-lg"
                         />
                     </CarouselItem>
@@ -24,7 +27,7 @@ const PropertyImageCarousel: React.FC<PropertyImageCarouselProps> = ({ propertyI
             <CarouselPrevious className="left-2" />
             <CarouselNext className="right-2" />
             <div className="absolute bottom-4 left-0 right-0 flex justify-center">
-                {[1, 2, 3].map((_, index) => (
+                {images.map((_, index) => (
                     <div
                         key={index}
                         className="h-2 w-2 rounded-full bg-white mx-1"

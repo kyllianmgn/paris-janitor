@@ -10,7 +10,7 @@ interface DataTableProps<T> {
     data: T[];
     columns: { key: keyof T; header: string }[];
     onUpdate: (id: number) => void;
-    onDelete: (id: number) => void;
+    onDelete?: (id: number) => void;
     onResetPassword?: (id: number) => void;
     onDetails: (id: number) => void;
     onBan?: (id: number) => void;
@@ -108,9 +108,10 @@ export default function DataTable<T extends { id: number }>({
                                         <DropdownMenuItem onClick={() => onUpdate(item.id)}>
                                             Edit
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => onDelete(item.id)}>
+                                        {onDelete &&
+                                            <DropdownMenuItem onClick={() => onDelete(item.id)}>
                                             Delete
-                                        </DropdownMenuItem>
+                                        </DropdownMenuItem>}
                                         {onResetPassword && (
                                             <DropdownMenuItem onClick={() => onResetPassword(item.id)}>
                                                 Reset Password
@@ -140,7 +141,6 @@ export default function DataTable<T extends { id: number }>({
             <Pagination
                 count={totalCount}
                 itemsName="items"
-                totalCount={totalCount}
                 onPageChange={handlePageChange}
             />
         </div>

@@ -4,7 +4,7 @@ import {Button} from "@/components/ui/button";
 import {useEffect, useRef, useState} from "react";
 import {PropertyReview, ServiceReview} from "@/types";
 
-export default function ReviewEditor({baseReview,uploadReview}:{baseReview: PropertyReview|ServiceReview,uploadReview: (note: number, comment: string) => PropertyReview|ServiceReview}){
+export default function ReviewEditor({baseReview,uploadReview}:{baseReview: PropertyReview|ServiceReview|null,uploadReview: (note: number, comment: string) => Promise<PropertyReview|ServiceReview|undefined>}){
 
     const reviewTextAreaRef = useRef<HTMLTextAreaElement>(null);
     const [note, setNote] = useState<number>(1);

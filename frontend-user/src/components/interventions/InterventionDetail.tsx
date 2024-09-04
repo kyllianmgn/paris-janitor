@@ -46,18 +46,20 @@ export const InterventionDetails = ({ interventionId }: InterventionDetailProps)
     }
 
     const cancelIntervention = async () => {
-        const res = await serviceInterventionsService.updateIntervention(interventionId, {serviceId: intervention?.serviceId, propertyOccupationId: intervention?.propertyOccupationId, providerOccupationId: intervention?.providerOccupationId, additionalPrice: intervention?.additionalPrice,status: InterventionStatus.CANCELLED})
+        if (!intervention?.serviceId) return;
+        const res = await serviceInterventionsService.updateIntervention(interventionId, {serviceId: intervention?.serviceId, propertyOccupationId: intervention?.propertyOccupationId, providerOccupationId: intervention?.providerOccupationId, additionalPrice: intervention?.additionalPrice,status: InterventionStatus.CANCELLED} as Intervention)
         setIntervention(res.data)
     }
 
     const completeIntervention = async () => {
+        if (!intervention?.serviceId || !intervention?.providerOccupationId || !intervention?.additionalPrice) return;
         const res = await serviceInterventionsService.updateIntervention(interventionId, {
             serviceId: intervention?.serviceId,
             propertyOccupationId: intervention?.propertyOccupationId,
             providerOccupationId: intervention?.providerOccupationId,
             additionalPrice: intervention?.additionalPrice,
             status: InterventionStatus.COMPLETED
-        })
+        } as Intervention)
         setIntervention(res.data)
     }
 

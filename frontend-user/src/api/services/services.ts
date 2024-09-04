@@ -68,7 +68,7 @@ export const servicesService = {
         return await api.get('provider-occupations/me').json()
     },
 
-    createOccupation: async (occupation: Omit<ProviderOccupation, "id">): Promise<ApiResponse<ProviderOccupation>> => {
+    createOccupation: async (occupation: Pick<ProviderOccupation, "startDate" | "endDate">): Promise<ApiResponse<ProviderOccupation>> => {
         return await api.post('provider-occupations/', {json: occupation}).json()
     },
 

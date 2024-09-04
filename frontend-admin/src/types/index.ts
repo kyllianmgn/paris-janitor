@@ -75,6 +75,7 @@ export interface Subscription {
     id: number;
     userId: number;
     planId: number;
+    plan?: SubscriptionPlan;
     status: SubscriptionStatus;
     startDate: Date;
     endDate?: Date | null;

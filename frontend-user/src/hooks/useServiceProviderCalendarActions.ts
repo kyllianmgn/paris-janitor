@@ -19,7 +19,7 @@ const useCalendarActions = () => {
     fetchOccupations().then();
   }, [role]);
 
-  const createOccupation = async (occupation: Omit<ProviderOccupation, "id">) => {
+  const createOccupation = async (occupation: Pick<ProviderOccupation, "startDate" | "endDate">) => {
     const response = await servicesService.createOccupation(occupation);
     setOccupations([...occupations, response.data]);
   };
