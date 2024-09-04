@@ -26,7 +26,7 @@ export const initInvoices = (app: express.Express) => {
                 where: {id: +req.user?.userId}
             })
             if (!user) return res.sendStatus(401)
-            if (!user.stripeCustomerId) return res.status(401).send({error: "No payments"})
+            if (!user.stripeCustomerId) return res.status(200).send({data: []})
 
 
             const invoices = await stripe.invoices.list({

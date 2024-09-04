@@ -20,7 +20,7 @@ export default function Invoices() {
 
 
     return (<>
-            <h1 className={"text-center font-bold"}>Your Invoices</h1>
+            <h1 className={"text-center text-2xl font-bold pb-10"}>Your Invoices</h1>
             <div className={"flex flex-col gap-2.5 my-3"}>
                 <div className={"flex justify-between border-b border-gray-600"}>
                     <span>Description</span>
@@ -29,7 +29,7 @@ export default function Invoices() {
                     <span>Actions</span>
                 </div>
                 {
-                    invoices.length > 0 && invoices.map((invoice: any) => (
+                    invoices && invoices.length > 0 && invoices.map((invoice: any) => (
                         <div className={"flex justify-between border-b border-gray-400 p-1"} key={invoice.id}>
                             <span>{invoice.lines.data[0].description}</span>
                             <span>{invoice.amount_paid / 100}€</span>

@@ -4,8 +4,9 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import {Providers} from "@/components/public/providers";
 import Header from "@/components/public/Header/Header";
-import React from "react";
 import RootLayoutAds from "@/components/RootLayoutAds";
+
+
 
 
 
@@ -37,11 +38,8 @@ export default function RootLayout({
     >
     <Providers>
           <Header/>
-            {false && <div className="container mx-auto pt-20 px-4 py-8">
-              {children}
-            </div>}
             <RootLayoutAds>
-              {children}
+                {children}
             </RootLayoutAds>
       </Providers>
       </body>

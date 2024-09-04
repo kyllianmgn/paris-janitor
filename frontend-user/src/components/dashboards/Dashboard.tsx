@@ -1,9 +1,10 @@
 "use client"
 
-import React, {useEffect, useState} from "react";
-import {User} from "@/types";
-import {authService} from "@/api/services/authService";
-import {LandlordDashboard} from "@/components/dashboards/LandlordDashboard";
+import React, { useEffect, useState } from "react";
+import { User } from "@/types";
+import { authService } from "@/api/services/authService";
+import {UserDashboard} from "@/components/UserDashboard";
+
 
 export const Dashboard = () => {
     const [user, setUser] = useState<User | null>(null);
@@ -17,28 +18,15 @@ export const Dashboard = () => {
         loadUser().then();
     }, []);
 
+    if (!user) return <div>Loading...</div>;
+
     return (
         <div className="container mx-auto px-4 py-8">
-            <div>
-                <div className="flex flex-col items-center justify-center">
-                    <h1 className="text-3xl font-bold">Dashboard</h1>
-                </div>
+            <div className="flex flex-col items-center justify-center mb-8">
+                <h1 className="text-3xl font-bold">Dashboard</h1>
             </div>
-            <div className="flex justify-between items-center mb-6">
-                {user?.Landlord && (
-                    <LandlordDashboard user={user}/>
-                )}
-                {user?.Traveler && (
-                    <div>
-                        Traveler Dashboard
-                    </div>
-                )}
-                {user?.ServiceProvider && (
-                    <div>
-                        ServiceProvider Dashboard
-                    </div>
-                )}
-            </div>
+            {(user.Landlord || user.ServiceProvider) && <UserDashboard user={user} />}
+            {user.Traveler && <div>Traveler Dashboard</div>}
         </div>
     );
 }
