@@ -61,6 +61,29 @@ export const findUserByEmail = async (email: string): Promise<User|null> => {
     });
 };
 
+export const findValidUserByEmail = async (email: string): Promise<User|null> => {
+    return prisma.user.findFirst({
+        where: {
+            email: email,
+            OR: [{
+                bannedUntil: {lte: new Date()}
+            },{
+                bannedUntil: null
+            }]
+        },
+        select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            password: true,
+            Landlord: true,
+            Traveler: true,
+            ServiceProvider: true
+        }
+    });
+};
+
 export const findAdminByUsername = async (username: string): Promise<Admin|null> => {
     return prisma.admin.findFirst({
         where: {username: username}
@@ -77,7 +100,7 @@ export const verifyUserPassword = async (
   email: string,
   password: string
 ): Promise<UserWithoutPassword | null> => {
-  const user = await findUserByEmail(email);
+  const user = await findValidUserByEmail(email);
   if (!user) return null;
 
   const validPassword = await bcrypt.compare(password, user.password);
