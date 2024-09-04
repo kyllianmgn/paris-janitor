@@ -36,7 +36,6 @@ export const PropertiesReservations = () => {
         <>
             <div className="text-center my-8">
                 <h1 className="text-4xl font-bold mb-4">Properties Reservations</h1>
-                <p className="text-lg text-gray-600">Properties Reservations List</p>
             </div>
             <PropertyReservationList propertiesReservations={propertiesReservationsFullList}></PropertyReservationList>
         </>
