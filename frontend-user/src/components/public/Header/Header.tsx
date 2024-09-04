@@ -24,12 +24,19 @@ export default function Header() {
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
   const [isLandlordPending, setIsLandlordPending] = useState(true);
   const [isTravelerFree, setIsTravelerFree] = useState(true);
+  const [isClient, setIsClient] = useState(false);
+
 
   const isLinkActive = (path: string) => {
     return currentPath.startsWith(path);
   };
 
+  const isNotLDorSP = () => {
+    return role !== "LANDLORD" && role !== "SERVICE_PROVIDER";
+  };
+
   useEffect(() => {
+    setIsClient(true);
     setShowNav(true);
   }, []);
 
@@ -40,6 +47,8 @@ export default function Header() {
     useEffect(() => {
         setIsTravelerFree(travelerPlan === "FREE")
     }, [travelerPlan]);
+
+  if (!isClient) return null;
 
   return (
       <header className="border-b fixed w-full bg-white shadow z-40">
@@ -58,8 +67,22 @@ export default function Header() {
               )}
             </div>
 
-            {/* Search bar */}
-            {currentPath === "/" && <SearchBar />}
+            {isNotLDorSP() && (
+                <Button
+                    variant={isLinkActive('/') ? "default" as BadgeProps['variant'] : "ghost" as BadgeProps['variant']}
+                    onClick={() => router.push('/')
+                    }
+                >
+                  Property
+                </Button>
+            )}
+            {isNotLDorSP() && (
+                <Button
+                    variant={isLinkActive('/services') ? "default" as BadgeProps['variant'] : "ghost" as BadgeProps['variant']}
+                    onClick={() => router.push('/services')}
+                >Service</Button>
+            )}
+
 
             {/* Navigation */}
             {user && showNav && (
@@ -85,6 +108,7 @@ export default function Header() {
                 </nav>
             )}
 
+
             {isLandlordPending && (
                 <Button onClick={() => setIsSubscriptionDialogOpen(true)}>
                   Subscribe Now
@@ -106,8 +130,6 @@ export default function Header() {
   );
 }
 
-// Helper functions remain the same
-// Helper functions remain the same
 // Helper functions
 function getDashboardPath(role: string | null) {
   switch (role) {
