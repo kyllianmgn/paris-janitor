@@ -91,7 +91,7 @@ export default function Header() {
                 </Button>
             )}
 
-            {!isTravelerFree && <Button onClick={() => router.push('subscription/traveler')}>Upgrade plan</Button>}
+            {isTravelerFree && user && <Button onClick={() => router.push('subscription/traveler')}>Upgrade plan</Button>}
 
             <SubscriptionDialog
                 isOpen={isSubscriptionDialogOpen}
